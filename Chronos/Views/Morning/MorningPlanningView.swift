@@ -23,9 +23,30 @@ struct MorningPlanningView: View {
 
     @State private var entry = ""
     @State private var entryEnergy: TaskEnergy = .none
-    @State private var included: Set<String> = []
-    @State private var initialized = false
+    /// Selection model: dated tasks are included by default (opt-out via
+    /// `manualExclude`); undated tasks are opt-in (`manualInclude`). This
+    /// way a task you add mid-flow — which is created due today — is picked
+    /// up automatically once it syncs in, no fragile id lookup needed.
+    @State private var manualInclude: Set<String> = []
+    @State private var manualExclude: Set<String> = []
     @FocusState private var entryFocused: Bool
+
+    private func isIncluded(_ task: TaskItem) -> Bool {
+        if task.dueDate != nil { return !manualExclude.contains(task.id) }
+        return manualInclude.contains(task.id)
+    }
+
+    private func toggle(_ task: TaskItem) {
+        if task.dueDate != nil {
+            if manualExclude.contains(task.id) { manualExclude.remove(task.id) }
+            else { manualExclude.insert(task.id) }
+        } else {
+            if manualInclude.contains(task.id) { manualInclude.remove(task.id) }
+            else { manualInclude.insert(task.id) }
+        }
+    }
+
+    private var includedCount: Int { candidates.filter(isIncluded).count }
 
     private var day: Date { Date().startOfDay }
 
@@ -49,7 +70,7 @@ struct MorningPlanningView: View {
 
     private var proposals: [AutoScheduler.Proposal] {
         AutoScheduler.plan(
-            tasks: candidates.filter { included.contains($0.id) },
+            tasks: candidates.filter(isIncluded),
             existing: service.blocks(on: day),
             on: day,
             workStartMinutes: workStartMinutes,
@@ -78,11 +99,6 @@ struct MorningPlanningView: View {
         #else
         .presentationDetents([.large])
         #endif
-        .onAppear {
-            guard !initialized else { return }
-            initialized = true
-            included = Set(candidates.filter { $0.dueDate != nil }.map(\.id))
-        }
     }
 
     private var greeting: String {
@@ -176,9 +192,9 @@ struct MorningPlanningView: View {
     }
 
     private func candidateRow(_ task: TaskItem) -> some View {
-        let isIn = included.contains(task.id)
+        let isIn = isIncluded(task)
         return Button {
-            if isIn { included.remove(task.id) } else { included.insert(task.id) }
+            toggle(task)
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: isIn ? "checkmark.square.fill" : "square")
@@ -217,13 +233,8 @@ struct MorningPlanningView: View {
         draft.energy = entryEnergy
         service.createTask(draft)
         entry = ""
-        // Newly created task is due today → auto-include once it reloads.
-        // (Selection is reconciled on next render via candidates.)
-        DispatchQueue.main.async {
-            if let created = candidates.first(where: { $0.title == title }) {
-                included.insert(created.id)
-            }
-        }
+        // Created due today, so it's auto-included by the dated-default rule
+        // as soon as it syncs in — no id bookkeeping required.
     }
 
     // MARK: Plan step
@@ -300,8 +311,8 @@ struct MorningPlanningView: View {
                     .background(Color.accentColor, in: Capsule())
             }
             .buttonStyle(.plain)
-            .disabled(step == .dump ? included.isEmpty : proposals.isEmpty)
-            .opacity((step == .dump ? included.isEmpty : proposals.isEmpty) ? 0.4 : 1)
+            .disabled(step == .dump ? includedCount == 0 : proposals.isEmpty)
+            .opacity((step == .dump ? includedCount == 0 : proposals.isEmpty) ? 0.4 : 1)
             .keyboardShortcut(.defaultAction)
         }
         .padding(14)

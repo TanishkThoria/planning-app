@@ -43,7 +43,7 @@ struct DayPlannerView: View {
             model.reviewPresented = true
         } label: {
             HStack(spacing: 9) {
-                Image(systemName: "checkmark.circle.badge.questionmark")
+                Image(systemName: "questionmark.circle.fill")
                     .font(.system(size: 13))
                     .foregroundStyle(Theme.warning)
                 Text("\(pendingReviewCount) finished block\(pendingReviewCount == 1 ? "" : "s") to review")
