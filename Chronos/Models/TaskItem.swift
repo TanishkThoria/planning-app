@@ -57,6 +57,40 @@ enum TaskPriority: Int, CaseIterable, Identifiable {
     }
 }
 
+/// Cognitive load of a task. Deep work is steered into your focus window by
+/// the scheduler; shallow work fills the remaining gaps.
+enum TaskEnergy: String, CaseIterable, Identifiable {
+    case none
+    case deep
+    case shallow
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .none: return "Any"
+        case .deep: return "Deep"
+        case .shallow: return "Shallow"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .none: return "circle.dotted"
+        case .deep: return "brain.head.profile"
+        case .shallow: return "wind"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .none: return Theme.textTertiary
+        case .deep: return Theme.accentChoices[0].color
+        case .shallow: return Theme.success
+        }
+    }
+}
+
 /// Immutable snapshot of an Apple Reminder.
 struct TaskItem: Identifiable, Hashable {
     let id: String            // calendarItemIdentifier
@@ -71,10 +105,21 @@ struct TaskItem: Identifiable, Hashable {
     var listName: String
     var color: Color
     var estimateMinutes: Int?
+    /// Preferred length of a single work session; when the estimate exceeds
+    /// this, the scheduler chunks the task across multiple sessions/days.
+    var sessionMinutes: Int?
+    var energy: TaskEnergy
     /// Set when this reminder is a Chronos subtask of another reminder.
     var parentID: String?
 
     var isSubtask: Bool { parentID != nil }
+
+    /// How the task should be broken up: nil = single block; otherwise the
+    /// per-session length (never larger than the estimate).
+    var effectiveSessionMinutes: Int? {
+        guard let session = sessionMinutes, let est = estimateMinutes, est > session else { return nil }
+        return session
+    }
 
     var isOverdue: Bool {
         guard let due = dueDate, !isCompleted else { return false }
@@ -112,6 +157,8 @@ struct TaskDraft {
     var hasTime: Bool = false
     var priority: TaskPriority = .none
     var estimateMinutes: Int?
+    var sessionMinutes: Int?
+    var energy: TaskEnergy = .none
     var notes: String = ""
     var isCompleted: Bool = false
     var parentID: String?
@@ -124,15 +171,19 @@ struct TaskEditorContext: Identifiable {
 }
 
 /// Chronos stores per-task metadata inside the reminder's notes as trailing
-/// tokens — `[est:45m]` for time estimates and `[sub:<reminder-id>]` for
-/// subtask links — so everything round-trips through Apple Reminders and
-/// syncs across devices for free. (EventKit doesn't expose the Reminders
-/// app's native subtasks, so Chronos subtasks are ordinary reminders that
-/// carry a pointer to their parent.)
+/// tokens — `[est:45m]` estimate, `[chunk:90m]` preferred session length,
+/// `[energy:deep]` load, and `[sub:<reminder-id>]` subtask link — so
+/// everything round-trips through Apple Reminders and syncs across devices
+/// for free. (EventKit doesn't expose the Reminders app's native subtasks,
+/// so Chronos subtasks are ordinary reminders carrying a parent pointer.)
 enum TaskMetadata {
 
     private static let estimatePattern = "\\[est:(\\d+)m\\]"
+    private static let chunkPattern = "\\[chunk:(\\d+)m\\]"
+    private static let energyPattern = "\\[energy:(deep|shallow)\\]"
     private static let parentPattern = "\\[sub:([^\\]]+)\\]"
+
+    private static let allPatterns = [estimatePattern, chunkPattern, energyPattern, parentPattern]
 
     private static func firstGroup(_ pattern: String, in notes: String?) -> String? {
         guard let notes,
@@ -147,13 +198,21 @@ enum TaskMetadata {
         firstGroup(estimatePattern, in: notes).flatMap { Int($0) }
     }
 
+    static func session(from notes: String?) -> Int? {
+        firstGroup(chunkPattern, in: notes).flatMap { Int($0) }
+    }
+
+    static func energy(from notes: String?) -> TaskEnergy {
+        firstGroup(energyPattern, in: notes).flatMap { TaskEnergy(rawValue: $0) } ?? .none
+    }
+
     static func parentID(from notes: String?) -> String? {
         firstGroup(parentPattern, in: notes)
     }
 
     static func strippingTokens(_ notes: String?) -> String? {
         guard var text = notes else { return nil }
-        for pattern in [estimatePattern, parentPattern] {
+        for pattern in allPatterns {
             guard let regex = try? NSRegularExpression(pattern: pattern) else { continue }
             text = regex.stringByReplacingMatches(
                 in: text,
@@ -166,12 +225,20 @@ enum TaskMetadata {
     }
 
     /// Combines display notes + metadata back into the stored notes string.
-    static func encode(notes: String, estimateMinutes: Int?, parentID: String?) -> String? {
+    static func encode(
+        notes: String,
+        estimateMinutes: Int?,
+        sessionMinutes: Int?,
+        energy: TaskEnergy,
+        parentID: String?
+    ) -> String? {
         let base = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         var parts: [String] = []
         if !base.isEmpty { parts.append(base) }
         var tokens: [String] = []
         if let est = estimateMinutes, est > 0 { tokens.append("[est:\(est)m]") }
+        if let session = sessionMinutes, session > 0 { tokens.append("[chunk:\(session)m]") }
+        if energy != .none { tokens.append("[energy:\(energy.rawValue)]") }
         if let parentID, !parentID.isEmpty { tokens.append("[sub:\(parentID)]") }
         if !tokens.isEmpty { parts.append(tokens.joined(separator: " ")) }
         let joined = parts.joined(separator: "\n")

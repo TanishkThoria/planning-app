@@ -9,6 +9,7 @@ import Combine
 final class AppModel: ObservableObject {
 
     enum Screen: String, CaseIterable, Identifiable {
+        case today
         case day
         case week
         case agenda
@@ -23,6 +24,7 @@ final class AppModel: ObservableObject {
 
         var title: String {
             switch self {
+            case .today: return "Today"
             case .day: return "Day"
             case .week: return "Week"
             case .agenda: return "Agenda"
@@ -36,6 +38,7 @@ final class AppModel: ObservableObject {
 
         var icon: String {
             switch self {
+            case .today: return "sun.max"
             case .day: return "calendar.day.timeline.left"
             case .week: return "calendar"
             case .agenda: return "list.bullet.rectangle"
@@ -49,29 +52,35 @@ final class AppModel: ObservableObject {
 
         var shortcut: KeyEquivalent? {
             switch self {
-            case .day: return "1"
-            case .week: return "2"
-            case .agenda: return "3"
-            case .tasks: return "4"
-            case .matrix: return "5"
-            case .insights: return "6"
+            case .today: return "1"
+            case .day: return "2"
+            case .week: return "3"
+            case .agenda: return "4"
+            case .tasks: return "5"
+            case .matrix: return "6"
+            case .insights: return "7"
             case .settings, .more: return nil
             }
         }
 
         /// Screens listed in the macOS/iPad sidebar.
-        static let sidebarCases: [Screen] = [.day, .week, .agenda, .tasks, .matrix, .insights, .settings]
+        static let sidebarCases: [Screen] = [.today, .day, .week, .agenda, .tasks, .matrix, .insights, .settings]
         /// Tabs shown on compact iPhone layouts (the rest live under More).
-        static let compactTabs: [Screen] = [.day, .agenda, .tasks, .matrix, .more]
+        static let compactTabs: [Screen] = [.today, .day, .tasks, .matrix, .more]
     }
 
-    @Published var screen: Screen = .day
+    @Published var screen: Screen = .today
     @Published var selectedDate: Date = Date().startOfDay
 
     // Sheets
     @Published var quickAddPresented = false
     @Published var planDayPresented = false
+    @Published var planWeekPresented = false
     @Published var calibrationPresented = false
+    @Published var morningPlanningPresented = false
+    @Published var reviewPresented = false
+    @Published var focusTimerPresented = false
+    @Published var focusTimerContext: FocusStartContext?
     @Published var blockEditor: BlockEditorContext?
     @Published var taskEditor: TaskEditorContext?
 
@@ -138,4 +147,15 @@ final class AppModel: ObservableObject {
         draft.listID = listID
         taskEditor = TaskEditorContext(draft: draft, existingID: nil)
     }
+
+    func startFocus(taskID: String?, title: String) {
+        focusTimerContext = FocusStartContext(taskID: taskID, title: title)
+        focusTimerPresented = true
+    }
+}
+
+/// Seeds the focus timer sheet with an optional task to work on.
+struct FocusStartContext {
+    var taskID: String?
+    var title: String
 }

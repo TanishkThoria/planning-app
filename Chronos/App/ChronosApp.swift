@@ -5,6 +5,9 @@ struct ChronosApp: App {
     @StateObject private var model = AppModel()
     @StateObject private var service = EventKitService()
     @StateObject private var profileStore = ProfileStore()
+    @StateObject private var focusLog = FocusLog()
+    @StateObject private var timer = FocusTimerController()
+    @StateObject private var notifications = NotificationService()
 
     var body: some Scene {
         #if os(macOS)
@@ -13,6 +16,9 @@ struct ChronosApp: App {
                 .environmentObject(model)
                 .environmentObject(service)
                 .environmentObject(profileStore)
+                .environmentObject(focusLog)
+                .environmentObject(timer)
+                .environmentObject(notifications)
         }
         .defaultSize(width: 1280, height: 840)
         .commands {
@@ -24,7 +30,10 @@ struct ChronosApp: App {
                 .environmentObject(model)
                 .environmentObject(service)
                 .environmentObject(profileStore)
-                .frame(width: 480, height: 620)
+                .environmentObject(focusLog)
+                .environmentObject(timer)
+                .environmentObject(notifications)
+                .frame(width: 480, height: 640)
                 .preferredColorScheme(.dark)
         }
         #else
@@ -33,6 +42,9 @@ struct ChronosApp: App {
                 .environmentObject(model)
                 .environmentObject(service)
                 .environmentObject(profileStore)
+                .environmentObject(focusLog)
+                .environmentObject(timer)
+                .environmentObject(notifications)
         }
         #endif
     }
@@ -54,8 +66,16 @@ struct ChronosCommands: Commands {
         }
 
         CommandMenu("Plan") {
+            Button("Plan Today…") { model.morningPlanningPresented = true }
+                .keyboardShortcut("m", modifiers: [.command, .shift])
             Button("Plan My Day…") { model.planDayPresented = true }
                 .keyboardShortcut("p", modifiers: [.command, .shift])
+            Button("Plan My Week…") { model.planWeekPresented = true }
+                .keyboardShortcut("w", modifiers: [.command, .shift])
+            Button("Review Day…") { model.reviewPresented = true }
+                .keyboardShortcut("r", modifiers: [.command, .shift])
+            Button("Start Focus Timer…") { model.startFocus(taskID: nil, title: "Focus") }
+                .keyboardShortcut("f", modifiers: [.command, .shift])
             Button("Recalibrate…") { model.calibrationPresented = true }
             Divider()
             Button("Go to Today") { model.goToToday() }

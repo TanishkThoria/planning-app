@@ -19,6 +19,7 @@ struct TimeBlockCard: View {
     var onToggleTask: () -> Void = {}
     var onDuplicate: () -> Void = {}
     var onStartNow: () -> Void = {}
+    var onFocus: () -> Void = {}
     var onDelete: () -> Void = {}
 
     @State private var dragOffset: CGFloat?
@@ -165,6 +166,7 @@ struct TimeBlockCard: View {
     @ViewBuilder
     private var contextMenuItems: some View {
         Button { onTap() } label: { Label("Edit", systemImage: "pencil") }
+        Button { onFocus() } label: { Label("Focus on This", systemImage: "timer") }
         if block.isEditable {
             Button { onDuplicate() } label: { Label("Duplicate", systemImage: "plus.square.on.square") }
             Button { onStartNow() } label: { Label("Start Now", systemImage: "play.circle") }

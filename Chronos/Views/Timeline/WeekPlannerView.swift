@@ -7,6 +7,7 @@ import EventKit
 struct WeekPlannerView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
+    @EnvironmentObject private var profileStore: ProfileStore
 
     @AppStorage(Prefs.hourHeight) private var hourHeight = 64.0
     @AppStorage(Prefs.snapMinutes) private var snapMinutes = 15
@@ -90,6 +91,9 @@ struct WeekPlannerView: View {
             }
             Spacer()
             DateNavigator()
+            HeaderIconButton(icon: "wand.and.stars", label: "Plan Week") {
+                model.planWeekPresented = true
+            }
             HeaderIconButton(icon: "plus", prominent: true) {
                 model.quickAddPresented = true
             }
@@ -150,6 +154,7 @@ struct WeekPlannerView: View {
             snapMinutes: snapMinutes,
             compact: true,
             dimPast: dimPastBlocks,
+            routineWindows: profileStore.profile.routineWindows(on: day),
             taskLookup: { service.task(withID: $0) },
             onTapBlock: { model.blockEditor = service.editorContext(for: $0) },
             onMoveBlock: { block, newStart in service.moveBlock(id: block.id, to: newStart) },
@@ -157,6 +162,7 @@ struct WeekPlannerView: View {
             onToggleTask: { service.toggleTaskCompletion(id: $0) },
             onDuplicateBlock: { service.duplicateBlock(id: $0.id) },
             onStartBlockNow: { service.startBlockNow(id: $0.id, snap: snapMinutes) },
+            onFocusBlock: { model.startFocus(taskID: $0.linkedTaskID, title: $0.title) },
             onDeleteBlock: { pendingDelete = $0 },
             onCreateAt: { start in
                 model.newBlock(

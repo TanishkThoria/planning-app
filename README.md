@@ -38,14 +38,39 @@ Natural-language capture with a live interpretation preview:
 ### Tasks
 Full Reminders client: Today / Upcoming / Anytime / Done filters, search, natural-language quick entry, priorities, due dates with optional times, estimates, list management, and one-tap "schedule next free slot today/tomorrow".
 
+### Today
+A focused "finish by end of day" command center, separate from the timeline: overdue at the top, then what's still ahead today (upcoming blocks + tasks due today), then what's already done. One tap to start a focus timer on any upcoming block, open morning planning, or run the end-of-day review.
+
+### Morning planning & end-of-day review
+- **Plan Today** (⇧⌘M) — a guided start-of-day ritual: brain-dump what you want to accomplish, tag rough effort, then let Chronos lay out the whole day around your routines and focus window.
+- **Review Day** (⇧⌘R) — walk each finished, task-linked block and answer *did you do it / needs more time / reschedule / skip*. Answers write back to Reminders and reschedule what slipped into your next free slot. A banner on the Day view nudges you when blocks are waiting to be reviewed.
+
+### Focus timer
+A Pomodoro / stopwatch that floats app-wide as a pill and survives navigation. Start it from any block or task ("Focus on This"), and completed focus time is logged for the Insights stats. Configurable focus/break lengths, pause/resume/skip.
+
+### Notifications & check-ins
+Opt-in local notifications fire when a task-linked block ends ("How did it go?"); opening the app surfaces the review flow so nothing slips silently. Toggle in Settings → Notifications.
+
 ### Agenda
 A rolling two-week list view — each day's all-day events, time blocks, and due tasks interleaved chronologically, with overdue tasks pinned to the top of today. Complete tasks inline, jump into any day's planner.
 
 ### Eisenhower matrix
 Live urgent/important quadrants over your Reminders (urgency from due dates, importance from priority). Drag a task to a different quadrant and its real due date and priority are rewritten in Apple Reminders.
 
+### Granular tasks, effort & chunking
+- **Estimates** from 5 minutes to 12 hours, with a fine stepper and quick presets.
+- **Effort tags** — mark a task *Deep* or *Shallow*; deep work is steered into your focus window by the scheduler, and the split shows up in Insights.
+- **Chunking** — give a big project a session length (e.g. 90 min) and Chronos splits it into multiple sessions, spreading them across days as earlier days fill up.
+- **List control** — move any task or subtask between Reminders lists from the editor.
+
 ### Subtasks
-Break any reminder into subtasks (EventKit doesn't expose the Reminders app's native subtasks, so Chronos subtasks are real reminders carrying a `[sub:<parent-id>]` link token — they sync everywhere). Subtasks nest under their parent in the task list, show x/y progress, and are individually draggable onto the timeline. Plan My Day schedules the subtasks rather than the parent umbrella.
+Break any reminder into subtasks (EventKit doesn't expose the Reminders app's native subtasks, so Chronos subtasks are real reminders carrying a `[sub:<parent-id>]` link token — they sync everywhere). Subtasks nest under their parent in the task list, show x/y progress, and are individually draggable onto the timeline. Plan My Day schedules the subtasks rather than the parent umbrella. Deleting a parent cascades to its subtasks.
+
+### Week auto-planning
+**Plan My Week** (⇧⌘W) distributes your open tasks and chunked-project sessions across the visible week, filling each day around existing blocks and protected routines, and shows the whole proposed week before you commit.
+
+### The Coach
+The Insights screen ends with prioritized, plain-language suggestions derived entirely on-device from your real stats and calibration profile — plan adherence, on-time rate, overdue backlog, deep-work placement, over-packed days, streaks. Fully offline; the engine is structured so a richer language model could be layered on later without changing the app.
 
 ### Calibration — the personal assistant layer
 On first launch (and anytime from Settings → Recalibrate or the Plan menu), Chronos interviews you:
@@ -59,7 +84,7 @@ On first launch (and anytime from Settings → Recalibrate or the Plan menu), Ch
 The profile lives on-device (UserDefaults) and every "next free slot" button, quick-add placement, and Plan My Day run respects it.
 
 ### Insights
-Weekly review — hours timeblocked, blocks created, tasks completed, completion rate for tasks due this week, hours per day, time by calendar, average/longest block, and how much of your calendar was task-linked.
+A deep weekly review: headline tiles (timeblocked, focused, done, streak), three behavioural rings (task completion, on-time rate, plan adherence), a planned-vs-focused day strip, deep/shallow split, time by calendar, the Coach's suggestions, and texture stats (average/longest block, task-linked ratio, focus sessions, overdue backlog).
 
 ### Power-user details
 - Full menu-bar + keyboard control on macOS: ⌘K quick add, ⌘N new block, ⇧⌘N new task, ⌘1–4 view switching, ⌘T today, ⌘[ / ⌘] navigation, ⇧⌘P plan my day.

@@ -255,6 +255,8 @@ final class EventKitService: ObservableObject {
             listName: list.title,
             color: color(of: list),
             estimateMinutes: TaskMetadata.estimate(from: reminder.notes),
+            sessionMinutes: TaskMetadata.session(from: reminder.notes),
+            energy: TaskMetadata.energy(from: reminder.notes),
             parentID: TaskMetadata.parentID(from: reminder.notes)
         )
     }
@@ -514,6 +516,8 @@ final class EventKitService: ObservableObject {
         reminder.notes = TaskMetadata.encode(
             notes: draft.notes,
             estimateMinutes: draft.estimateMinutes,
+            sessionMinutes: draft.sessionMinutes,
+            energy: draft.energy,
             parentID: draft.parentID
         )
 
@@ -573,6 +577,8 @@ final class EventKitService: ObservableObject {
         draft.hasTime = task.dueHasTime
         draft.priority = task.priority
         draft.estimateMinutes = task.estimateMinutes
+        draft.sessionMinutes = task.sessionMinutes
+        draft.energy = task.energy
         draft.notes = task.notes ?? ""
         draft.isCompleted = task.isCompleted
         draft.parentID = task.parentID

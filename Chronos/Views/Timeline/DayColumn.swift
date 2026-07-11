@@ -11,6 +11,8 @@ struct DayColumn: View {
     let snapMinutes: Int
     var compact = false
     var dimPast = true
+    /// Calibrated meal/routine windows drawn as ghost bands behind blocks.
+    var routineWindows: [PlannerProfile.DayWindow] = []
     var taskLookup: (String) -> TaskItem? = { _ in nil }
 
     var onTapBlock: (TimeBlock) -> Void = { _ in }
@@ -19,6 +21,7 @@ struct DayColumn: View {
     var onToggleTask: (String) -> Void = { _ in }
     var onDuplicateBlock: (TimeBlock) -> Void = { _ in }
     var onStartBlockNow: (TimeBlock) -> Void = { _ in }
+    var onFocusBlock: (TimeBlock) -> Void = { _ in }
     var onDeleteBlock: (TimeBlock) -> Void = { _ in }
     var onCreateAt: (Date) -> Void = { _ in }
     var onDropTask: (String, Date) -> Void = { _, _ in }
@@ -31,6 +34,8 @@ struct DayColumn: View {
         GeometryReader { geo in
             ZStack(alignment: .topLeading) {
                 grid
+
+                routineBands(width: geo.size.width)
 
                 // Create layer — double tap/click an empty slot.
                 Color.clear
@@ -57,6 +62,7 @@ struct DayColumn: View {
                         },
                         onDuplicate: { onDuplicateBlock(placed.block) },
                         onStartNow: { onStartBlockNow(placed.block) },
+                        onFocus: { onFocusBlock(placed.block) },
                         onDelete: { onDeleteBlock(placed.block) }
                     )
                 }
@@ -82,6 +88,38 @@ struct DayColumn: View {
                     .fill(Theme.gridLine)
                     .frame(height: 1)
                     .offset(y: CGFloat(hour) * hourHeight)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+
+    /// Striped ghost bands for meals/routines — always-on planning context,
+    /// distinct from real calendar blocks. Tap-through so you can still
+    /// create blocks over them.
+    @ViewBuilder
+    private func routineBands(width: CGFloat) -> some View {
+        ForEach(routineWindows) { window in
+            let start = max(window.start, date.startOfDay)
+            let end = min(window.end, date.startOfDay.adding(days: 1))
+            if start < end {
+                let y = CGFloat(start.minutesSinceMidnight) / 60 * hourHeight
+                let height = max(CGFloat(end.timeIntervalSince(start) / 60) / 60 * hourHeight, 10)
+                ZStack(alignment: .topLeading) {
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .fill(Theme.textTertiary.opacity(0.07))
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .strokeBorder(Theme.textTertiary.opacity(0.18), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                    if height >= 22 && !compact {
+                        Label(window.title, systemImage: "moon.stars")
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(Theme.textTertiary)
+                            .padding(.horizontal, 5)
+                            .padding(.top, 3)
+                            .lineLimit(1)
+                    }
+                }
+                .frame(width: width - 4, height: height)
+                .offset(x: 2, y: y)
             }
         }
         .allowsHitTesting(false)

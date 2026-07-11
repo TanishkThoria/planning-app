@@ -51,6 +51,11 @@ struct TaskRow: View {
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(task.priority.color)
                     }
+                    if task.energy != .none {
+                        Image(systemName: task.energy.icon)
+                            .font(.system(size: 10))
+                            .foregroundStyle(task.energy.color)
+                    }
                 }
 
                 if let notes = task.notes, !notes.isEmpty {
@@ -133,6 +138,12 @@ struct TaskRow: View {
             }
 
             if !task.isCompleted {
+                Button {
+                    model.startFocus(taskID: task.id, title: task.title)
+                } label: {
+                    Label("Focus on This", systemImage: "timer")
+                }
+
                 Menu {
                     Button("Next free slot today") { scheduleNextFree(dayOffset: 0) }
                     Button("Next free slot tomorrow") { scheduleNextFree(dayOffset: 1) }

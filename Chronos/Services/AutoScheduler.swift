@@ -22,6 +22,34 @@ enum AutoScheduler {
         var minutes: Int { max(0, Int(end.timeIntervalSince(start) / 60)) }
     }
 
+    /// One schedulable slice of a task. Chunked tasks expand into several
+    /// units (session 1 of 3, …); simple tasks yield exactly one.
+    struct WorkUnit {
+        let task: TaskItem
+        let minutes: Int
+        let sessionIndex: Int
+        let sessionCount: Int
+    }
+
+    /// Breaks a task into work units honouring its per-session length.
+    static func workUnits(for task: TaskItem, defaultMinutes: Int) -> [WorkUnit] {
+        let total = max(task.estimateMinutes ?? defaultMinutes, 10)
+        guard let session = task.effectiveSessionMinutes, session >= 10, session < total else {
+            return [WorkUnit(task: task, minutes: total, sessionIndex: 0, sessionCount: 1)]
+        }
+        var remaining = total
+        var lengths: [Int] = []
+        while remaining > 0 {
+            lengths.append(min(session, remaining))
+            remaining -= session
+        }
+        // Cap the number of sessions to keep proposals sane.
+        let capped = Array(lengths.prefix(12))
+        return capped.enumerated().map {
+            WorkUnit(task: task, minutes: $0.element, sessionIndex: $0.offset, sessionCount: capped.count)
+        }
+    }
+
     /// The effective scheduling window for a day, given prefs + profile.
     static func schedulingWindow(
         on day: Date,
@@ -138,6 +166,9 @@ enum AutoScheduler {
             }
         }
 
+        // Expand into work units so chunked tasks get multiple sessions.
+        let units = ordered.flatMap { workUnits(for: $0, defaultMinutes: defaultMinutes) }
+
         var proposals: [Proposal] = []
 
         func gapIndex(fitting minutes: Int, preferFocus: Bool) -> Int? {
@@ -151,9 +182,10 @@ enum AutoScheduler {
             return gaps.firstIndex(where: { $0.minutes >= minutes })
         }
 
-        for task in ordered {
-            let minutes = max(task.estimateMinutes ?? defaultMinutes, 10)
-            let preferFocus = task.priority == .high
+        for unit in units {
+            let minutes = unit.minutes
+            // Deep work and high priority are steered into the focus window.
+            let preferFocus = unit.task.priority == .high || unit.task.energy == .deep
             guard let index = gapIndex(fitting: minutes, preferFocus: preferFocus) else { continue }
 
             var gap = gaps[index]
@@ -163,19 +195,99 @@ enum AutoScheduler {
             guard end <= gap.end else {
                 // Snapping pushed it past the gap; try the gap unsnapped.
                 if gap.start.adding(minutes: minutes) <= gap.end {
-                    proposals.append(Proposal(task: task, start: gap.start, minutes: minutes))
+                    proposals.append(Proposal(task: unit.task, start: gap.start, minutes: minutes))
                     gap.start = gap.start.adding(minutes: minutes + padding)
                     gaps[index] = gap
                 }
                 continue
             }
 
-            proposals.append(Proposal(task: task, start: start, minutes: minutes))
+            proposals.append(Proposal(task: unit.task, start: start, minutes: minutes))
             gap.start = end.adding(minutes: padding)
             gaps[index] = gap
         }
 
         return proposals.sorted { $0.start < $1.start }
+    }
+
+    /// Week-level auto-plan: distributes the given tasks across the supplied
+    /// days, filling each day before moving on. Chunked tasks naturally
+    /// spread their sessions across days as earlier days fill up. Blocks
+    /// proposed on one day are treated as busy on the next.
+    static func planWeek(
+        tasks: [TaskItem],
+        existing: [TimeBlock],
+        days: [Date],
+        workStartMinutes: Int,
+        workEndMinutes: Int,
+        snapMinutes: Int,
+        defaultMinutes: Int,
+        gapPaddingMinutes: Int = 0,
+        profile: PlannerProfile? = nil,
+        now: Date = Date()
+    ) -> [Date: [Proposal]] {
+        var remaining = tasks
+        var byDay: [Date: [Proposal]] = [:]
+        // Synthetic blocks representing what we've already proposed, so later
+        // days see earlier days' plan as busy.
+        var proposedBlocks: [TimeBlock] = []
+
+        for day in days.sorted() {
+            guard !remaining.isEmpty else { break }
+            let dayExisting = existing + proposedBlocks
+            let proposals = plan(
+                tasks: remaining,
+                existing: dayExisting,
+                on: day,
+                workStartMinutes: workStartMinutes,
+                workEndMinutes: workEndMinutes,
+                snapMinutes: snapMinutes,
+                defaultMinutes: defaultMinutes,
+                gapPaddingMinutes: gapPaddingMinutes,
+                profile: profile,
+                now: now
+            )
+            guard !proposals.isEmpty else { continue }
+            byDay[day.startOfDay] = proposals
+
+            // Record placed minutes so a task fully scheduled today drops out,
+            // and partially-chunked tasks keep only their unscheduled remainder.
+            var placedMinutesByTask: [String: Int] = [:]
+            for proposal in proposals {
+                placedMinutesByTask[proposal.task.id, default: 0] += proposal.minutes
+                proposedBlocks.append(syntheticBlock(from: proposal))
+            }
+
+            remaining = remaining.compactMap { task in
+                guard let placed = placedMinutesByTask[task.id] else { return task }
+                let total = max(task.estimateMinutes ?? defaultMinutes, 10)
+                let left = total - placed
+                guard left >= 10 else { return nil }   // fully (or near-fully) scheduled
+                var trimmed = task
+                trimmed.estimateMinutes = left
+                return trimmed
+            }
+        }
+        return byDay
+    }
+
+    private static func syntheticBlock(from proposal: Proposal) -> TimeBlock {
+        TimeBlock(
+            id: "proposed-\(proposal.task.id)-\(Int(proposal.start.timeIntervalSinceReferenceDate))",
+            eventID: "proposed",
+            title: proposal.task.title,
+            start: proposal.start,
+            end: proposal.end,
+            isAllDay: false,
+            calendarID: "",
+            calendarTitle: "",
+            color: .clear,
+            notes: nil,
+            location: nil,
+            linkedTaskID: proposal.task.id,
+            hasRecurrence: false,
+            isEditable: false
+        )
     }
 
     /// The next open slot of at least `minutes` starting from `after` —

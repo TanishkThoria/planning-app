@@ -7,6 +7,7 @@ import Combine
 struct DayPlannerView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
+    @EnvironmentObject private var profileStore: ProfileStore
 
     @AppStorage(Prefs.hourHeight) private var hourHeight = 64.0
     @AppStorage(Prefs.snapMinutes) private var snapMinutes = 15
@@ -27,6 +28,43 @@ struct DayPlannerView: View {
     private var allDayBlocks: [TimeBlock] { dayBlocks.filter(\.isAllDay) }
     private var timedBlocks: [TimeBlock] { dayBlocks.filter { !$0.isAllDay } }
 
+    /// Past task-linked blocks whose task is still open — candidates for the
+    /// end-of-day review.
+    private var pendingReviewCount: Int {
+        guard model.selectedDate.isToday else { return 0 }
+        return timedBlocks.filter { block in
+            guard block.end < now, let id = block.linkedTaskID else { return false }
+            return service.task(withID: id)?.isCompleted == false
+        }.count
+    }
+
+    private var reviewBanner: some View {
+        Button {
+            model.reviewPresented = true
+        } label: {
+            HStack(spacing: 9) {
+                Image(systemName: "checkmark.circle.badge.questionmark")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.warning)
+                Text("\(pendingReviewCount) finished block\(pendingReviewCount == 1 ? "" : "s") to review")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Spacer()
+                Text("Review")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Theme.bg)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Theme.warning, in: Capsule())
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            .background(Theme.warning.opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.warning.opacity(0.25), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
     var body: some View {
         GeometryReader { geo in
             let showRail = geo.size.width > 720 && model.backlogVisible
@@ -39,6 +77,12 @@ struct DayPlannerView: View {
 
                 if model.selectedDate.isToday {
                     UpNextStrip(blocks: dayBlocks, now: now)
+                        .padding(.horizontal, 18)
+                        .padding(.bottom, 8)
+                }
+
+                if pendingReviewCount > 0 {
+                    reviewBanner
                         .padding(.horizontal, 18)
                         .padding(.bottom, 8)
                 }
@@ -126,6 +170,9 @@ struct DayPlannerView: View {
             HeaderIconButton(icon: "plus.magnifyingglass") {
                 hourHeight = min(128, hourHeight + 8)
             }
+            HeaderIconButton(icon: "timer") {
+                model.startFocus(taskID: nil, title: "Focus")
+            }
             HeaderIconButton(icon: "wand.and.stars", label: "Plan") {
                 model.planDayPresented = true
             }
@@ -197,6 +244,7 @@ struct DayPlannerView: View {
             hourHeight: hourHeight,
             snapMinutes: snapMinutes,
             dimPast: dimPastBlocks,
+            routineWindows: profileStore.profile.routineWindows(on: model.selectedDate),
             taskLookup: { service.task(withID: $0) },
             onTapBlock: { model.blockEditor = service.editorContext(for: $0) },
             onMoveBlock: { block, newStart in service.moveBlock(id: block.id, to: newStart) },
@@ -204,6 +252,7 @@ struct DayPlannerView: View {
             onToggleTask: { service.toggleTaskCompletion(id: $0) },
             onDuplicateBlock: { service.duplicateBlock(id: $0.id) },
             onStartBlockNow: { service.startBlockNow(id: $0.id, snap: snapMinutes) },
+            onFocusBlock: { model.startFocus(taskID: $0.linkedTaskID, title: $0.title) },
             onDeleteBlock: { pendingDelete = $0 },
             onCreateAt: { start in
                 model.newBlock(

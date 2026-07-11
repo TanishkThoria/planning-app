@@ -4,6 +4,9 @@ struct RootView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var profileStore: ProfileStore
+    @EnvironmentObject private var focusLog: FocusLog
+    @EnvironmentObject private var timer: FocusTimerController
+    @EnvironmentObject private var notifications: NotificationService
     @AppStorage(Prefs.accentName) private var accentName = "Indigo"
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -13,6 +16,10 @@ struct RootView: View {
         Group {
             if service.hasFullAccess {
                 mainInterface
+                    .overlay(alignment: .bottom) {
+                        FocusTimerPill()
+                            .padding(.bottom, 16)
+                    }
             } else {
                 PermissionGateView()
             }
@@ -21,6 +28,10 @@ struct RootView: View {
         .preferredColorScheme(.dark)
         .tint(Theme.accent(named: accentName))
         .task {
+            // Route completed focus stretches into the persistent log.
+            timer.onSessionComplete = { [weak focusLog] session in
+                focusLog?.record(session)
+            }
             await service.requestAccess()
             if service.hasFullAccess && !profileStore.profile.isCalibrated {
                 model.calibrationPresented = true
@@ -28,6 +39,9 @@ struct RootView: View {
         }
         .onChange(of: model.selectedDate) { _, newDate in
             service.ensureWindow(around: newDate)
+        }
+        .onChange(of: service.blocks) { _, blocks in
+            notifications.rescheduleCheckIns(for: blocks)
         }
         .sheet(item: $model.blockEditor) { context in
             BlockEditorView(context: context)
@@ -41,8 +55,23 @@ struct RootView: View {
         .sheet(isPresented: $model.planDayPresented) {
             PlanMyDayView()
         }
+        .sheet(isPresented: $model.planWeekPresented) {
+            PlanWeekView()
+        }
         .sheet(isPresented: $model.calibrationPresented) {
             CalibrationView()
+        }
+        .sheet(isPresented: $model.morningPlanningPresented) {
+            MorningPlanningView()
+        }
+        .sheet(isPresented: $model.reviewPresented) {
+            DayReviewView(day: model.selectedDate.isToday ? model.selectedDate : Date().startOfDay)
+        }
+        .sheet(isPresented: $model.focusTimerPresented, onDismiss: { model.focusTimerContext = nil }) {
+            FocusTimerView(
+                presetTaskID: model.focusTimerContext?.taskID,
+                presetTitle: model.focusTimerContext?.title
+            )
         }
         .alert(
             "Something went wrong",
@@ -102,6 +131,7 @@ struct RootView: View {
     @ViewBuilder
     private func screenView(_ screen: AppModel.Screen) -> some View {
         switch screen {
+        case .today: TodayView()
         case .day: DayPlannerView()
         case .week: WeekPlannerView()
         case .agenda: AgendaView()
@@ -120,9 +150,19 @@ struct MoreView: View {
         NavigationStack {
             List {
                 NavigationLink {
+                    DayPlannerView()
+                } label: {
+                    Label("Day", systemImage: "calendar.day.timeline.left")
+                }
+                NavigationLink {
                     WeekPlannerView()
                 } label: {
                     Label("Week", systemImage: "calendar")
+                }
+                NavigationLink {
+                    AgendaView()
+                } label: {
+                    Label("Agenda", systemImage: "list.bullet.rectangle")
                 }
                 NavigationLink {
                     InsightsView()

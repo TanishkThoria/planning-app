@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var profileStore: ProfileStore
+    @EnvironmentObject private var notifications: NotificationService
 
     @State private var showingCalibration = false
 
@@ -128,6 +129,38 @@ struct SettingsView: View {
                             options: service.taskLists,
                             selection: defaultListBinding
                         )
+                    }
+
+                    settingsSection("Notifications") {
+                        FieldRow(label: "Block check-in nudges") {
+                            Toggle("", isOn: Binding(
+                                get: { notifications.enabled },
+                                set: { newValue in
+                                    notifications.enabled = newValue
+                                    if newValue {
+                                        Task {
+                                            await notifications.requestAuthorization()
+                                            notifications.rescheduleCheckIns(for: service.blocks)
+                                        }
+                                    } else {
+                                        notifications.cancelAll()
+                                    }
+                                }
+                            ))
+                            .labelsHidden()
+                            .toggleStyle(.switch)
+                        }
+                        if notifications.enabled && notifications.authorization == .denied {
+                            Text("Notifications are turned off in system settings. Enable them for Chronos to get check-in nudges.")
+                                .font(.system(size: 11))
+                                .foregroundStyle(Theme.warning)
+                                .padding(.horizontal, 4)
+                        } else {
+                            Text("Get a nudge when a task-linked block ends. Open the app to review what got done and reschedule what slipped.")
+                                .font(.system(size: 11))
+                                .foregroundStyle(Theme.textTertiary)
+                                .padding(.horizontal, 4)
+                        }
                     }
 
                     settingsSection("Appearance") {
