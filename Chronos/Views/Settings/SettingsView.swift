@@ -1,0 +1,194 @@
+import SwiftUI
+
+struct SettingsView: View {
+    @EnvironmentObject private var service: EventKitService
+
+    @AppStorage(Prefs.accentName) private var accentName = "Indigo"
+    @AppStorage(Prefs.workStartMinutes) private var workStartMinutes = 9 * 60
+    @AppStorage(Prefs.workEndMinutes) private var workEndMinutes = 18 * 60
+    @AppStorage(Prefs.snapMinutes) private var snapMinutes = 15
+    @AppStorage(Prefs.defaultBlockMinutes) private var defaultBlockMinutes = 30
+    @AppStorage(Prefs.planDayGapMinutes) private var gapMinutes = 5
+    @AppStorage(Prefs.defaultCalendarID) private var defaultCalendarID = ""
+    @AppStorage(Prefs.defaultListID) private var defaultListID = ""
+    @AppStorage(Prefs.dimPastBlocks) private var dimPastBlocks = true
+
+    private var defaultCalendarBinding: Binding<String?> {
+        Binding(
+            get: { defaultCalendarID.isEmpty ? service.calendars.first(where: \.isEditable)?.id : defaultCalendarID },
+            set: { defaultCalendarID = $0 ?? "" }
+        )
+    }
+
+    private var defaultListBinding: Binding<String?> {
+        Binding(
+            get: { defaultListID.isEmpty ? service.taskLists.first(where: \.isEditable)?.id : defaultListID },
+            set: { defaultListID = $0 ?? "" }
+        )
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Settings")
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("Tuned for how you plan")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 14)
+            .padding(.bottom, 12)
+
+            Rectangle().fill(Theme.hairline).frame(height: 1)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+
+                    settingsSection("Schedule") {
+                        FieldRow(label: "Workday starts") {
+                            hourPicker(selection: $workStartMinutes, range: 0...max(min(workEndMinutes / 60 - 1, 23), 0))
+                        }
+                        FieldRow(label: "Workday ends") {
+                            hourPicker(selection: $workEndMinutes, range: min(max(workStartMinutes / 60 + 1, 1), 24)...24)
+                        }
+                        FieldRow(label: "Snap to") {
+                            Picker("", selection: $snapMinutes) {
+                                ForEach([5, 10, 15, 30], id: \.self) { minutes in
+                                    Text("\(minutes) min").tag(minutes)
+                                }
+                            }
+                            .labelsHidden()
+                            .fixedSize()
+                        }
+                        FieldRow(label: "Default block length") {
+                            Picker("", selection: $defaultBlockMinutes) {
+                                ForEach([15, 25, 30, 45, 50, 60, 90], id: \.self) { minutes in
+                                    Text(Fmt.duration(minutes: minutes)).tag(minutes)
+                                }
+                            }
+                            .labelsHidden()
+                            .fixedSize()
+                        }
+                        FieldRow(label: "Plan My Day breathing room") {
+                            Picker("", selection: $gapMinutes) {
+                                ForEach([0, 5, 10, 15], id: \.self) { minutes in
+                                    Text(minutes == 0 ? "None" : "\(minutes) min").tag(minutes)
+                                }
+                            }
+                            .labelsHidden()
+                            .fixedSize()
+                        }
+                    }
+
+                    settingsSection("Defaults") {
+                        CalendarPickerRow(
+                            label: "New blocks go to",
+                            options: service.calendars,
+                            selection: defaultCalendarBinding
+                        )
+                        CalendarPickerRow(
+                            label: "New tasks go to",
+                            options: service.taskLists,
+                            selection: defaultListBinding
+                        )
+                    }
+
+                    settingsSection("Appearance") {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Accent")
+                                .font(.system(size: 12.5))
+                                .foregroundStyle(Theme.textSecondary)
+                            HStack(spacing: 10) {
+                                ForEach(Theme.accentChoices) { choice in
+                                    Button {
+                                        accentName = choice.name
+                                    } label: {
+                                        Circle()
+                                            .fill(choice.color)
+                                            .frame(width: 26, height: 26)
+                                            .overlay(
+                                                Circle()
+                                                    .strokeBorder(
+                                                        accentName == choice.name ? Theme.textPrimary : Color.clear,
+                                                        lineWidth: 2
+                                                    )
+                                                    .padding(-3)
+                                            )
+                                    }
+                                    .buttonStyle(.plain)
+                                    .help(choice.name)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+
+                        FieldRow(label: "Dim past blocks") {
+                            Toggle("", isOn: $dimPastBlocks)
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                        }
+                    }
+
+                    settingsSection("Sync") {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label {
+                                Text("Chronos has no database. Blocks are Apple Calendar events; tasks are Apple Reminders. Edits made anywhere — including Siri, the Apple apps, or other devices — appear here automatically, and vice-versa.")
+                            } icon: {
+                                Image(systemName: "arrow.triangle.2.circlepath")
+                                    .foregroundStyle(Color.accentColor)
+                            }
+                            .font(.system(size: 12))
+                            .foregroundStyle(Theme.textSecondary)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+
+                        Button {
+                            service.refresh()
+                        } label: {
+                            Label("Refresh now", systemImage: "arrow.clockwise")
+                                .font(.system(size: 12.5, weight: .medium))
+                                .foregroundStyle(Color.accentColor)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, 4)
+                    }
+                }
+                .padding(18)
+                .frame(maxWidth: 560, alignment: .leading)
+            }
+            .scrollIndicators(.hidden)
+        }
+        .background(Theme.bg)
+    }
+
+    @ViewBuilder
+    private func settingsSection(_ title: String, @ViewBuilder content: () -> some View) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            SectionHeader(title: title)
+                .padding(.horizontal, 4)
+            content()
+        }
+    }
+
+    private func hourPicker(selection: Binding<Int>, range: ClosedRange<Int>) -> some View {
+        Picker("", selection: selection) {
+            ForEach(Array(range), id: \.self) { hour in
+                Text(hour == 24
+                     ? "Midnight"
+                     : Fmt.hourLabel.string(from: Date().startOfDay.at(minutes: hour * 60)))
+                    .tag(hour * 60)
+            }
+        }
+        .labelsHidden()
+        .fixedSize()
+    }
+}

@@ -1,0 +1,211 @@
+import SwiftUI
+import EventKit
+
+struct BlockEditorView: View {
+    let context: BlockEditorContext
+
+    @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var service: EventKitService
+    @Environment(\.dismiss) private var dismiss
+    @AppStorage(Prefs.defaultCalendarID) private var defaultCalendarID = ""
+
+    @State private var draft: BlockDraft
+    @State private var applyToFuture = false
+    @State private var confirmingDelete = false
+
+    private var isNew: Bool { context.existingID == nil }
+
+    init(context: BlockEditorContext) {
+        self.context = context
+        var draft = context.draft
+        if draft.calendarID == nil {
+            draft.calendarID = UserDefaults.standard.string(forKey: Prefs.defaultCalendarID)
+        }
+        _draft = State(initialValue: draft)
+    }
+
+    var body: some View {
+        EditorSheet(
+            title: isNew ? "New Block" : "Edit Block",
+            confirmDisabled: draft.title.trimmingCharacters(in: .whitespaces).isEmpty && isNew,
+            onConfirm: save
+        ) {
+            TitleField(placeholder: "Block title", text: $draft.title)
+
+            if let taskID = draft.linkedTaskID, let task = service.task(withID: taskID) {
+                linkedTaskBanner(task)
+            }
+
+            VStack(spacing: 6) {
+                CalendarPickerRow(label: "Calendar", options: service.calendars, selection: $draft.calendarID)
+
+                FieldRow(label: "All-day") {
+                    Toggle("", isOn: $draft.isAllDay)
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                }
+
+                FieldRow(label: "Date") {
+                    DatePicker("", selection: $draft.start, displayedComponents: [.date])
+                        .labelsHidden()
+                }
+
+                if !draft.isAllDay {
+                    FieldRow(label: "Starts") {
+                        DatePicker("", selection: $draft.start, displayedComponents: [.hourAndMinute])
+                            .labelsHidden()
+                    }
+                    FieldRow(label: "Ends") {
+                        DatePicker(
+                            "",
+                            selection: $draft.end,
+                            in: draft.start.adding(minutes: 5)...,
+                            displayedComponents: [.hourAndMinute]
+                        )
+                        .labelsHidden()
+                    }
+                    HStack {
+                        Spacer()
+                        DurationChips(current: draft.durationMinutes) { minutes in
+                            draft.end = draft.start.adding(minutes: minutes)
+                        }
+                    }
+                }
+            }
+            .onChange(of: draft.start) { oldValue, newValue in
+                // Moving the start keeps the duration.
+                draft.end = draft.end.addingTimeInterval(newValue.timeIntervalSince(oldValue))
+            }
+
+            VStack(spacing: 6) {
+                FieldRow(label: "Repeat") {
+                    Picker("", selection: $draft.recurrence) {
+                        if draft.originalRecurrence == .custom {
+                            Text("Custom").tag(RecurrenceOption.custom)
+                        }
+                        ForEach(RecurrenceOption.pickable) { option in
+                            Text(option.rawValue).tag(option)
+                        }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                }
+                FieldRow(label: "Alert") {
+                    Picker("", selection: $draft.alarm) {
+                        ForEach(AlarmOption.allCases) { option in
+                            Text(option.label).tag(option)
+                        }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                }
+                if context.isRecurring {
+                    FieldRow(label: "Apply to future occurrences") {
+                        Toggle("", isOn: $applyToFuture)
+                            .labelsHidden()
+                            .toggleStyle(.switch)
+                    }
+                }
+            }
+
+            VStack(spacing: 6) {
+                FieldRow(label: "Location") {
+                    TextField("None", text: $draft.location)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 12.5))
+                        .multilineTextAlignment(.trailing)
+                }
+                if draft.linkedTaskID == nil {
+                    FieldRow(label: "URL") {
+                        TextField("None", text: $draft.urlString)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 12.5))
+                            .multilineTextAlignment(.trailing)
+                    }
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("NOTES")
+                    .font(.system(size: 10, weight: .semibold))
+                    .tracking(1.2)
+                    .foregroundStyle(Theme.textTertiary)
+                TextEditor(text: $draft.notes)
+                    .font(.system(size: 12.5))
+                    .scrollContentBackground(.hidden)
+                    .frame(minHeight: 70)
+                    .padding(8)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            }
+
+            if !isNew {
+                Button(role: .destructive) {
+                    confirmingDelete = true
+                } label: {
+                    Text("Delete Block")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Theme.danger)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Theme.danger.opacity(0.1), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        #if os(iOS)
+        .presentationDetents([.large])
+        #endif
+        .confirmationDialog(
+            "Delete this block?",
+            isPresented: $confirmingDelete,
+            titleVisibility: .visible
+        ) {
+            if context.isRecurring {
+                Button("Delete This Occurrence", role: .destructive) { delete(span: .thisEvent) }
+                Button("Delete This and Future", role: .destructive) { delete(span: .futureEvents) }
+            } else {
+                Button("Delete", role: .destructive) { delete(span: .thisEvent) }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+    }
+
+    private func linkedTaskBanner(_ task: TaskItem) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "link")
+                .font(.system(size: 11))
+                .foregroundStyle(Color.accentColor)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Linked to reminder")
+                    .font(.system(size: 10))
+                    .foregroundStyle(Theme.textTertiary)
+                Text(task.title)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+            }
+            Spacer()
+            Button("Unlink") { draft.linkedTaskID = nil }
+                .buttonStyle(.plain)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .padding(10)
+        .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+    }
+
+    private func save() {
+        if let id = context.existingID {
+            service.updateBlock(id: id, with: draft, span: applyToFuture ? .futureEvents : .thisEvent)
+        } else {
+            service.createBlock(draft)
+        }
+    }
+
+    private func delete(span: EKSpan) {
+        if let id = context.existingID {
+            service.deleteBlock(id: id, span: span)
+        }
+        dismiss()
+    }
+}
