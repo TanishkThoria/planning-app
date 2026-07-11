@@ -31,7 +31,8 @@ struct MiniMonthView: View {
 
             let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
             LazyVGrid(columns: columns, spacing: 3) {
-                ForEach(weekdaySymbols(), id: \.self) { symbol in
+                // Symbols repeat ("S", "T"), so identify columns by index.
+                ForEach(Array(weekdaySymbols().enumerated()), id: \.offset) { _, symbol in
                     Text(symbol)
                         .font(.system(size: 9, weight: .semibold))
                         .foregroundStyle(Theme.textTertiary)

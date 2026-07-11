@@ -6,12 +6,12 @@ struct ChronosApp: App {
     @StateObject private var service = EventKitService()
 
     var body: some Scene {
+        #if os(macOS)
         WindowGroup {
             RootView()
                 .environmentObject(model)
                 .environmentObject(service)
         }
-        #if os(macOS)
         .defaultSize(width: 1280, height: 840)
         .commands {
             ChronosCommands(model: model)
@@ -23,6 +23,12 @@ struct ChronosApp: App {
                 .environmentObject(service)
                 .frame(width: 480, height: 560)
                 .preferredColorScheme(.dark)
+        }
+        #else
+        WindowGroup {
+            RootView()
+                .environmentObject(model)
+                .environmentObject(service)
         }
         #endif
     }

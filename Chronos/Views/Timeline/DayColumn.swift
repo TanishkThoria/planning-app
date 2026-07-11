@@ -24,7 +24,6 @@ struct DayColumn: View {
     var onDropTask: (String, Date) -> Void = { _, _ in }
 
     @State private var now = Date()
-    @State private var dropIndicatorMinutes: Int?
 
     private let timer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
 
@@ -62,21 +61,14 @@ struct DayColumn: View {
                     )
                 }
 
-                if let minutes = dropIndicatorMinutes {
-                    dropIndicator(minutes: minutes)
-                }
-
                 if date.isToday {
                     NowLine(hourHeight: hourHeight, now: now)
                 }
             }
             .dropDestination(for: String.self) { items, location in
-                dropIndicatorMinutes = nil
                 guard let taskID = items.first else { return false }
                 onDropTask(taskID, time(atY: location.y).snappedDown(to: snapMinutes))
                 return true
-            } isTargeted: { targeted in
-                if !targeted { dropIndicatorMinutes = nil }
             }
         }
         .frame(height: 24 * hourHeight)
@@ -93,14 +85,6 @@ struct DayColumn: View {
             }
         }
         .allowsHitTesting(false)
-    }
-
-    private func dropIndicator(minutes: Int) -> some View {
-        Rectangle()
-            .fill(Color.accentColor)
-            .frame(height: 2)
-            .offset(y: CGFloat(minutes) / 60 * hourHeight)
-            .allowsHitTesting(false)
     }
 
     private func time(atY y: CGFloat) -> Date {
