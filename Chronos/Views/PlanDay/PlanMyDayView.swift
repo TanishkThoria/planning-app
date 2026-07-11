@@ -272,7 +272,13 @@ struct PlanMyDayView: View {
     }
 
     private func apply() {
-        for window in ritualCandidates where includedRituals.contains(window.id) {
+        // Snapshot both lists first: creating ritual blocks refreshes the
+        // service, and re-computing `proposals` afterwards could shift or
+        // drop task slots the user just confirmed.
+        let confirmedRituals = ritualCandidates.filter { includedRituals.contains($0.id) }
+        let confirmedProposals = proposals
+
+        for window in confirmedRituals {
             var draft = BlockDraft()
             draft.title = window.title
             draft.calendarID = defaultCalendarID.isEmpty ? nil : defaultCalendarID
@@ -280,7 +286,7 @@ struct PlanMyDayView: View {
             draft.end = window.end
             service.createBlock(draft)
         }
-        for proposal in proposals {
+        for proposal in confirmedProposals {
             service.scheduleTask(
                 proposal.task,
                 at: proposal.start,

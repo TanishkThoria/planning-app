@@ -544,6 +544,13 @@ final class EventKitService: ObservableObject {
     func deleteTask(id: String) {
         guard let reminder = liveReminder(withID: id) else { return }
         do {
+            // Cascade: subtasks would otherwise carry a dead parent link and
+            // vanish from every nested view.
+            for subtask in subtasks(of: id) {
+                if let child = liveReminder(withID: subtask.id) {
+                    try store.remove(child, commit: false)
+                }
+            }
             try store.remove(reminder, commit: true)
             refresh()
         } catch {

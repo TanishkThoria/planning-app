@@ -192,6 +192,15 @@ struct TasksView: View {
         let tasks: [TaskItem]
     }
 
+    /// True only when the task nests under a parent that is still visible
+    /// (exists and is open) — the only case where it's hidden from
+    /// top-level lists.
+    private func hasOpenParent(_ task: TaskItem) -> Bool {
+        guard let parentID = task.parentID,
+              let parent = service.task(withID: parentID) else { return false }
+        return !parent.isCompleted
+    }
+
     private func sections() -> [Group2] {
         var tasks = visibleTasks
         if !searchText.isEmpty {
@@ -205,7 +214,9 @@ struct TasksView: View {
         switch filter {
         case .today:
             // Top-level only; subtasks render nested under their parent.
-            let open = tasks.filter { !$0.isCompleted && !$0.isSubtask }
+            // Orphaned subtasks (parent deleted/completed) surface as
+            // top-level so they can never silently disappear.
+            let open = tasks.filter { !$0.isCompleted && !hasOpenParent($0) }
             let overdue = open.filter { ($0.dueDate?.startOfDay ?? .distantFuture) < today }
             let dueToday = open.filter { $0.dueDate?.isToday == true }
             let flagged = open.filter { $0.dueDate == nil && $0.priority == .high }
@@ -215,7 +226,7 @@ struct TasksView: View {
                 Group2(title: "High Priority", tasks: flagged),
             ]
         case .upcoming:
-            let open = tasks.filter { !$0.isCompleted && !$0.isSubtask }
+            let open = tasks.filter { !$0.isCompleted && !hasOpenParent($0) }
             let upcoming = open
                 .filter { ($0.dueDate?.startOfDay ?? .distantPast) > today }
                 .sorted { ($0.dueDate ?? .distantFuture) < ($1.dueDate ?? .distantFuture) }
@@ -224,7 +235,7 @@ struct TasksView: View {
                 Group2(title: Fmt.relativeDay(day), tasks: byDay[day] ?? [])
             }
         case .anytime:
-            let open = tasks.filter { !$0.isCompleted && $0.dueDate == nil && !$0.isSubtask }
+            let open = tasks.filter { !$0.isCompleted && $0.dueDate == nil && !hasOpenParent($0) }
             let byList = Dictionary(grouping: open, by: \.listName)
             return byList.keys.sorted().map { list in
                 Group2(title: list, tasks: byList[list] ?? [])
