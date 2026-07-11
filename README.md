@@ -38,6 +38,26 @@ Natural-language capture with a live interpretation preview:
 ### Tasks
 Full Reminders client: Today / Upcoming / Anytime / Done filters, search, natural-language quick entry, priorities, due dates with optional times, estimates, list management, and one-tap "schedule next free slot today/tomorrow".
 
+### Agenda
+A rolling two-week list view — each day's all-day events, time blocks, and due tasks interleaved chronologically, with overdue tasks pinned to the top of today. Complete tasks inline, jump into any day's planner.
+
+### Eisenhower matrix
+Live urgent/important quadrants over your Reminders (urgency from due dates, importance from priority). Drag a task to a different quadrant and its real due date and priority are rewritten in Apple Reminders.
+
+### Subtasks
+Break any reminder into subtasks (EventKit doesn't expose the Reminders app's native subtasks, so Chronos subtasks are real reminders carrying a `[sub:<parent-id>]` link token — they sync everywhere). Subtasks nest under their parent in the task list, show x/y progress, and are individually draggable onto the timeline. Plan My Day schedules the subtasks rather than the parent umbrella.
+
+### Calibration — the personal assistant layer
+On first launch (and anytime from Settings → Recalibrate or the Plan menu), Chronos interviews you:
+
+- **Sleep** — wake time and bedtime become the hard bounds of every plan.
+- **Meals** — protected windows the scheduler won't book over; optionally auto-blocked onto the calendar by Plan My Day.
+- **Standing routines** — gym, commute, anything recurring, with per-weekday schedules.
+- **Focus period** — morning/afternoon/evening; Plan My Day steers your high-priority tasks into it.
+- **Flexibility** — Strict / Balanced / Flexible controls whether routines are untouchable, how much breathing room goes between blocks, and whether scheduling may spill beyond work hours into the full waking day.
+
+The profile lives on-device (UserDefaults) and every "next free slot" button, quick-add placement, and Plan My Day run respects it.
+
 ### Insights
 Weekly review — hours timeblocked, blocks created, tasks completed, completion rate for tasks due this week, hours per day, time by calendar, average/longest block, and how much of your calendar was task-linked.
 

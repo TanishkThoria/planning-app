@@ -232,6 +232,7 @@ struct BacklogRail: View {
 
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
+    @EnvironmentObject private var profileStore: ProfileStore
 
     @AppStorage(Prefs.snapMinutes) private var snapMinutes = 15
     @AppStorage(Prefs.defaultBlockMinutes) private var defaultBlockMinutes = 30
@@ -304,7 +305,8 @@ struct BacklogRail: View {
             existing: service.blocks,
             workStartMinutes: workStartMinutes,
             workEndMinutes: workEndMinutes,
-            snapMinutes: snapMinutes
+            snapMinutes: snapMinutes,
+            profile: profileStore.profile
         )
         service.scheduleTask(
             task,

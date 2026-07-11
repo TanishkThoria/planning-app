@@ -12,7 +12,7 @@ struct SidebarView: View {
                 header
 
                 VStack(alignment: .leading, spacing: 2) {
-                    ForEach(AppModel.Screen.allCases) { screen in
+                    ForEach(AppModel.Screen.sidebarCases) { screen in
                         navRow(screen)
                     }
                 }

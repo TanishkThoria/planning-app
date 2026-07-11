@@ -3,6 +3,7 @@ import SwiftUI
 struct RootView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
+    @EnvironmentObject private var profileStore: ProfileStore
     @AppStorage(Prefs.accentName) private var accentName = "Indigo"
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -21,6 +22,9 @@ struct RootView: View {
         .tint(Theme.accent(named: accentName))
         .task {
             await service.requestAccess()
+            if service.hasFullAccess && !profileStore.profile.isCalibrated {
+                model.calibrationPresented = true
+            }
         }
         .onChange(of: model.selectedDate) { _, newDate in
             service.ensureWindow(around: newDate)
@@ -36,6 +40,9 @@ struct RootView: View {
         }
         .sheet(isPresented: $model.planDayPresented) {
             PlanMyDayView()
+        }
+        .sheet(isPresented: $model.calibrationPresented) {
+            CalibrationView()
         }
         .alert(
             "Something went wrong",
@@ -76,7 +83,7 @@ struct RootView: View {
     #if os(iOS)
     private var compactLayout: some View {
         TabView(selection: $model.screen) {
-            ForEach(AppModel.Screen.allCases) { screen in
+            ForEach(AppModel.Screen.compactTabs) { screen in
                 screenView(screen)
                     .tabItem { Label(screen.title, systemImage: screen.icon) }
                     .tag(screen)
@@ -97,9 +104,41 @@ struct RootView: View {
         switch screen {
         case .day: DayPlannerView()
         case .week: WeekPlannerView()
+        case .agenda: AgendaView()
         case .tasks: TasksView()
+        case .matrix: MatrixView()
         case .insights: InsightsView()
         case .settings: SettingsView()
+        case .more: MoreView()
+        }
+    }
+}
+
+/// iPhone overflow tab: the screens that don't fit in the tab bar.
+struct MoreView: View {
+    var body: some View {
+        NavigationStack {
+            List {
+                NavigationLink {
+                    WeekPlannerView()
+                } label: {
+                    Label("Week", systemImage: "calendar")
+                }
+                NavigationLink {
+                    InsightsView()
+                } label: {
+                    Label("Insights", systemImage: "chart.bar.xaxis")
+                }
+                NavigationLink {
+                    SettingsView()
+                } label: {
+                    Label("Settings", systemImage: "gearshape")
+                }
+            }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Theme.bg)
+            .navigationTitle("More")
         }
     }
 }

@@ -245,7 +245,7 @@ final class EventKitService: ObservableObject {
         return TaskItem(
             id: reminder.calendarItemIdentifier,
             title: reminder.title ?? "Untitled",
-            notes: TaskMetadata.strippingToken(reminder.notes),
+            notes: TaskMetadata.strippingTokens(reminder.notes),
             dueDate: due,
             dueHasTime: comps?.hour != nil,
             isCompleted: reminder.isCompleted,
@@ -254,7 +254,8 @@ final class EventKitService: ObservableObject {
             listID: list.calendarIdentifier,
             listName: list.title,
             color: color(of: list),
-            estimateMinutes: TaskMetadata.estimate(from: reminder.notes)
+            estimateMinutes: TaskMetadata.estimate(from: reminder.notes),
+            parentID: TaskMetadata.parentID(from: reminder.notes)
         )
     }
 
@@ -510,7 +511,11 @@ final class EventKitService: ObservableObject {
         let title = draft.title.trimmingCharacters(in: .whitespacesAndNewlines)
         reminder.title = title.isEmpty ? "Untitled task" : title
         reminder.priority = draft.priority.rawValue
-        reminder.notes = TaskMetadata.encode(notes: draft.notes, estimateMinutes: draft.estimateMinutes)
+        reminder.notes = TaskMetadata.encode(
+            notes: draft.notes,
+            estimateMinutes: draft.estimateMinutes,
+            parentID: draft.parentID
+        )
 
         if draft.hasDue {
             var comps: Set<Calendar.Component> = [.year, .month, .day]
@@ -563,7 +568,31 @@ final class EventKitService: ObservableObject {
         draft.estimateMinutes = task.estimateMinutes
         draft.notes = task.notes ?? ""
         draft.isCompleted = task.isCompleted
+        draft.parentID = task.parentID
         return TaskEditorContext(draft: draft, existingID: task.id)
+    }
+
+    // MARK: - Subtasks
+
+    /// Chronos subtasks are real reminders carrying a `[sub:<parent-id>]`
+    /// token, so they sync everywhere and can be timeblocked individually.
+    func subtasks(of parentID: String) -> [TaskItem] {
+        tasks.filter { $0.parentID == parentID }
+    }
+
+    func createSubtask(parentID: String, title: String, estimateMinutes: Int? = nil) {
+        guard let parent = task(withID: parentID) else { return }
+        var draft = TaskDraft()
+        draft.title = title
+        draft.listID = parent.listID
+        draft.parentID = parentID
+        draft.estimateMinutes = estimateMinutes
+        if let due = parent.dueDate {
+            draft.hasDue = true
+            draft.due = due
+            draft.hasTime = parent.dueHasTime
+        }
+        createTask(draft)
     }
 
     // MARK: - Timeblocking (the bridge between the two worlds)

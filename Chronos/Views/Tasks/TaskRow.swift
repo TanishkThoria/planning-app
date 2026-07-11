@@ -7,6 +7,7 @@ struct TaskRow: View {
 
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
+    @EnvironmentObject private var profileStore: ProfileStore
 
     @AppStorage(Prefs.snapMinutes) private var snapMinutes = 15
     @AppStorage(Prefs.defaultBlockMinutes) private var defaultBlockMinutes = 30
@@ -16,6 +17,10 @@ struct TaskRow: View {
 
     private var linkedBlocks: [TimeBlock] {
         service.blocksLinked(to: task.id)
+    }
+
+    private var subtasks: [TaskItem] {
+        service.subtasks(of: task.id)
     }
 
     var body: some View {
@@ -73,6 +78,14 @@ struct TaskRow: View {
                         )
                         .font(.system(size: 10.5, design: .rounded))
                         .foregroundStyle(Color.accentColor)
+                    }
+                    if !subtasks.isEmpty {
+                        Label(
+                            "\(subtasks.filter(\.isCompleted).count)/\(subtasks.count)",
+                            systemImage: "checklist"
+                        )
+                        .font(.system(size: 10.5, design: .rounded))
+                        .foregroundStyle(Theme.textTertiary)
                     }
                     HStack(spacing: 4) {
                         Circle().fill(task.color).frame(width: 5, height: 5)
@@ -155,7 +168,8 @@ struct TaskRow: View {
             existing: service.blocks,
             workStartMinutes: workStartMinutes,
             workEndMinutes: workEndMinutes,
-            snapMinutes: snapMinutes
+            snapMinutes: snapMinutes,
+            profile: profileStore.profile
         )
         service.scheduleTask(
             task,
@@ -170,6 +184,74 @@ struct TaskRow: View {
         context.draft.priority = priority
         if let id = context.existingID {
             service.updateTask(id: id, with: context.draft)
+        }
+    }
+}
+
+/// Slim indented row for a subtask nested under its parent. Draggable onto
+/// any timeline, just like a full task.
+struct SubtaskRow: View {
+    let task: TaskItem
+
+    @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var service: EventKitService
+
+    var body: some View {
+        HStack(spacing: 9) {
+            Image(systemName: "arrow.turn.down.right")
+                .font(.system(size: 9))
+                .foregroundStyle(Theme.textTertiary)
+
+            Button {
+                withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
+            } label: {
+                Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 13))
+                    .foregroundStyle(task.isCompleted ? Theme.success : Theme.textTertiary)
+            }
+            .buttonStyle(.plain)
+
+            Text(task.title)
+                .font(.system(size: 12.5))
+                .foregroundStyle(task.isCompleted ? Theme.textTertiary : Theme.textPrimary)
+                .strikethrough(task.isCompleted, color: Theme.textTertiary)
+                .lineLimit(1)
+
+            if let est = task.estimateMinutes {
+                Text("~\(Fmt.duration(minutes: est))")
+                    .font(.system(size: 10, design: .rounded))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+
+            if let first = service.blocksLinked(to: task.id).first {
+                Label(Fmt.relativeDay(first.start), systemImage: "rectangle.stack")
+                    .font(.system(size: 10, design: .rounded))
+                    .foregroundStyle(Color.accentColor)
+            }
+
+            Spacer(minLength: 4)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .background(Theme.surface.opacity(0.6), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .contentShape(Rectangle())
+        .draggable(task.id)
+        .onTapGesture {
+            model.taskEditor = service.editorContext(for: task)
+        }
+        .contextMenu {
+            Button {
+                model.taskEditor = service.editorContext(for: task)
+            } label: { Label("Edit", systemImage: "pencil") }
+            Button {
+                service.toggleTaskCompletion(id: task.id)
+            } label: {
+                Label(task.isCompleted ? "Mark Incomplete" : "Complete", systemImage: "checkmark.circle")
+            }
+            Divider()
+            Button(role: .destructive) {
+                service.deleteTask(id: task.id)
+            } label: { Label("Delete", systemImage: "trash") }
         }
     }
 }

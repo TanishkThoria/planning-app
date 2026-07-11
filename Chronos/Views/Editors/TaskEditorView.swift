@@ -8,6 +8,7 @@ struct TaskEditorView: View {
 
     @State private var draft: TaskDraft
     @State private var confirmingDelete = false
+    @State private var newSubtaskTitle = ""
 
     private var isNew: Bool { context.existingID == nil }
 
@@ -91,6 +92,14 @@ struct TaskEditorView: View {
                 }
             }
 
+            if let taskID = context.existingID, draft.parentID == nil {
+                subtasksSection(taskID: taskID)
+            } else if isNew {
+                Text("Save the task first to add subtasks.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+
             VStack(alignment: .leading, spacing: 6) {
                 Text("NOTES")
                     .font(.system(size: 10, weight: .semibold))
@@ -129,6 +138,73 @@ struct TaskEditorView: View {
                 dismiss()
             }
             Button("Cancel", role: .cancel) {}
+        }
+    }
+
+    /// Subtasks are real reminders linked to this one; changes here apply
+    /// immediately (they don't wait for Save).
+    private func subtasksSection(taskID: String) -> some View {
+        let subtasks = service.subtasks(of: taskID)
+        return VStack(alignment: .leading, spacing: 6) {
+            Text("SUBTASKS")
+                .font(.system(size: 10, weight: .semibold))
+                .tracking(1.2)
+                .foregroundStyle(Theme.textTertiary)
+
+            ForEach(subtasks) { subtask in
+                HStack(spacing: 9) {
+                    Button {
+                        service.toggleTaskCompletion(id: subtask.id)
+                    } label: {
+                        Image(systemName: subtask.isCompleted ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 14))
+                            .foregroundStyle(subtask.isCompleted ? Theme.success : Theme.textTertiary)
+                    }
+                    .buttonStyle(.plain)
+
+                    Text(subtask.title)
+                        .font(.system(size: 12.5))
+                        .foregroundStyle(subtask.isCompleted ? Theme.textTertiary : Theme.textPrimary)
+                        .strikethrough(subtask.isCompleted, color: Theme.textTertiary)
+                        .lineLimit(1)
+
+                    Spacer()
+
+                    Button {
+                        service.deleteTask(id: subtask.id)
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            }
+
+            HStack(spacing: 8) {
+                Image(systemName: "plus.circle")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textTertiary)
+                TextField("Add a subtask", text: $newSubtaskTitle)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 12.5))
+                    .onSubmit {
+                        let title = newSubtaskTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+                        guard !title.isEmpty else { return }
+                        service.createSubtask(parentID: taskID, title: title)
+                        newSubtaskTitle = ""
+                    }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+
+            Text("Each subtask is a real reminder — drag it onto the timeline to give it its own block.")
+                .font(.system(size: 10.5))
+                .foregroundStyle(Theme.textTertiary)
         }
     }
 

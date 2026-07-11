@@ -61,7 +61,7 @@ enum TaskPriority: Int, CaseIterable, Identifiable {
 struct TaskItem: Identifiable, Hashable {
     let id: String            // calendarItemIdentifier
     var title: String
-    var notes: String?        // display notes, metadata token stripped
+    var notes: String?        // display notes, metadata tokens stripped
     var dueDate: Date?
     var dueHasTime: Bool
     var isCompleted: Bool
@@ -71,6 +71,10 @@ struct TaskItem: Identifiable, Hashable {
     var listName: String
     var color: Color
     var estimateMinutes: Int?
+    /// Set when this reminder is a Chronos subtask of another reminder.
+    var parentID: String?
+
+    var isSubtask: Bool { parentID != nil }
 
     var isOverdue: Bool {
         guard let due = dueDate, !isCompleted else { return false }
@@ -80,6 +84,17 @@ struct TaskItem: Identifiable, Hashable {
     var isDueToday: Bool {
         guard let due = dueDate else { return false }
         return due.isToday
+    }
+
+    /// Eisenhower urgency: overdue or due within the next 48 hours.
+    var isUrgent: Bool {
+        guard let due = dueDate else { return false }
+        return due < Date().adding(minutes: 48 * 60)
+    }
+
+    /// Eisenhower importance rides on the reminder's priority.
+    var isImportant: Bool {
+        priority == .high || priority == .medium
     }
 
     func dueLabel() -> String? {
@@ -99,6 +114,7 @@ struct TaskDraft {
     var estimateMinutes: Int?
     var notes: String = ""
     var isCompleted: Bool = false
+    var parentID: String?
 }
 
 struct TaskEditorContext: Identifiable {
@@ -107,38 +123,57 @@ struct TaskEditorContext: Identifiable {
     var existingID: String?
 }
 
-/// Chronos stores per-task metadata (currently the time estimate) inside the
-/// reminder's notes as a trailing `[est:45m]` token, so it round-trips
-/// through Apple Reminders and syncs across devices for free.
+/// Chronos stores per-task metadata inside the reminder's notes as trailing
+/// tokens — `[est:45m]` for time estimates and `[sub:<reminder-id>]` for
+/// subtask links — so everything round-trips through Apple Reminders and
+/// syncs across devices for free. (EventKit doesn't expose the Reminders
+/// app's native subtasks, so Chronos subtasks are ordinary reminders that
+/// carry a pointer to their parent.)
 enum TaskMetadata {
 
-    private static let pattern = "\\[est:(\\d+)m\\]"
+    private static let estimatePattern = "\\[est:(\\d+)m\\]"
+    private static let parentPattern = "\\[sub:([^\\]]+)\\]"
 
-    static func estimate(from notes: String?) -> Int? {
+    private static func firstGroup(_ pattern: String, in notes: String?) -> String? {
         guard let notes,
               let regex = try? NSRegularExpression(pattern: pattern),
               let match = regex.firstMatch(in: notes, range: NSRange(notes.startIndex..., in: notes)),
               let range = Range(match.range(at: 1), in: notes)
         else { return nil }
-        return Int(notes[range])
+        return String(notes[range])
     }
 
-    static func strippingToken(_ notes: String?) -> String? {
-        guard let notes, let regex = try? NSRegularExpression(pattern: pattern) else { return notes }
-        let cleaned = regex.stringByReplacingMatches(
-            in: notes,
-            range: NSRange(notes.startIndex..., in: notes),
-            withTemplate: ""
-        ).trimmingCharacters(in: .whitespacesAndNewlines)
+    static func estimate(from notes: String?) -> Int? {
+        firstGroup(estimatePattern, in: notes).flatMap { Int($0) }
+    }
+
+    static func parentID(from notes: String?) -> String? {
+        firstGroup(parentPattern, in: notes)
+    }
+
+    static func strippingTokens(_ notes: String?) -> String? {
+        guard var text = notes else { return nil }
+        for pattern in [estimatePattern, parentPattern] {
+            guard let regex = try? NSRegularExpression(pattern: pattern) else { continue }
+            text = regex.stringByReplacingMatches(
+                in: text,
+                range: NSRange(text.startIndex..., in: text),
+                withTemplate: ""
+            )
+        }
+        let cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
         return cleaned.isEmpty ? nil : cleaned
     }
 
-    /// Combines display notes + estimate back into the stored notes string.
-    static func encode(notes: String, estimateMinutes: Int?) -> String? {
+    /// Combines display notes + metadata back into the stored notes string.
+    static func encode(notes: String, estimateMinutes: Int?, parentID: String?) -> String? {
         let base = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         var parts: [String] = []
         if !base.isEmpty { parts.append(base) }
-        if let est = estimateMinutes, est > 0 { parts.append("[est:\(est)m]") }
+        var tokens: [String] = []
+        if let est = estimateMinutes, est > 0 { tokens.append("[est:\(est)m]") }
+        if let parentID, !parentID.isEmpty { tokens.append("[sub:\(parentID)]") }
+        if !tokens.isEmpty { parts.append(tokens.joined(separator: " ")) }
         let joined = parts.joined(separator: "\n")
         return joined.isEmpty ? nil : joined
     }

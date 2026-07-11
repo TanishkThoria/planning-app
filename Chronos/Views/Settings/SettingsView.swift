@@ -2,6 +2,9 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject private var service: EventKitService
+    @EnvironmentObject private var profileStore: ProfileStore
+
+    @State private var showingCalibration = false
 
     @AppStorage(Prefs.accentName) private var accentName = "Indigo"
     @AppStorage(Prefs.workStartMinutes) private var workStartMinutes = 9 * 60
@@ -48,6 +51,35 @@ struct SettingsView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
+
+                    settingsSection("Personalization") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            if profileStore.profile.isCalibrated {
+                                let profile = profileStore.profile
+                                Text("Awake \(minuteLabel(profile.wakeMinutes))–\(minuteLabel(profile.bedMinutes)) · \(profile.meals.filter(\.enabled).count) meals · \(profile.routines.count) routines · \(profile.focus.rawValue.lowercased()) focus · \(profile.flexibility.rawValue.lowercased())")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(Theme.textSecondary)
+                            } else {
+                                Text("Not calibrated yet — tell Chronos about your sleep, meals, and routines so Plan My Day can schedule around your life.")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(Theme.textSecondary)
+                            }
+                            Button {
+                                showingCalibration = true
+                            } label: {
+                                Label(
+                                    profileStore.profile.isCalibrated ? "Recalibrate" : "Calibrate now",
+                                    systemImage: "person.crop.circle.badge.checkmark"
+                                )
+                                .font(.system(size: 12.5, weight: .semibold))
+                                .foregroundStyle(Color.accentColor)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    }
 
                     settingsSection("Schedule") {
                         FieldRow(label: "Workday starts") {
@@ -168,6 +200,13 @@ struct SettingsView: View {
             .scrollIndicators(.hidden)
         }
         .background(Theme.bg)
+        .sheet(isPresented: $showingCalibration) {
+            CalibrationView()
+        }
+    }
+
+    private func minuteLabel(_ minutes: Int) -> String {
+        Fmt.time.string(from: Date().startOfDay.at(minutes: minutes))
     }
 
     @ViewBuilder

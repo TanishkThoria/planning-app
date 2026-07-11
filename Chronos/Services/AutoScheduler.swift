@@ -1,9 +1,11 @@
 import Foundation
 
-/// Greedy gap-filling scheduler behind "Plan My Day": takes the tasks you
-/// choose, finds the free stretches between existing calendar blocks inside
-/// your working hours, and proposes a slot for each task — highest priority
-/// and earliest due date first.
+/// Greedy gap-filling scheduler behind "Plan My Day" and every
+/// "next free slot" button. Once a `PlannerProfile` is calibrated it gets
+/// opinionated: meal and routine windows become protected time (unless the
+/// profile is fully flexible), the scheduling window can widen to
+/// wake-to-bed, high-priority tasks are steered into the user's focus
+/// window, and the flexibility level enforces breathing room.
 enum AutoScheduler {
 
     struct Proposal: Identifiable, Hashable {
@@ -20,27 +22,61 @@ enum AutoScheduler {
         var minutes: Int { max(0, Int(end.timeIntervalSince(start) / 60)) }
     }
 
-    /// Free stretches on `day` between `workStartMinutes` and
-    /// `workEndMinutes`, excluding existing (non-all-day) blocks. When the
-    /// day is today, time already gone is not offered.
+    /// The effective scheduling window for a day, given prefs + profile.
+    static func schedulingWindow(
+        on day: Date,
+        workStartMinutes: Int,
+        workEndMinutes: Int,
+        profile: PlannerProfile?
+    ) -> (start: Date, end: Date) {
+        guard let profile, profile.isCalibrated else {
+            return (day.at(minutes: workStartMinutes), day.at(minutes: max(workEndMinutes, workStartMinutes + 30)))
+        }
+        switch profile.flexibility {
+        case .flexible:
+            // Anything awake is fair game.
+            return (day.at(minutes: profile.wakeMinutes),
+                    day.at(minutes: max(profile.bedMinutes, profile.wakeMinutes + 60)))
+        case .strict, .balanced:
+            // Work hours, clamped inside the waking day.
+            let start = max(workStartMinutes, profile.wakeMinutes)
+            let end = min(max(workEndMinutes, start + 30), profile.bedMinutes)
+            return (day.at(minutes: start), day.at(minutes: max(end, start + 30)))
+        }
+    }
+
+    /// Free stretches on `day` inside the scheduling window, minus existing
+    /// (non-all-day) blocks and any protected routine windows. When the day
+    /// is today, time already gone is not offered.
     static func freeGaps(
         on day: Date,
         existing: [TimeBlock],
         workStartMinutes: Int,
         workEndMinutes: Int,
+        profile: PlannerProfile? = nil,
         now: Date = Date()
     ) -> [Gap] {
-        var windowStart = day.at(minutes: workStartMinutes)
-        let windowEnd = day.at(minutes: max(workEndMinutes, workStartMinutes + 30))
+        let window = schedulingWindow(
+            on: day,
+            workStartMinutes: workStartMinutes,
+            workEndMinutes: workEndMinutes,
+            profile: profile
+        )
+        var windowStart = window.start
+        let windowEnd = window.end
         if day.isSameDay(as: now) {
             windowStart = max(windowStart, now.snapped(to: 5))
         }
         guard windowStart < windowEnd else { return [] }
 
-        let busy = existing
+        var busy: [(start: Date, end: Date)] = existing
             .filter { !$0.isAllDay }
             .compactMap { $0.clamped(to: day) }
-            .sorted { $0.start < $1.start }
+
+        if let profile, profile.isCalibrated, profile.flexibility.protectsRoutines {
+            busy += profile.routineWindows(on: day).map { ($0.start, $0.end) }
+        }
+        busy.sort { $0.start < $1.start }
 
         var gaps: [Gap] = []
         var cursor = windowStart
@@ -57,8 +93,9 @@ enum AutoScheduler {
         return gaps.filter { $0.minutes >= 10 }
     }
 
-    /// First-fit proposal set. Tasks that don't fit are simply omitted —
-    /// the UI reports how many were left out.
+    /// First-fit proposal set. High-priority tasks are offered focus-window
+    /// gaps first; tasks that don't fit anywhere are omitted (the UI reports
+    /// how many were left out).
     static func plan(
         tasks: [TaskItem],
         existing: [TimeBlock],
@@ -68,6 +105,7 @@ enum AutoScheduler {
         snapMinutes: Int,
         defaultMinutes: Int,
         gapPaddingMinutes: Int = 0,
+        profile: PlannerProfile? = nil,
         now: Date = Date()
     ) -> [Proposal] {
         var gaps = freeGaps(
@@ -75,8 +113,20 @@ enum AutoScheduler {
             existing: existing,
             workStartMinutes: workStartMinutes,
             workEndMinutes: workEndMinutes,
+            profile: profile,
             now: now
         )
+
+        let padding: Int = {
+            guard let profile, profile.isCalibrated else { return gapPaddingMinutes }
+            return max(gapPaddingMinutes, profile.flexibility.minimumGapMinutes)
+        }()
+
+        let focusWindow: (start: Date, end: Date)? = {
+            guard let profile, profile.isCalibrated else { return nil }
+            let minutes = profile.focus.windowMinutes
+            return (day.at(minutes: minutes.start), day.at(minutes: minutes.end))
+        }()
 
         let ordered = tasks.sorted { a, b in
             if a.priority.sortRank != b.priority.sortRank { return a.priority.sortRank < b.priority.sortRank }
@@ -89,27 +139,39 @@ enum AutoScheduler {
         }
 
         var proposals: [Proposal] = []
+
+        func gapIndex(fitting minutes: Int, preferFocus: Bool) -> Int? {
+            if preferFocus, let focus = focusWindow {
+                if let index = gaps.firstIndex(where: {
+                    $0.minutes >= minutes && $0.start < focus.end && $0.end > focus.start
+                }) {
+                    return index
+                }
+            }
+            return gaps.firstIndex(where: { $0.minutes >= minutes })
+        }
+
         for task in ordered {
             let minutes = max(task.estimateMinutes ?? defaultMinutes, 10)
-            guard let index = gaps.firstIndex(where: { $0.minutes >= minutes }) else { continue }
+            let preferFocus = task.priority == .high
+            guard let index = gapIndex(fitting: minutes, preferFocus: preferFocus) else { continue }
 
             var gap = gaps[index]
-            let start = gap.start.snapped(to: snapMinutes) < gap.start
-                ? gap.start.snapped(to: snapMinutes).adding(minutes: snapMinutes)
-                : gap.start.snapped(to: snapMinutes)
+            let snapped = gap.start.snapped(to: snapMinutes)
+            let start = snapped < gap.start ? snapped.adding(minutes: snapMinutes) : snapped
             let end = start.adding(minutes: minutes)
             guard end <= gap.end else {
                 // Snapping pushed it past the gap; try the gap unsnapped.
                 if gap.start.adding(minutes: minutes) <= gap.end {
                     proposals.append(Proposal(task: task, start: gap.start, minutes: minutes))
-                    gap.start = gap.start.adding(minutes: minutes + gapPaddingMinutes)
+                    gap.start = gap.start.adding(minutes: minutes + padding)
                     gaps[index] = gap
                 }
                 continue
             }
 
             proposals.append(Proposal(task: task, start: start, minutes: minutes))
-            gap.start = end.adding(minutes: gapPaddingMinutes)
+            gap.start = end.adding(minutes: padding)
             gaps[index] = gap
         }
 
@@ -125,7 +187,8 @@ enum AutoScheduler {
         existing: [TimeBlock],
         workStartMinutes: Int,
         workEndMinutes: Int,
-        snapMinutes: Int
+        snapMinutes: Int,
+        profile: PlannerProfile? = nil
     ) -> Date {
         for offset in 0..<7 {
             let day = after.startOfDay.adding(days: offset)
@@ -134,6 +197,7 @@ enum AutoScheduler {
                 existing: existing.filter { $0.clamped(to: day) != nil },
                 workStartMinutes: workStartMinutes,
                 workEndMinutes: workEndMinutes,
+                profile: profile,
                 now: max(after, Date())
             )
             for gap in gaps where gap.minutes >= minutes {

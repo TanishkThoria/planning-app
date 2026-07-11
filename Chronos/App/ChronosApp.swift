@@ -4,6 +4,7 @@ import SwiftUI
 struct ChronosApp: App {
     @StateObject private var model = AppModel()
     @StateObject private var service = EventKitService()
+    @StateObject private var profileStore = ProfileStore()
 
     var body: some Scene {
         #if os(macOS)
@@ -11,6 +12,7 @@ struct ChronosApp: App {
             RootView()
                 .environmentObject(model)
                 .environmentObject(service)
+                .environmentObject(profileStore)
         }
         .defaultSize(width: 1280, height: 840)
         .commands {
@@ -21,7 +23,8 @@ struct ChronosApp: App {
             SettingsView()
                 .environmentObject(model)
                 .environmentObject(service)
-                .frame(width: 480, height: 560)
+                .environmentObject(profileStore)
+                .frame(width: 480, height: 620)
                 .preferredColorScheme(.dark)
         }
         #else
@@ -29,6 +32,7 @@ struct ChronosApp: App {
             RootView()
                 .environmentObject(model)
                 .environmentObject(service)
+                .environmentObject(profileStore)
         }
         #endif
     }
@@ -52,6 +56,7 @@ struct ChronosCommands: Commands {
         CommandMenu("Plan") {
             Button("Plan My Day…") { model.planDayPresented = true }
                 .keyboardShortcut("p", modifiers: [.command, .shift])
+            Button("Recalibrate…") { model.calibrationPresented = true }
             Divider()
             Button("Go to Today") { model.goToToday() }
                 .keyboardShortcut("t", modifiers: .command)

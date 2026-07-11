@@ -5,6 +5,7 @@ import SwiftUI
 struct QuickAddView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
+    @EnvironmentObject private var profileStore: ProfileStore
     @Environment(\.dismiss) private var dismiss
 
     @AppStorage(Prefs.defaultBlockMinutes) private var defaultBlockMinutes = 30
@@ -163,7 +164,8 @@ struct QuickAddView: View {
             existing: service.blocks,
             workStartMinutes: workStartMinutes,
             workEndMinutes: workEndMinutes,
-            snapMinutes: snapMinutes
+            snapMinutes: snapMinutes,
+            profile: profileStore.profile
         )
     }
 

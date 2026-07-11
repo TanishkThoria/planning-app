@@ -11,9 +11,13 @@ final class AppModel: ObservableObject {
     enum Screen: String, CaseIterable, Identifiable {
         case day
         case week
+        case agenda
         case tasks
+        case matrix
         case insights
         case settings
+        /// iPhone-only overflow tab hosting the screens that don't fit the bar.
+        case more
 
         var id: String { rawValue }
 
@@ -21,9 +25,12 @@ final class AppModel: ObservableObject {
             switch self {
             case .day: return "Day"
             case .week: return "Week"
+            case .agenda: return "Agenda"
             case .tasks: return "Tasks"
+            case .matrix: return "Matrix"
             case .insights: return "Insights"
             case .settings: return "Settings"
+            case .more: return "More"
             }
         }
 
@@ -31,9 +38,12 @@ final class AppModel: ObservableObject {
             switch self {
             case .day: return "calendar.day.timeline.left"
             case .week: return "calendar"
+            case .agenda: return "list.bullet.rectangle"
             case .tasks: return "checklist"
+            case .matrix: return "square.grid.2x2"
             case .insights: return "chart.bar.xaxis"
             case .settings: return "gearshape"
+            case .more: return "ellipsis.circle"
             }
         }
 
@@ -41,11 +51,18 @@ final class AppModel: ObservableObject {
             switch self {
             case .day: return "1"
             case .week: return "2"
-            case .tasks: return "3"
-            case .insights: return "4"
-            case .settings: return nil
+            case .agenda: return "3"
+            case .tasks: return "4"
+            case .matrix: return "5"
+            case .insights: return "6"
+            case .settings, .more: return nil
             }
         }
+
+        /// Screens listed in the macOS/iPad sidebar.
+        static let sidebarCases: [Screen] = [.day, .week, .agenda, .tasks, .matrix, .insights, .settings]
+        /// Tabs shown on compact iPhone layouts (the rest live under More).
+        static let compactTabs: [Screen] = [.day, .agenda, .tasks, .matrix, .more]
     }
 
     @Published var screen: Screen = .day
@@ -54,6 +71,7 @@ final class AppModel: ObservableObject {
     // Sheets
     @Published var quickAddPresented = false
     @Published var planDayPresented = false
+    @Published var calibrationPresented = false
     @Published var blockEditor: BlockEditorContext?
     @Published var taskEditor: TaskEditorContext?
 

@@ -59,6 +59,11 @@ struct TasksView: View {
                                     .padding(.horizontal, 4)
                                 ForEach(group.tasks) { task in
                                     TaskRow(task: task)
+                                    // Open subtasks ride along under their parent.
+                                    ForEach(service.subtasks(of: task.id).filter { !$0.isCompleted }) { subtask in
+                                        SubtaskRow(task: subtask)
+                                            .padding(.leading, 28)
+                                    }
                                 }
                             }
                         }
@@ -199,7 +204,8 @@ struct TasksView: View {
         let today = Date().startOfDay
         switch filter {
         case .today:
-            let open = tasks.filter { !$0.isCompleted }
+            // Top-level only; subtasks render nested under their parent.
+            let open = tasks.filter { !$0.isCompleted && !$0.isSubtask }
             let overdue = open.filter { ($0.dueDate?.startOfDay ?? .distantFuture) < today }
             let dueToday = open.filter { $0.dueDate?.isToday == true }
             let flagged = open.filter { $0.dueDate == nil && $0.priority == .high }
@@ -209,7 +215,7 @@ struct TasksView: View {
                 Group2(title: "High Priority", tasks: flagged),
             ]
         case .upcoming:
-            let open = tasks.filter { !$0.isCompleted }
+            let open = tasks.filter { !$0.isCompleted && !$0.isSubtask }
             let upcoming = open
                 .filter { ($0.dueDate?.startOfDay ?? .distantPast) > today }
                 .sorted { ($0.dueDate ?? .distantFuture) < ($1.dueDate ?? .distantFuture) }
@@ -218,7 +224,7 @@ struct TasksView: View {
                 Group2(title: Fmt.relativeDay(day), tasks: byDay[day] ?? [])
             }
         case .anytime:
-            let open = tasks.filter { !$0.isCompleted && $0.dueDate == nil }
+            let open = tasks.filter { !$0.isCompleted && $0.dueDate == nil && !$0.isSubtask }
             let byList = Dictionary(grouping: open, by: \.listName)
             return byList.keys.sorted().map { list in
                 Group2(title: list, tasks: byList[list] ?? [])
