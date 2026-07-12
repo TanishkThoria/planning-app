@@ -115,7 +115,6 @@ final class AppModel: ObservableObject {
     @Published var habitEditor: HabitEditContext?
     @Published var journalPresented = false
     @Published var templatesPresented = false
-    @Published var saveTemplatePresented = false
     @Published var budgetsPresented = false
 
     /// Show/hide the backlog rail in the day planner (wide layouts).
