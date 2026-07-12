@@ -251,6 +251,7 @@
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Chronos reads and writes your calendars so your time blocks stay in perfect sync with Apple Calendar.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Chronos reads and writes your reminders so your tasks stay in perfect sync with Apple Reminders.";
@@ -292,6 +293,7 @@
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Chronos reads and writes your calendars so your time blocks stay in perfect sync with Apple Calendar.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Chronos reads and writes your reminders so your tasks stay in perfect sync with Apple Reminders.";
