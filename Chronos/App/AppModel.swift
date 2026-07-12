@@ -10,66 +10,89 @@ final class AppModel: ObservableObject {
 
     enum Screen: String, CaseIterable, Identifiable {
         case today
-        case day
-        case week
-        case agenda
+        case calendar
         case tasks
         case matrix
         case insights
         case settings
-        /// iPhone-only overflow tab hosting the screens that don't fit the bar.
-        case more
 
         var id: String { rawValue }
 
         var title: String {
             switch self {
             case .today: return "Today"
-            case .day: return "Day"
-            case .week: return "Week"
-            case .agenda: return "Agenda"
+            case .calendar: return "Calendar"
             case .tasks: return "Tasks"
             case .matrix: return "Matrix"
             case .insights: return "Insights"
             case .settings: return "Settings"
-            case .more: return "More"
             }
         }
 
         var icon: String {
             switch self {
             case .today: return "sun.max"
-            case .day: return "calendar.day.timeline.left"
-            case .week: return "calendar"
-            case .agenda: return "list.bullet.rectangle"
+            case .calendar: return "calendar"
             case .tasks: return "checklist"
             case .matrix: return "square.grid.2x2"
             case .insights: return "chart.bar.xaxis"
             case .settings: return "gearshape"
-            case .more: return "ellipsis.circle"
+            }
+        }
+
+        /// Filled variant for the iOS tab bar selected state.
+        var iconFilled: String {
+            switch self {
+            case .today: return "sun.max.fill"
+            case .calendar: return "calendar"
+            case .tasks: return "checklist.checked"
+            case .matrix: return "square.grid.2x2.fill"
+            case .insights: return "chart.bar.xaxis"
+            case .settings: return "gearshape.fill"
             }
         }
 
         var shortcut: KeyEquivalent? {
             switch self {
             case .today: return "1"
-            case .day: return "2"
-            case .week: return "3"
-            case .agenda: return "4"
-            case .tasks: return "5"
-            case .matrix: return "6"
-            case .insights: return "7"
-            case .settings, .more: return nil
+            case .calendar: return "2"
+            case .tasks: return "3"
+            case .matrix: return "4"
+            case .insights: return "5"
+            case .settings: return nil
             }
         }
 
         /// Screens listed in the macOS/iPad sidebar.
-        static let sidebarCases: [Screen] = [.today, .day, .week, .agenda, .tasks, .matrix, .insights, .settings]
-        /// Tabs shown on compact iPhone layouts (the rest live under More).
-        static let compactTabs: [Screen] = [.today, .day, .tasks, .matrix, .more]
+        static let sidebarCases: [Screen] = [.today, .calendar, .tasks, .matrix, .insights, .settings]
+        /// The five primary iPhone tabs — Settings is reached from a toolbar
+        /// gear, so nothing hides behind a "More" overflow.
+        static let compactTabs: [Screen] = [.today, .calendar, .tasks, .matrix, .insights]
+    }
+
+    /// The three ways of viewing the calendar, switched with a segmented
+    /// control inside the Calendar screen.
+    enum PlannerMode: String, CaseIterable, Identifiable {
+        case day, week, agenda
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .day: return "Day"
+            case .week: return "Week"
+            case .agenda: return "Agenda"
+            }
+        }
+        var icon: String {
+            switch self {
+            case .day: return "calendar.day.timeline.left"
+            case .week: return "calendar"
+            case .agenda: return "list.bullet.rectangle"
+            }
+        }
     }
 
     @Published var screen: Screen = .today
+    @Published var plannerMode: PlannerMode = .day
     @Published var selectedDate: Date = Date().startOfDay
 
     // Sheets
@@ -79,6 +102,8 @@ final class AppModel: ObservableObject {
     @Published var calibrationPresented = false
     @Published var morningPlanningPresented = false
     @Published var reviewPresented = false
+    /// iOS presents Settings as a sheet (macOS uses the sidebar + ⌘,).
+    @Published var settingsPresented = false
     @Published var focusTimerPresented = false
     @Published var focusTimerContext: FocusStartContext?
     @Published var blockEditor: BlockEditorContext?
@@ -118,12 +143,24 @@ final class AppModel: ObservableObject {
         selectedDate = Date().startOfDay
     }
 
+    /// Week mode steps a week at a time; day and agenda step a day.
+    private var navStride: Int {
+        (screen == .calendar && plannerMode == .week) ? 7 : 1
+    }
+
     func goForward() {
-        selectedDate = selectedDate.adding(days: screen == .week ? 7 : 1)
+        selectedDate = selectedDate.adding(days: navStride)
     }
 
     func goBackward() {
-        selectedDate = selectedDate.adding(days: screen == .week ? -7 : -1)
+        selectedDate = selectedDate.adding(days: -navStride)
+    }
+
+    /// Jump to a specific day and show it in the day planner.
+    func openDay(_ date: Date) {
+        selectedDate = date.startOfDay
+        plannerMode = .day
+        screen = .calendar
     }
 
     // MARK: Sheet launchers

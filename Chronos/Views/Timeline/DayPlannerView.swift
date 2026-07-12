@@ -5,6 +5,10 @@ import Combine
 /// The main screen: a full-day timeline with an optional backlog rail for
 /// dragging unscheduled tasks straight onto the day.
 struct DayPlannerView: View {
+    /// When embedded in the Calendar screen, the shared header is hidden and
+    /// this renders as body-only content.
+    var embedded = false
+
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var profileStore: ProfileStore
@@ -19,6 +23,7 @@ struct DayPlannerView: View {
 
     @State private var pendingDelete: TimeBlock?
     @State private var now = Date()
+    @State private var pinchBaseHeight: CGFloat?
     private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
     private var dayBlocks: [TimeBlock] {
@@ -70,14 +75,17 @@ struct DayPlannerView: View {
             let showRail = geo.size.width > 720 && model.backlogVisible
 
             VStack(spacing: 0) {
-                header
-                    .padding(.horizontal, 18)
-                    .padding(.top, 14)
-                    .padding(.bottom, 10)
+                if !embedded {
+                    header
+                        .padding(.horizontal, 18)
+                        .padding(.top, 14)
+                        .padding(.bottom, 10)
+                }
 
                 if model.selectedDate.isToday {
                     UpNextStrip(blocks: dayBlocks, now: now)
                         .padding(.horizontal, 18)
+                        .padding(.top, embedded ? 10 : 0)
                         .padding(.bottom, 8)
                 }
 
@@ -90,10 +98,14 @@ struct DayPlannerView: View {
                 if !allDayBlocks.isEmpty {
                     allDayRow
                         .padding(.horizontal, 18)
+                        .padding(.top, embedded && !model.selectedDate.isToday ? 10 : 0)
                         .padding(.bottom, 8)
                 }
 
-                Rectangle().fill(Theme.hairline).frame(height: 1)
+                // The embedded host already draws a separator above us.
+                if !embedded || model.selectedDate.isToday || !allDayBlocks.isEmpty {
+                    Rectangle().fill(Theme.hairline).frame(height: 1)
+                }
 
                 HStack(spacing: 0) {
                     timeline
@@ -228,6 +240,16 @@ struct DayPlannerView: View {
                 .padding(.vertical, 8)
             }
             .scrollIndicators(.hidden)
+            // Pinch (or trackpad-zoom) to scale the hour height.
+            .simultaneousGesture(
+                MagnifyGesture()
+                    .onChanged { value in
+                        let base = pinchBaseHeight ?? hourHeight
+                        if pinchBaseHeight == nil { pinchBaseHeight = base }
+                        hourHeight = min(160, max(40, base * value.magnification))
+                    }
+                    .onEnded { _ in pinchBaseHeight = nil }
+            )
             .onAppear {
                 let anchor = model.selectedDate.isToday
                     ? max(Date().minutesSinceMidnight / 60 - 1, 0)

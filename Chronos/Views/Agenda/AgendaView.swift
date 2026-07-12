@@ -4,6 +4,8 @@ import SwiftUI
 /// all-day events, time blocks, and due tasks interleaved chronologically.
 /// Built for the "what does my life look like" read-through.
 struct AgendaView: View {
+    var embedded = false
+
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
 
@@ -17,12 +19,14 @@ struct AgendaView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-                .padding(.horizontal, 18)
-                .padding(.top, 14)
-                .padding(.bottom, 12)
+            if !embedded {
+                header
+                    .padding(.horizontal, 18)
+                    .padding(.top, 14)
+                    .padding(.bottom, 12)
 
-            Rectangle().fill(Theme.hairline).frame(height: 1)
+                Rectangle().fill(Theme.hairline).frame(height: 1)
+            }
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
@@ -135,8 +139,7 @@ struct AgendaView: View {
                         .foregroundStyle(Theme.textTertiary)
                 }
                 Button {
-                    model.selectedDate = day
-                    model.screen = .day
+                    model.openDay(day)
                 } label: {
                     Image(systemName: "arrow.up.right.square")
                         .font(.system(size: 11))

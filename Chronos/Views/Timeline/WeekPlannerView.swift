@@ -5,6 +5,8 @@ import EventKit
 /// dragged vertically within a day, tasks can be dropped onto any day, and
 /// tapping a day header jumps into the day planner.
 struct WeekPlannerView: View {
+    var embedded = false
+
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var profileStore: ProfileStore
@@ -25,10 +27,12 @@ struct WeekPlannerView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-                .padding(.horizontal, 18)
-                .padding(.top, 14)
-                .padding(.bottom, 10)
+            if !embedded {
+                header
+                    .padding(.horizontal, 18)
+                    .padding(.top, 14)
+                    .padding(.bottom, 10)
+            }
 
             dayHeaderRow
 
@@ -119,13 +123,13 @@ struct WeekPlannerView: View {
         let hasAllDay = service.blocks(on: day, hiddenCalendars: model.hiddenCalendarIDs)
             .contains(where: \.isAllDay)
         return Button {
-            model.selectedDate = day
-            model.screen = .day
+            model.openDay(day)
         } label: {
             VStack(spacing: 3) {
-                Text(Fmt.weekdayShort.string(from: day).uppercased())
+                // Single-letter weekday keeps 7 columns legible on iPhone.
+                Text(String(Fmt.weekdayNarrow.string(from: day).prefix(2)).uppercased())
                     .font(.system(size: 9.5, weight: .semibold))
-                    .tracking(0.8)
+                    .tracking(0.5)
                     .foregroundStyle(day.isToday ? Color.accentColor : Theme.textTertiary)
                 Text(Fmt.dayNumber.string(from: day))
                     .font(.system(size: 15, weight: day.isToday ? .bold : .medium, design: .rounded))

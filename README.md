@@ -4,6 +4,13 @@ A minimalist, dark-mode timeblocking planner for iOS and macOS that uses **Apple
 
 Built for power users and serious planners: fast, keyboard-driven, and designed around the daily ritual of turning a task list into a realistic schedule.
 
+## Navigation
+
+- **macOS / iPad** — a sidebar with Today, Calendar, Tasks, Matrix, Insights, Settings, a mini-month for jumping around, and per-calendar/list visibility toggles. Full menu-bar keyboard control.
+- **iPhone** — five primary tabs (Today, Calendar, Tasks, Matrix, Insights) with nothing hidden behind an overflow menu; Settings opens from a gear on the home screen. The **Calendar** tab carries a segmented **Day / Week / Agenda** switch so all three planner modes live in one place. Pinch the day timeline to zoom.
+
+The app ships a minimal, memorable app icon — a single indigo time block crossed by the red "now" line on a faint hour grid — with dedicated dark and tinted variants for iOS icon theming.
+
 ## Features
 
 ### Timeblocking

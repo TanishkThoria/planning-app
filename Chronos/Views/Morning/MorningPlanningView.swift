@@ -328,8 +328,7 @@ struct MorningPlanningView: View {
                 calendarID: defaultCalendarID.isEmpty ? nil : defaultCalendarID
             )
         }
-        model.selectedDate = day
-        model.screen = .day
+        model.openDay(day)
         dismiss()
     }
 }

@@ -114,8 +114,22 @@ struct RootView: View {
         TabView(selection: $model.screen) {
             ForEach(AppModel.Screen.compactTabs) { screen in
                 screenView(screen)
-                    .tabItem { Label(screen.title, systemImage: screen.icon) }
+                    .tabItem {
+                        Label(screen.title, systemImage: model.screen == screen ? screen.iconFilled : screen.icon)
+                    }
                     .tag(screen)
+            }
+        }
+        .sheet(isPresented: $model.settingsPresented) {
+            NavigationStack {
+                SettingsView(showsHeader: false)
+                    .navigationTitle("Settings")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") { model.settingsPresented = false }
+                        }
+                    }
             }
         }
     }
@@ -132,53 +146,11 @@ struct RootView: View {
     private func screenView(_ screen: AppModel.Screen) -> some View {
         switch screen {
         case .today: TodayView()
-        case .day: DayPlannerView()
-        case .week: WeekPlannerView()
-        case .agenda: AgendaView()
+        case .calendar: PlannerScreen()
         case .tasks: TasksView()
         case .matrix: MatrixView()
         case .insights: InsightsView()
         case .settings: SettingsView()
-        case .more: MoreView()
-        }
-    }
-}
-
-/// iPhone overflow tab: the screens that don't fit in the tab bar.
-struct MoreView: View {
-    var body: some View {
-        NavigationStack {
-            List {
-                NavigationLink {
-                    DayPlannerView()
-                } label: {
-                    Label("Day", systemImage: "calendar.day.timeline.left")
-                }
-                NavigationLink {
-                    WeekPlannerView()
-                } label: {
-                    Label("Week", systemImage: "calendar")
-                }
-                NavigationLink {
-                    AgendaView()
-                } label: {
-                    Label("Agenda", systemImage: "list.bullet.rectangle")
-                }
-                NavigationLink {
-                    InsightsView()
-                } label: {
-                    Label("Insights", systemImage: "chart.bar.xaxis")
-                }
-                NavigationLink {
-                    SettingsView()
-                } label: {
-                    Label("Settings", systemImage: "gearshape")
-                }
-            }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .background(Theme.bg)
-            .navigationTitle("More")
         }
     }
 }

@@ -155,7 +155,7 @@ struct DateNavigator: View {
                     .background(Theme.fill, in: Capsule())
             }
             .buttonStyle(.plain)
-            .disabled(model.selectedDate.isToday && model.screen == .day)
+            .disabled(model.selectedDate.isToday && model.screen == .calendar && model.plannerMode == .day)
             navButton("chevron.right") { model.goForward() }
         }
     }

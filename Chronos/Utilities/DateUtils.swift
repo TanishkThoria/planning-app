@@ -93,6 +93,13 @@ enum Fmt {
         return f
     }()
 
+    /// Narrow single-letter weekday (M, T, W…) for tight week grids.
+    static let weekdayNarrow: DateFormatter = {
+        let f = DateFormatter()
+        f.setLocalizedDateFormatFromTemplate("EEEEE")
+        return f
+    }()
+
     static let monthDay: DateFormatter = {
         let f = DateFormatter()
         f.setLocalizedDateFormatFromTemplate("MMMd")

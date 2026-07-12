@@ -31,24 +31,30 @@ struct SettingsView: View {
         )
     }
 
+    /// Hidden when presented inside a navigation stack (iOS sheet) that
+    /// already supplies a title bar.
+    var showsHeader = true
+
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Settings")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(Theme.textPrimary)
-                    Text("Tuned for how you plan")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Theme.textSecondary)
+            if showsHeader {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Settings")
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text("Tuned for how you plan")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                    Spacer()
                 }
-                Spacer()
-            }
-            .padding(.horizontal, 18)
-            .padding(.top, 14)
-            .padding(.bottom, 12)
+                .padding(.horizontal, 18)
+                .padding(.top, 14)
+                .padding(.bottom, 12)
 
-            Rectangle().fill(Theme.hairline).frame(height: 1)
+                Rectangle().fill(Theme.hairline).frame(height: 1)
+            }
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {

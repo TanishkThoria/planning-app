@@ -18,9 +18,7 @@ struct SidebarView: View {
                 }
 
                 MiniMonthView(selectedDate: $model.selectedDate) {
-                    if model.screen != .day && model.screen != .week {
-                        model.screen = .day
-                    }
+                    if model.screen != .calendar { model.screen = .calendar }
                 }
 
                 calendarSection(

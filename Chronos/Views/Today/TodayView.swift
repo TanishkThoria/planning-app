@@ -110,12 +110,19 @@ struct TodayView: View {
                     .foregroundStyle(remainingCount == 0 ? Theme.success : Theme.textSecondary)
             }
             Spacer()
-            HeaderIconButton(icon: "sunrise", label: "Plan") {
+            #if os(iOS)
+            HeaderIconButton(icon: "gearshape") {
+                model.settingsPresented = true
+            }
+            #endif
+            HeaderIconButton(icon: "sunrise") {
                 model.morningPlanningPresented = true
             }
-            HeaderIconButton(icon: "checkmark.circle", label: "Review") {
+            .help("Plan Today")
+            HeaderIconButton(icon: "checkmark.circle") {
                 model.reviewPresented = true
             }
+            .help("Review Day")
             HeaderIconButton(icon: "plus", prominent: true) {
                 model.quickAddPresented = true
             }
