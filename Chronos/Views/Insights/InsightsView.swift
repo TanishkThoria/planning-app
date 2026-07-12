@@ -9,10 +9,40 @@ struct InsightsView: View {
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var profileStore: ProfileStore
     @EnvironmentObject private var focusLog: FocusLog
+    @EnvironmentObject private var life: LifeStore
 
     private var weekDays: [Date] {
         let start = model.selectedDate.startOfWeek
         return (0..<7).map { start.adding(days: $0) }
+    }
+
+    private var achievements: [Achievement] {
+        let bestHabitStreak = life.activeHabits.map { life.streak($0) }.max() ?? 0
+        return AchievementEngine.compute(.init(
+            completionStreak: stats.streakDays,
+            totalFocusMinutes: focusLog.sessions.reduce(0) { $0 + $1.actualMinutes },
+            weekDeepMinutes: stats.deepMinutes,
+            onTimeRate: stats.onTimeRate,
+            datedCompleted: stats.datedCompleted,
+            bestHabitStreak: bestHabitStreak,
+            journalStreak: life.journalStreak,
+            templatesSaved: life.templates.count,
+            weekBlockCount: stats.blockCount
+        ))
+    }
+
+    private var budgeted: [(cal: CalendarInfo, target: Double, minutes: Int)] {
+        life.budgets.compactMap { budget in
+            guard let cal = service.calendarInfo(withID: budget.calendarID) else { return nil }
+            let minutes = weekDays.reduce(0) { acc, day in
+                acc + service.blocks(on: day)
+                    .filter { !$0.isAllDay && $0.calendarID == budget.calendarID }
+                    .compactMap { $0.clamped(to: day) }
+                    .reduce(0) { $0 + Int($1.end.timeIntervalSince($1.start) / 60) }
+            }
+            return (cal, budget.weeklyHoursTarget, minutes)
+        }
+        .sorted { $0.cal.title < $1.cal.title }
     }
 
     private var stats: StatsEngine.Stats {
@@ -56,9 +86,11 @@ struct InsightsView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     statTiles
                     ringsCard
+                    budgetsCard
                     hoursPerDayCard
                     if stats.deepMinutes + stats.shallowMinutes > 0 { energySplitCard }
                     timeByCalendarCard
+                    achievementsCard
                     coachCard
                     detailCard
                 }
@@ -266,6 +298,89 @@ struct InsightsView: View {
                             .background(Theme.fill, in: Capsule())
                         }
                     }
+                }
+            }
+        }
+        .panel()
+    }
+
+    // MARK: Budgets
+
+    private var budgetsCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                SectionHeader(title: "Time budgets")
+                Spacer(minLength: 8)
+                Button { model.budgetsPresented = true } label: {
+                    Text(budgeted.isEmpty ? "Set" : "Edit")
+                        .font(.system(size: 11, weight: .semibold)).foregroundStyle(Color.accentColor)
+                }
+                .buttonStyle(.plain)
+            }
+            if budgeted.isEmpty {
+                Text("Set weekly hour targets per calendar to keep your time honest.")
+                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+            } else {
+                ForEach(budgeted, id: \.cal.id) { entry in
+                    let frac = entry.target > 0 ? Double(entry.minutes) / (entry.target * 60) : 0
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            HStack(spacing: 6) {
+                                Circle().fill(entry.cal.color).frame(width: 7, height: 7)
+                                Text(entry.cal.title).font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.textPrimary)
+                            }
+                            Spacer()
+                            Text("\(Fmt.duration(minutes: entry.minutes)) / \(String(format: "%g h", entry.target))")
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                .foregroundStyle(frac >= 1 ? Theme.success : Theme.textSecondary)
+                        }
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(Theme.fill)
+                                Capsule().fill(frac >= 1 ? Theme.success : entry.cal.color)
+                                    .frame(width: min(geo.size.width, geo.size.width * frac))
+                            }
+                        }
+                        .frame(height: 5)
+                    }
+                }
+            }
+        }
+        .panel()
+    }
+
+    // MARK: Achievements
+
+    private var achievementsCard: some View {
+        let unlocked = achievements.filter(\.unlocked)
+        return VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "Achievements", trailing: "\(unlocked.count)/\(achievements.count)")
+            let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 3)
+            LazyVGrid(columns: columns, spacing: 8) {
+                ForEach(achievements) { badge in
+                    VStack(spacing: 5) {
+                        ZStack {
+                            Circle()
+                                .fill(badge.unlocked ? Color.accentColor.opacity(0.18) : Theme.fill)
+                                .frame(width: 40, height: 40)
+                            Image(systemName: badge.icon)
+                                .font(.system(size: 16))
+                                .foregroundStyle(badge.unlocked ? Color.accentColor : Theme.textTertiary)
+                        }
+                        Text(badge.title)
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(badge.unlocked ? Theme.textPrimary : Theme.textTertiary)
+                            .lineLimit(1)
+                        if !badge.unlocked {
+                            Text("\(Int(badge.progress * 100))%")
+                                .font(.system(size: 8.5, design: .rounded))
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .help(badge.detail)
                 }
             }
         }

@@ -111,4 +111,8 @@ enum Prefs {
     static let showCompletedInToday = "pref.showCompletedInToday"
     static let hourHeight = "pref.hourHeight"
     static let planDayGapMinutes = "pref.planDayGapMinutes"     // breathing room between auto-scheduled blocks
+    static let morningReminderEnabled = "pref.morningReminderEnabled"
+    static let morningReminderMinutes = "pref.morningReminderMinutes"
+    static let eveningReminderEnabled = "pref.eveningReminderEnabled"
+    static let eveningReminderMinutes = "pref.eveningReminderMinutes"
 }

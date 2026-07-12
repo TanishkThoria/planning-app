@@ -7,7 +7,12 @@ struct RootView: View {
     @EnvironmentObject private var focusLog: FocusLog
     @EnvironmentObject private var timer: FocusTimerController
     @EnvironmentObject private var notifications: NotificationService
+    @EnvironmentObject private var life: LifeStore
     @AppStorage(Prefs.accentName) private var accentName = "Indigo"
+    @AppStorage(Prefs.morningReminderEnabled) private var morningReminderEnabled = false
+    @AppStorage(Prefs.morningReminderMinutes) private var morningReminderMinutes = 8 * 60
+    @AppStorage(Prefs.eveningReminderEnabled) private var eveningReminderEnabled = false
+    @AppStorage(Prefs.eveningReminderMinutes) private var eveningReminderMinutes = 21 * 60
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     #endif
@@ -36,12 +41,24 @@ struct RootView: View {
             if service.hasFullAccess && !profileStore.profile.isCalibrated {
                 model.calibrationPresented = true
             }
+            await notifications.refreshAuthorization()
+            rescheduleRituals()
+            rescheduleHabitReminders()
         }
+        .onChange(of: morningReminderEnabled) { _, _ in rescheduleRituals() }
+        .onChange(of: morningReminderMinutes) { _, _ in rescheduleRituals() }
+        .onChange(of: eveningReminderEnabled) { _, _ in rescheduleRituals() }
+        .onChange(of: eveningReminderMinutes) { _, _ in rescheduleRituals() }
         .onChange(of: model.selectedDate) { _, newDate in
             service.ensureWindow(around: newDate)
         }
         .onChange(of: service.blocks) { _, blocks in
             notifications.rescheduleCheckIns(for: blocks)
+        }
+        .onChange(of: life.habits) { _, _ in rescheduleHabitReminders() }
+        .onChange(of: notifications.enabled) { _, _ in
+            rescheduleRituals()
+            rescheduleHabitReminders()
         }
         .sheet(item: $model.blockEditor) { context in
             BlockEditorView(context: context)
@@ -72,6 +89,21 @@ struct RootView: View {
                 presetTaskID: model.focusTimerContext?.taskID,
                 presetTitle: model.focusTimerContext?.title
             )
+        }
+        .sheet(item: $model.goalEditor) { context in
+            GoalEditorView(context: context)
+        }
+        .sheet(item: $model.habitEditor) { context in
+            HabitEditorView(context: context)
+        }
+        .sheet(isPresented: $model.journalPresented) {
+            JournalView()
+        }
+        .sheet(isPresented: $model.templatesPresented) {
+            TemplatesView()
+        }
+        .sheet(isPresented: $model.budgetsPresented) {
+            BudgetsView()
         }
         .alert(
             "Something went wrong",
@@ -148,9 +180,26 @@ struct RootView: View {
         case .today: TodayView()
         case .calendar: PlannerScreen()
         case .tasks: TasksView()
-        case .matrix: MatrixView()
+        case .grow: GrowView()
         case .insights: InsightsView()
         case .settings: SettingsView()
         }
+    }
+
+    // MARK: Notification scheduling helpers
+
+    private func rescheduleRituals() {
+        notifications.scheduleRituals(
+            morningMinutes: morningReminderEnabled ? morningReminderMinutes : nil,
+            eveningMinutes: eveningReminderEnabled ? eveningReminderMinutes : nil
+        )
+    }
+
+    private func rescheduleHabitReminders() {
+        let reminders = life.activeHabits.compactMap { habit -> (id: String, title: String, minutes: Int)? in
+            guard let minutes = habit.reminderMinutes else { return nil }
+            return (id: habit.id.uuidString, title: habit.title, minutes: minutes)
+        }
+        notifications.scheduleHabitReminders(reminders)
     }
 }

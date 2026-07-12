@@ -5,6 +5,8 @@ import SwiftUI
 /// dragging a task between quadrants writes real changes back to Apple
 /// Reminders: due dates move, priorities change.
 struct MatrixView: View {
+    var embedded = false
+
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
 
@@ -55,12 +57,14 @@ struct MatrixView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-                .padding(.horizontal, 18)
-                .padding(.top, 14)
-                .padding(.bottom, 12)
+            if !embedded {
+                header
+                    .padding(.horizontal, 18)
+                    .padding(.top, 14)
+                    .padding(.bottom, 12)
 
-            Rectangle().fill(Theme.hairline).frame(height: 1)
+                Rectangle().fill(Theme.hairline).frame(height: 1)
+            }
 
             GeometryReader { geo in
                 let twoColumns = geo.size.width > 560

@@ -21,6 +21,8 @@ final class NotificationService: ObservableObject {
 
     private static let enabledKey = "chronos.notificationsEnabled"
     private static let checkInPrefix = "chronos.checkin."
+    private static let ritualPrefix = "chronos.ritual."
+    private static let habitPrefix = "chronos.habit."
     private let center = UNUserNotificationCenter.current()
 
     init() {
@@ -87,6 +89,58 @@ final class NotificationService: ObservableObject {
                 )
                 self?.center.add(request)
             }
+        }
+    }
+
+    // MARK: Daily rituals + habit nudges
+
+    /// A repeating daily notification at a given minute-of-day.
+    private func scheduleDaily(id: String, title: String, body: String, minutes: Int) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        var comps = DateComponents()
+        comps.hour = minutes / 60
+        comps.minute = minutes % 60
+        let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: true)
+        center.add(UNNotificationRequest(identifier: id, content: content, trigger: trigger))
+    }
+
+    private func clear(prefix: String) {
+        center.getPendingNotificationRequests { [weak self] pending in
+            let ids = pending.map(\.identifier).filter { $0.hasPrefix(prefix) }
+            self?.center.removePendingNotificationRequests(withIdentifiers: ids)
+        }
+    }
+
+    /// Morning planning + evening reflection nudges. Pass nil to disable one.
+    func scheduleRituals(morningMinutes: Int?, eveningMinutes: Int?) {
+        clear(prefix: Self.ritualPrefix)
+        guard enabled, authorization == .authorized else { return }
+        if let m = morningMinutes {
+            scheduleDaily(id: "\(Self.ritualPrefix)morning",
+                          title: "Plan your day",
+                          body: "Take two minutes to lay out today before it runs away.",
+                          minutes: m)
+        }
+        if let e = eveningMinutes {
+            scheduleDaily(id: "\(Self.ritualPrefix)evening",
+                          title: "Reflect on today",
+                          body: "How did it go? Review what slipped and set tomorrow's intentions.",
+                          minutes: e)
+        }
+    }
+
+    /// Per-habit reminders at their configured time-of-day.
+    func scheduleHabitReminders(_ reminders: [(id: String, title: String, minutes: Int)]) {
+        clear(prefix: Self.habitPrefix)
+        guard enabled, authorization == .authorized else { return }
+        for r in reminders.prefix(16) {
+            scheduleDaily(id: "\(Self.habitPrefix)\(r.id)",
+                          title: "Habit reminder",
+                          body: r.title,
+                          minutes: r.minutes)
         }
     }
 

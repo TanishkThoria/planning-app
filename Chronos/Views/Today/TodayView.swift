@@ -8,6 +8,7 @@ struct TodayView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var timer: FocusTimerController
+    @EnvironmentObject private var life: LifeStore
 
     @State private var now = Date()
     private let clock = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
@@ -44,6 +45,86 @@ struct TodayView: View {
 
     private var remainingCount: Int { overdue.count + dueToday.count }
 
+    private var dueHabits: [Habit] {
+        life.activeHabits.filter { $0.isDue(on: today) }
+    }
+
+    // MARK: Intentions
+
+    private var intentionsCard: some View {
+        let entry = life.entry(for: today)
+        let intentions = (entry?.intentions ?? []).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        return Button {
+            model.journalPresented = true
+        } label: {
+            VStack(alignment: .leading, spacing: intentions.isEmpty ? 0 : 8) {
+                HStack {
+                    Label("Today's intentions", systemImage: "sunrise.fill")
+                        .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
+                }
+                if intentions.isEmpty {
+                    Text("Set your top three for the day →")
+                        .font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
+                        .padding(.top, 4)
+                } else {
+                    ForEach(Array(intentions.enumerated()), id: \.offset) { idx, text in
+                        HStack(spacing: 8) {
+                            Text("\(idx + 1)").font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color.accentColor).frame(width: 14)
+                            Text(text).font(.system(size: 12.5)).foregroundStyle(Theme.textPrimary).lineLimit(1)
+                            Spacer(minLength: 0)
+                        }
+                    }
+                }
+            }
+            .panel(padding: 12)
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: Habits strip
+
+    private var habitsStrip: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Label("Habits", systemImage: "leaf.fill")
+                    .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                Spacer()
+                let done = dueHabits.filter { life.doneToday($0) }.count
+                Text("\(done)/\(dueHabits.count)")
+                    .font(.system(size: 11, weight: .semibold, design: .rounded)).foregroundStyle(Theme.textSecondary)
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(dueHabits) { habit in
+                        let isDone = life.doneToday(habit)
+                        Button {
+                            withAnimation(.snappy) { life.toggle(habit, on: today) }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: isDone ? "checkmark.circle.fill" : habit.iconName)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(isDone ? habit.color : Theme.textSecondary)
+                                Text(habit.title)
+                                    .font(.system(size: 11.5, weight: .medium))
+                                    .foregroundStyle(isDone ? Theme.textPrimary : Theme.textSecondary)
+                                    .lineLimit(1)
+                            }
+                            .padding(.horizontal, 11).padding(.vertical, 7)
+                            .background(isDone ? habit.color.opacity(0.15) : Theme.surface,
+                                        in: Capsule())
+                            .overlay(Capsule().strokeBorder(isDone ? habit.color.opacity(0.4) : Theme.hairline, lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -55,6 +136,9 @@ struct TodayView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
+                    intentionsCard
+                    if !dueHabits.isEmpty { habitsStrip }
+
                     if remainingCount == 0 && upcomingBlocks.isEmpty {
                         EmptyStateView(
                             icon: "checkmark.seal.fill",

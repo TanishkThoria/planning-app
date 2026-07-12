@@ -5,6 +5,11 @@ struct SettingsView: View {
     @EnvironmentObject private var profileStore: ProfileStore
     @EnvironmentObject private var notifications: NotificationService
 
+    @AppStorage(Prefs.morningReminderEnabled) private var morningReminderEnabled = false
+    @AppStorage(Prefs.morningReminderMinutes) private var morningReminderMinutes = 8 * 60
+    @AppStorage(Prefs.eveningReminderEnabled) private var eveningReminderEnabled = false
+    @AppStorage(Prefs.eveningReminderMinutes) private var eveningReminderMinutes = 21 * 60
+
     @State private var showingCalibration = false
 
     @AppStorage(Prefs.accentName) private var accentName = "Indigo"
@@ -167,6 +172,27 @@ struct SettingsView: View {
                                 .foregroundStyle(Theme.textTertiary)
                                 .padding(.horizontal, 4)
                         }
+
+                        if notifications.enabled {
+                            FieldRow(label: "Morning planning reminder") {
+                                HStack(spacing: 10) {
+                                    if morningReminderEnabled {
+                                        DatePicker("", selection: minuteBinding($morningReminderMinutes), displayedComponents: [.hourAndMinute])
+                                            .labelsHidden()
+                                    }
+                                    Toggle("", isOn: $morningReminderEnabled).labelsHidden().toggleStyle(.switch)
+                                }
+                            }
+                            FieldRow(label: "Evening reflection reminder") {
+                                HStack(spacing: 10) {
+                                    if eveningReminderEnabled {
+                                        DatePicker("", selection: minuteBinding($eveningReminderMinutes), displayedComponents: [.hourAndMinute])
+                                            .labelsHidden()
+                                    }
+                                    Toggle("", isOn: $eveningReminderEnabled).labelsHidden().toggleStyle(.switch)
+                                }
+                            }
+                        }
                     }
 
                     settingsSection("Appearance") {
@@ -246,6 +272,13 @@ struct SettingsView: View {
 
     private func minuteLabel(_ minutes: Int) -> String {
         Fmt.time.string(from: Date().startOfDay.at(minutes: minutes))
+    }
+
+    private func minuteBinding(_ source: Binding<Int>) -> Binding<Date> {
+        Binding(
+            get: { Date().startOfDay.at(minutes: source.wrappedValue) },
+            set: { source.wrappedValue = $0.minutesSinceMidnight }
+        )
     }
 
     @ViewBuilder

@@ -12,7 +12,7 @@ final class AppModel: ObservableObject {
         case today
         case calendar
         case tasks
-        case matrix
+        case grow
         case insights
         case settings
 
@@ -23,7 +23,7 @@ final class AppModel: ObservableObject {
             case .today: return "Today"
             case .calendar: return "Calendar"
             case .tasks: return "Tasks"
-            case .matrix: return "Matrix"
+            case .grow: return "Grow"
             case .insights: return "Insights"
             case .settings: return "Settings"
             }
@@ -34,7 +34,7 @@ final class AppModel: ObservableObject {
             case .today: return "sun.max"
             case .calendar: return "calendar"
             case .tasks: return "checklist"
-            case .matrix: return "square.grid.2x2"
+            case .grow: return "leaf"
             case .insights: return "chart.bar.xaxis"
             case .settings: return "gearshape"
             }
@@ -46,7 +46,7 @@ final class AppModel: ObservableObject {
             case .today: return "sun.max.fill"
             case .calendar: return "calendar"
             case .tasks: return "checklist.checked"
-            case .matrix: return "square.grid.2x2.fill"
+            case .grow: return "leaf.fill"
             case .insights: return "chart.bar.xaxis"
             case .settings: return "gearshape.fill"
             }
@@ -57,17 +57,18 @@ final class AppModel: ObservableObject {
             case .today: return "1"
             case .calendar: return "2"
             case .tasks: return "3"
-            case .matrix: return "4"
+            case .grow: return "4"
             case .insights: return "5"
             case .settings: return nil
             }
         }
 
         /// Screens listed in the macOS/iPad sidebar.
-        static let sidebarCases: [Screen] = [.today, .calendar, .tasks, .matrix, .insights, .settings]
+        static let sidebarCases: [Screen] = [.today, .calendar, .tasks, .grow, .insights, .settings]
         /// The five primary iPhone tabs — Settings is reached from a toolbar
-        /// gear, so nothing hides behind a "More" overflow.
-        static let compactTabs: [Screen] = [.today, .calendar, .tasks, .matrix, .insights]
+        /// gear, so nothing hides behind a "More" overflow. (Matrix lives as
+        /// a mode inside Tasks.)
+        static let compactTabs: [Screen] = [.today, .calendar, .tasks, .grow, .insights]
     }
 
     /// The three ways of viewing the calendar, switched with a segmented
@@ -108,6 +109,14 @@ final class AppModel: ObservableObject {
     @Published var focusTimerContext: FocusStartContext?
     @Published var blockEditor: BlockEditorContext?
     @Published var taskEditor: TaskEditorContext?
+
+    // Lifestyle sheets
+    @Published var goalEditor: GoalEditContext?
+    @Published var habitEditor: HabitEditContext?
+    @Published var journalPresented = false
+    @Published var templatesPresented = false
+    @Published var saveTemplatePresented = false
+    @Published var budgetsPresented = false
 
     /// Show/hide the backlog rail in the day planner (wide layouts).
     @Published var backlogVisible = true
@@ -195,4 +204,16 @@ final class AppModel: ObservableObject {
 struct FocusStartContext {
     var taskID: String?
     var title: String
+}
+
+struct GoalEditContext: Identifiable {
+    let id = UUID()
+    var goal: Goal
+    var isNew: Bool
+}
+
+struct HabitEditContext: Identifiable {
+    let id = UUID()
+    var habit: Habit
+    var isNew: Bool
 }

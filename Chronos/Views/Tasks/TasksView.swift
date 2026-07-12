@@ -26,12 +26,38 @@ struct TasksView: View {
         service.tasks.filter { !model.hiddenListIDs.contains($0.listID) }
     }
 
+    enum Mode: String, CaseIterable, Identifiable {
+        case list = "List"
+        case matrix = "Matrix"
+        var id: String { rawValue }
+    }
+    @State private var mode: Mode = .list
+
     var body: some View {
         VStack(spacing: 0) {
             header
                 .padding(.horizontal, 18)
                 .padding(.top, 14)
 
+            Picker("", selection: $mode) {
+                ForEach(Mode.allCases) { Text($0.rawValue).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .padding(.horizontal, 18)
+            .padding(.top, 10)
+
+            if mode == .matrix {
+                MatrixView(embedded: true)
+            } else {
+                listContent
+            }
+        }
+        .background(Theme.bg)
+    }
+
+    private var listContent: some View {
+        VStack(spacing: 0) {
             quickEntryField
                 .padding(.horizontal, 18)
                 .padding(.top, 12)

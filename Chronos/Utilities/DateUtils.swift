@@ -124,6 +124,18 @@ enum Fmt {
         return f
     }()
 
+    /// Stable, locale-independent day key (yyyy-MM-dd) for local storage.
+    static let dayKeyFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
+
+    static func dayKey(_ date: Date) -> String {
+        dayKeyFormatter.string(from: date.startOfDay)
+    }
+
     static func timeRange(_ start: Date, _ end: Date) -> String {
         "\(time.string(from: start))–\(time.string(from: end))"
     }

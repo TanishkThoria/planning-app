@@ -610,6 +610,50 @@ final class EventKitService: ObservableObject {
 
     // MARK: - Timeblocking (the bridge between the two worlds)
 
+    // MARK: - Day templates
+
+    /// Snapshots a day's timed blocks into reusable template blocks.
+    func templateBlocks(for day: Date) -> [TemplateBlock] {
+        blocks(on: day)
+            .filter { !$0.isAllDay }
+            .compactMap { block in
+                guard let clamped = block.clamped(to: day) else { return nil }
+                return TemplateBlock(
+                    title: block.title,
+                    startMinutes: clamped.start.minutesSinceMidnight,
+                    durationMinutes: max(5, Int(clamped.end.timeIntervalSince(clamped.start) / 60)),
+                    calendarID: block.calendarID
+                )
+            }
+            .sorted { $0.startMinutes < $1.startMinutes }
+    }
+
+    /// Stamps a template's blocks onto `day`, committing once.
+    func applyTemplate(_ template: DayTemplate, to day: Date, fallbackCalendarID: String?) {
+        var created = 0
+        for tb in template.blocks {
+            guard let calendar = writableCalendar(for: tb.calendarID ?? fallbackCalendarID) else { continue }
+            let event = EKEvent(eventStore: store)
+            event.calendar = calendar
+            event.title = tb.title
+            event.startDate = day.at(minutes: tb.startMinutes)
+            event.endDate = day.at(minutes: tb.startMinutes + max(tb.durationMinutes, 5))
+            do {
+                try store.save(event, span: .thisEvent, commit: false)
+                created += 1
+            } catch {
+                continue
+            }
+        }
+        guard created > 0 else { return }
+        do {
+            try store.commit()
+            refresh()
+        } catch {
+            fail("Couldn't apply the template", error)
+        }
+    }
+
     /// Creates a calendar event for a reminder and links the two. The link
     /// travels inside the event's URL so it syncs everywhere EventKit does.
     func scheduleTask(_ task: TaskItem, at start: Date, minutes: Int, calendarID: String?) {

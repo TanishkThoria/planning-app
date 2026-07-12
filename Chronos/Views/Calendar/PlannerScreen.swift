@@ -83,6 +83,9 @@ struct PlannerScreen: View {
             Button { model.startFocus(taskID: nil, title: "Focus") } label: {
                 Label("Focus Timer", systemImage: "timer")
             }
+            Button { model.templatesPresented = true } label: {
+                Label("Day Templates", systemImage: "square.grid.3x3")
+            }
 
             #if os(iOS)
             Divider()

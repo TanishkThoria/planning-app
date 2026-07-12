@@ -8,6 +8,7 @@ struct ChronosApp: App {
     @StateObject private var focusLog = FocusLog()
     @StateObject private var timer = FocusTimerController()
     @StateObject private var notifications = NotificationService()
+    @StateObject private var life = LifeStore()
 
     var body: some Scene {
         #if os(macOS)
@@ -19,6 +20,7 @@ struct ChronosApp: App {
                 .environmentObject(focusLog)
                 .environmentObject(timer)
                 .environmentObject(notifications)
+                .environmentObject(life)
         }
         .defaultSize(width: 1280, height: 840)
         .commands {
@@ -33,6 +35,7 @@ struct ChronosApp: App {
                 .environmentObject(focusLog)
                 .environmentObject(timer)
                 .environmentObject(notifications)
+                .environmentObject(life)
                 .frame(width: 480, height: 640)
                 .preferredColorScheme(.dark)
         }
@@ -45,6 +48,7 @@ struct ChronosApp: App {
                 .environmentObject(focusLog)
                 .environmentObject(timer)
                 .environmentObject(notifications)
+                .environmentObject(life)
         }
         #endif
     }
@@ -76,6 +80,9 @@ struct ChronosCommands: Commands {
                 .keyboardShortcut("r", modifiers: [.command, .shift])
             Button("Start Focus Timer…") { model.startFocus(taskID: nil, title: "Focus") }
                 .keyboardShortcut("f", modifiers: [.command, .shift])
+            Button("Journal…") { model.journalPresented = true }
+                .keyboardShortcut("j", modifiers: [.command, .shift])
+            Button("Templates…") { model.templatesPresented = true }
             Button("Recalibrate…") { model.calibrationPresented = true }
             Divider()
             Button("Go to Today") { model.goToToday() }
