@@ -162,6 +162,8 @@ struct TaskDraft {
     var notes: String = ""
     var isCompleted: Bool = false
     var parentID: String?
+    var recurrence: RecurrenceOption = .none
+    var originalRecurrence: RecurrenceOption = .none
 }
 
 struct TaskEditorContext: Identifiable {

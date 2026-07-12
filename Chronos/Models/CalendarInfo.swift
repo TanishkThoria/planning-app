@@ -10,6 +10,50 @@ struct CalendarInfo: Identifiable, Hashable {
     var sourceTitle: String
 }
 
+/// Free/busy status shown to others — mirrors EKEventAvailability.
+enum EventAvailability: Int, CaseIterable, Identifiable {
+    case busy, free, tentative, unavailable
+    var id: Int { rawValue }
+
+    var label: String {
+        switch self {
+        case .busy: return "Busy"
+        case .free: return "Free"
+        case .tentative: return "Tentative"
+        case .unavailable: return "Unavailable"
+        }
+    }
+
+    func ek() -> EKEventAvailability {
+        switch self {
+        case .busy: return .busy
+        case .free: return .free
+        case .tentative: return .tentative
+        case .unavailable: return .unavailable
+        }
+    }
+
+    /// The calendar-capability mask bit, to check whether a calendar
+    /// supports this availability before setting it.
+    var mask: EKCalendarEventAvailabilityMask {
+        switch self {
+        case .busy: return .busy
+        case .free: return .free
+        case .tentative: return .tentative
+        case .unavailable: return .unavailable
+        }
+    }
+
+    static func from(_ availability: EKEventAvailability) -> EventAvailability {
+        switch availability {
+        case .free: return .free
+        case .tentative: return .tentative
+        case .unavailable: return .unavailable
+        default: return .busy
+        }
+    }
+}
+
 enum RecurrenceOption: String, CaseIterable, Identifiable {
     case none = "Never"
     case daily = "Every Day"

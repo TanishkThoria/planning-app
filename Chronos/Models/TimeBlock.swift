@@ -59,6 +59,10 @@ struct BlockDraft {
     var notes: String = ""
     var recurrence: RecurrenceOption = .none
     var alarm: AlarmOption = .none
+    var secondAlarm: AlarmOption = .none
+    var availability: EventAvailability = .busy
+    /// Minutes of travel buffer to add as a preceding block (0 = none).
+    var travelMinutes: Int = 0
     var linkedTaskID: String?
 
     /// Snapshot of the recurrence/alarm the event had when editing began;
@@ -66,6 +70,8 @@ struct BlockDraft {
     /// so exotic rules created in Apple Calendar survive a Chronos edit.
     var originalRecurrence: RecurrenceOption = .none
     var originalAlarm: AlarmOption = .none
+    var originalSecondAlarm: AlarmOption = .none
+    var originalTravelMinutes: Int = 0
 
     var durationMinutes: Int {
         max(0, Int(end.timeIntervalSince(start) / 60))
@@ -79,4 +85,6 @@ struct BlockEditorContext: Identifiable {
     /// Occurrence id of the block being edited; nil when creating.
     var existingID: String?
     var isRecurring: Bool = false
+    /// Read-only attendee display names, if the event has any.
+    var attendees: [String] = []
 }

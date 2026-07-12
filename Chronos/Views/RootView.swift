@@ -105,6 +105,9 @@ struct RootView: View {
         .sheet(isPresented: $model.budgetsPresented) {
             BudgetsView()
         }
+        .sheet(isPresented: $model.calendarFilterPresented) {
+            CalendarFilterView()
+        }
         .alert(
             "Something went wrong",
             isPresented: Binding(

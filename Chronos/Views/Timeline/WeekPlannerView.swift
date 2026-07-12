@@ -1,9 +1,18 @@
 import SwiftUI
 import EventKit
 
-/// Seven side-by-side day columns sharing one hour scale. Blocks can be
-/// dragged vertically within a day, tasks can be dropped onto any day, and
-/// tapping a day header jumps into the day planner.
+/// Tracks the horizontal scroll offset of the week body so the frozen day
+/// header can mirror it.
+private struct WeekHScrollKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
+}
+
+/// Seven day columns on one hour scale. On roomy widths (Mac / iPad) all
+/// seven fit; on iPhone each column keeps a comfortable minimum width and
+/// the grid scrolls horizontally — with the day header frozen at the top and
+/// the time gutter frozen at the left, exactly like a proper calendar grid.
+/// This keeps event names readable instead of crushing them into 50-pt lanes.
 struct WeekPlannerView: View {
     var embedded = false
 
@@ -19,6 +28,11 @@ struct WeekPlannerView: View {
     @AppStorage(Prefs.defaultCalendarID) private var defaultCalendarID = ""
 
     @State private var pendingDelete: TimeBlock?
+    @State private var hOffset: CGFloat = 0
+
+    /// Comfortable minimum column width; below this we scroll horizontally.
+    private let minColumnWidth: CGFloat = 116
+    private let headerHeight: CGFloat = 52
 
     private var weekDays: [Date] {
         let start = model.selectedDate.startOfWeek
@@ -26,34 +40,35 @@ struct WeekPlannerView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            if !embedded {
-                header
-                    .padding(.horizontal, 18)
-                    .padding(.top, 14)
-                    .padding(.bottom, 10)
-            }
+        GeometryReader { geo in
+            let bodyWidth = max(geo.size.width - TimeGutter.width, 220)
+            let columnWidth = max(minColumnWidth, bodyWidth / 7)
+            let columnsWidth = columnWidth * 7
 
-            dayHeaderRow
-
-            Rectangle().fill(Theme.hairline).frame(height: 1)
-
-            ScrollViewReader { proxy in
-                ScrollView {
-                    HStack(alignment: .top, spacing: 0) {
-                        TimeGutter(hourHeight: hourHeight)
-                        ForEach(weekDays, id: \.self) { day in
-                            column(for: day)
-                                .overlay(alignment: .leading) {
-                                    Rectangle().fill(Theme.gridLine).frame(width: 1)
-                                }
-                        }
-                    }
-                    .padding(.vertical, 8)
+            VStack(spacing: 0) {
+                if !embedded {
+                    header
+                        .padding(.horizontal, 18)
+                        .padding(.top, 14)
+                        .padding(.bottom, 10)
                 }
-                .scrollIndicators(.hidden)
-                .onAppear {
-                    proxy.scrollTo("hour-\(max(workStartMinutes / 60 - 1, 1))", anchor: .top)
+
+                frozenHeader(columnWidth: columnWidth, columnsWidth: columnsWidth, bodyWidth: bodyWidth)
+
+                Rectangle().fill(Theme.hairline).frame(height: 1)
+
+                ScrollViewReader { proxy in
+                    ScrollView(.vertical) {
+                        HStack(alignment: .top, spacing: 0) {
+                            TimeGutter(hourHeight: hourHeight)
+                            weekBody(columnWidth: columnWidth, columnsWidth: columnsWidth, bodyWidth: bodyWidth)
+                        }
+                        .padding(.top, 8)
+                    }
+                    .scrollIndicators(.hidden)
+                    .onAppear {
+                        proxy.scrollTo("hour-\(max(workStartMinutes / 60 - 1, 1))", anchor: .top)
+                    }
                 }
             }
         }
@@ -109,14 +124,21 @@ struct WeekPlannerView: View {
         return "\(Fmt.monthDay.string(from: first)) – \(Fmt.monthDay.string(from: last))"
     }
 
-    private var dayHeaderRow: some View {
+    // MARK: Frozen day header (mirrors the body's horizontal scroll)
+
+    private func frozenHeader(columnWidth: CGFloat, columnsWidth: CGFloat, bodyWidth: CGFloat) -> some View {
         HStack(spacing: 0) {
-            Color.clear.frame(width: TimeGutter.width, height: 1)
-            ForEach(weekDays, id: \.self) { day in
-                dayHeader(day)
+            Color.clear.frame(width: TimeGutter.width, height: headerHeight)
+            HStack(spacing: 0) {
+                ForEach(weekDays, id: \.self) { day in
+                    dayHeader(day).frame(width: columnWidth)
+                }
             }
+            .frame(width: columnsWidth, alignment: .leading)
+            .offset(x: hOffset)
+            .frame(width: bodyWidth, alignment: .leading)
+            .clipped()
         }
-        .padding(.bottom, 8)
     }
 
     private func dayHeader(_ day: Date) -> some View {
@@ -125,27 +147,57 @@ struct WeekPlannerView: View {
         return Button {
             model.openDay(day)
         } label: {
-            VStack(spacing: 3) {
-                // Single-letter weekday keeps 7 columns legible on iPhone.
-                Text(String(Fmt.weekdayNarrow.string(from: day).prefix(2)).uppercased())
-                    .font(.system(size: 9.5, weight: .semibold))
+            HStack(spacing: 6) {
+                Text(Fmt.weekdayShort.string(from: day).uppercased())
+                    .font(.system(size: 10.5, weight: .semibold))
                     .tracking(0.5)
                     .foregroundStyle(day.isToday ? Color.accentColor : Theme.textTertiary)
                 Text(Fmt.dayNumber.string(from: day))
                     .font(.system(size: 15, weight: day.isToday ? .bold : .medium, design: .rounded))
                     .foregroundStyle(day.isToday ? Color.accentColor : Theme.textPrimary)
-                    .frame(width: 28, height: 28)
+                    .frame(width: 27, height: 27)
                     .background(
-                        day.isSameDay(as: model.selectedDate) ? Theme.fill : Color.clear,
+                        day.isToday ? AnyShapeStyle(Color.accentColor.opacity(0.15))
+                            : (day.isSameDay(as: model.selectedDate) ? AnyShapeStyle(Theme.fill) : AnyShapeStyle(Color.clear)),
                         in: Circle()
                     )
-                Circle()
-                    .fill(hasAllDay ? Theme.textTertiary : Color.clear)
-                    .frame(width: 3, height: 3)
+                if hasAllDay {
+                    Circle().fill(Theme.textTertiary).frame(width: 3, height: 3)
+                }
             }
             .frame(maxWidth: .infinity)
+            .frame(height: headerHeight)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: Body (horizontally scrollable columns)
+
+    private func weekBody(columnWidth: CGFloat, columnsWidth: CGFloat, bodyWidth: CGFloat) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 0) {
+                ForEach(weekDays, id: \.self) { day in
+                    column(for: day)
+                        .frame(width: columnWidth)
+                        .overlay(alignment: .leading) {
+                            Rectangle().fill(Theme.gridLine).frame(width: 1)
+                        }
+                }
+            }
+            .frame(width: columnsWidth)
+            .background(
+                GeometryReader { g in
+                    Color.clear.preference(
+                        key: WeekHScrollKey.self,
+                        value: g.frame(in: .named("weekH")).minX
+                    )
+                }
+            )
+        }
+        .frame(width: bodyWidth)
+        .coordinateSpace(name: "weekH")
+        .onPreferenceChange(WeekHScrollKey.self) { hOffset = $0 }
     }
 
     private func column(for day: Date) -> some View {

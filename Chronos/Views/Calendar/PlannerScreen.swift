@@ -41,6 +41,10 @@ struct PlannerScreen: View {
                 }
                 Spacer(minLength: 6)
                 DateNavigator()
+                HeaderIconButton(icon: "line.3.horizontal.decrease.circle") {
+                    model.calendarFilterPresented = true
+                }
+                .help("Show & hide calendars")
                 actionsMenu
                 HeaderIconButton(icon: "plus", prominent: true) {
                     model.quickAddPresented = true

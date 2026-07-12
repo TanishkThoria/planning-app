@@ -68,6 +68,18 @@ struct TaskEditorView: View {
                                 .toggleStyle(.switch)
                         }
                     }
+                    FieldRow(label: "Repeat") {
+                        Picker("", selection: $draft.recurrence) {
+                            if draft.originalRecurrence == .custom {
+                                Text("Custom").tag(RecurrenceOption.custom)
+                            }
+                            ForEach(RecurrenceOption.pickable) { option in
+                                Text(option.rawValue).tag(option)
+                            }
+                        }
+                        .labelsHidden()
+                        .fixedSize()
+                    }
                 }
             }
 

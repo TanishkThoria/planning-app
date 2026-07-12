@@ -326,10 +326,25 @@ final class EventKitService: ObservableObject {
         apply(draft, to: event, isNew: true)
         do {
             try store.save(event, span: .thisEvent, commit: true)
+            addTravelBufferIfNeeded(draft, calendar: calendar)
             refresh()
         } catch {
             fail("Couldn't create the block", error)
         }
+    }
+
+    /// Adds a preceding "Travel" block so commute time is visible on the
+    /// timeline (EventKit has no public travel-time field).
+    private func addTravelBufferIfNeeded(_ draft: BlockDraft, calendar: EKCalendar) {
+        guard draft.travelMinutes > 0, draft.travelMinutes != draft.originalTravelMinutes, !draft.isAllDay else { return }
+        let buffer = EKEvent(eventStore: store)
+        buffer.calendar = calendar
+        let destination = draft.location.isEmpty ? draft.title : draft.location
+        buffer.title = "Travel to \(destination)"
+        buffer.endDate = draft.start
+        buffer.startDate = draft.start.adding(minutes: -draft.travelMinutes)
+        buffer.availability = .busy
+        try? store.save(buffer, span: .thisEvent, commit: true)
     }
 
     func updateBlock(id: String, with draft: BlockDraft, span: EKSpan = .thisEvent) {
@@ -345,6 +360,7 @@ final class EventKitService: ObservableObject {
         apply(draft, to: event, isNew: false)
         do {
             try store.save(event, span: span, commit: true)
+            if let calendar = event.calendar { addTravelBufferIfNeeded(draft, calendar: calendar) }
             refresh()
         } catch {
             fail("Couldn't save the block", error)
@@ -372,13 +388,18 @@ final class EventKitService: ObservableObject {
             event.url = nil
         }
 
+        if event.calendar?.supportedEventAvailabilities.contains(draft.availability.mask) == true {
+            event.availability = draft.availability.ek()
+        }
+
         // Only rewrite recurrence/alarms the user actually touched so
         // rules built in Apple Calendar survive round-trips.
         if isNew || draft.recurrence != draft.originalRecurrence {
             event.recurrenceRules = draft.recurrence.rule().map { [$0] }
         }
-        if isNew || draft.alarm != draft.originalAlarm {
-            event.alarms = draft.alarm.alarm().map { [$0] }
+        if isNew || draft.alarm != draft.originalAlarm || draft.secondAlarm != draft.originalSecondAlarm {
+            let alarms = [draft.alarm.alarm(), draft.secondAlarm.alarm()].compactMap { $0 }
+            event.alarms = alarms.isEmpty ? nil : alarms
         }
     }
 
@@ -450,7 +471,10 @@ final class EventKitService: ObservableObject {
     func editorContext(for block: TimeBlock) -> BlockEditorContext {
         let event = eventCache[block.id]
         let recurrence = RecurrenceOption.from(rules: event?.recurrenceRules)
-        let alarm = AlarmOption.from(alarms: event?.alarms)
+        let sortedAlarms = (event?.alarms ?? []).sorted { $0.relativeOffset > $1.relativeOffset }
+        let alarm = AlarmOption.from(alarms: sortedAlarms.isEmpty ? nil : [sortedAlarms[0]])
+        let secondAlarm = sortedAlarms.count > 1 ? AlarmOption.from(alarms: [sortedAlarms[1]]) : .none
+        let availability = EventAvailability.from(event?.availability ?? .busy)
         var urlString = ""
         if let url = event?.url, url.scheme != "chronos" { urlString = url.absoluteString }
 
@@ -465,11 +489,16 @@ final class EventKitService: ObservableObject {
         draft.notes = block.notes ?? ""
         draft.recurrence = recurrence
         draft.alarm = alarm
+        draft.secondAlarm = secondAlarm
+        draft.availability = availability
         draft.linkedTaskID = block.linkedTaskID
         draft.originalRecurrence = recurrence
         draft.originalAlarm = alarm
+        draft.originalSecondAlarm = secondAlarm
 
-        return BlockEditorContext(draft: draft, existingID: block.id, isRecurring: block.hasRecurrence)
+        let attendees = (event?.attendees ?? []).compactMap { $0.name }
+
+        return BlockEditorContext(draft: draft, existingID: block.id, isRecurring: block.hasRecurrence, attendees: attendees)
     }
 
     // MARK: - Task mutations
@@ -532,6 +561,12 @@ final class EventKitService: ObservableObject {
         if draft.isCompleted != reminder.isCompleted {
             reminder.isCompleted = draft.isCompleted
         }
+
+        // Recurrence — only rewritten if the user changed it, preserving
+        // custom rules made in Apple Reminders.
+        if draft.recurrence != draft.originalRecurrence {
+            reminder.recurrenceRules = draft.recurrence.rule().map { [$0] }
+        }
     }
 
     func toggleTaskCompletion(id: String) {
@@ -582,6 +617,9 @@ final class EventKitService: ObservableObject {
         draft.notes = task.notes ?? ""
         draft.isCompleted = task.isCompleted
         draft.parentID = task.parentID
+        let recurrence = RecurrenceOption.from(rules: liveReminder(withID: task.id)?.recurrenceRules)
+        draft.recurrence = recurrence
+        draft.originalRecurrence = recurrence
         return TaskEditorContext(draft: draft, existingID: task.id)
     }
 

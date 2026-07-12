@@ -99,6 +99,28 @@ struct BlockEditorView: View {
                     .labelsHidden()
                     .fixedSize()
                 }
+                if draft.alarm != .none {
+                    FieldRow(label: "Second alert") {
+                        Picker("", selection: $draft.secondAlarm) {
+                            ForEach(AlarmOption.allCases) { option in
+                                Text(option.label).tag(option)
+                            }
+                        }
+                        .labelsHidden()
+                        .fixedSize()
+                    }
+                }
+                if !draft.isAllDay {
+                    FieldRow(label: "Show as") {
+                        Picker("", selection: $draft.availability) {
+                            ForEach(EventAvailability.allCases) { option in
+                                Text(option.label).tag(option)
+                            }
+                        }
+                        .labelsHidden()
+                        .fixedSize()
+                    }
+                }
                 if context.isRecurring {
                     FieldRow(label: "Apply to future occurrences") {
                         Toggle("", isOn: $applyToFuture)
@@ -115,12 +137,47 @@ struct BlockEditorView: View {
                         .font(.system(size: 12.5))
                         .multilineTextAlignment(.trailing)
                 }
+                if !draft.isAllDay {
+                    FieldRow(label: "Travel time") {
+                        Picker("", selection: $draft.travelMinutes) {
+                            Text("None").tag(0)
+                            ForEach([5, 10, 15, 30, 45, 60], id: \.self) { m in
+                                Text(Fmt.duration(minutes: m)).tag(m)
+                            }
+                        }
+                        .labelsHidden()
+                        .fixedSize()
+                    }
+                    if draft.travelMinutes > 0 {
+                        Text("Adds a \(Fmt.duration(minutes: draft.travelMinutes)) travel block before this event.")
+                            .font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
                 if draft.linkedTaskID == nil {
                     FieldRow(label: "URL") {
                         TextField("None", text: $draft.urlString)
                             .textFieldStyle(.plain)
                             .font(.system(size: 12.5))
                             .multilineTextAlignment(.trailing)
+                    }
+                }
+            }
+
+            if !context.attendees.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("ATTENDEES")
+                        .font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                        .foregroundStyle(Theme.textTertiary)
+                    ForEach(context.attendees, id: \.self) { name in
+                        HStack(spacing: 8) {
+                            Image(systemName: "person.crop.circle")
+                                .font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+                            Text(name).font(.system(size: 12.5)).foregroundStyle(Theme.textPrimary)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 12).padding(.vertical, 8)
+                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                     }
                 }
             }

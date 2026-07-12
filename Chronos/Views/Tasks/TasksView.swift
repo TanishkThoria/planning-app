@@ -176,37 +176,50 @@ struct TasksView: View {
     // MARK: Filters
 
     private var filterBar: some View {
-        HStack(spacing: 6) {
-            ForEach(Filter.allCases) { item in
-                Button {
-                    filter = item
-                } label: {
-                    Text(item.rawValue)
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(filter == item ? Theme.bg : Theme.textSecondary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 5)
-                        .background(
-                            filter == item ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Theme.fill),
-                            in: Capsule()
-                        )
+        VStack(spacing: 8) {
+            // Chips never compress or wrap — they scroll if space runs out.
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(Filter.allCases) { item in
+                        Button {
+                            filter = item
+                        } label: {
+                            Text(item.rawValue)
+                                .font(.system(size: 12, weight: .semibold))
+                                .lineLimit(1)
+                                .fixedSize()
+                                .foregroundStyle(filter == item ? Theme.bg : Theme.textSecondary)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 5)
+                                .background(
+                                    filter == item ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Theme.fill),
+                                    in: Capsule()
+                                )
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
-                .buttonStyle(.plain)
+                .padding(.trailing, 2)
             }
-
-            Spacer()
 
             HStack(spacing: 6) {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textTertiary)
-                TextField("Search", text: $searchText)
+                TextField("Search tasks", text: $searchText)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 12))
-                    .frame(maxWidth: 140)
+                    .font(.system(size: 12.5))
+                if !searchText.isEmpty {
+                    Button { searchText = "" } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
             .background(Theme.fill, in: Capsule())
         }
     }
