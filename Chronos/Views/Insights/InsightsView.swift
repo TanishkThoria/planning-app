@@ -488,6 +488,7 @@ struct InsightsView: View {
         case .morningRitual: model.morningRitualPresented = true
         case .eveningRitual: model.eveningRitualPresented = true
         case .focusTimer: model.startFocus(taskID: nil, title: "Focus")
+        case .overdueSweep: model.overdueSweepPresented = true
         }
     }
 

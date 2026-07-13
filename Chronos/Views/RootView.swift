@@ -129,6 +129,12 @@ struct RootView: View {
         .sheet(isPresented: $model.calendarFilterPresented) {
             CalendarFilterView()
         }
+        .sheet(isPresented: $model.searchPresented) {
+            SearchView()
+        }
+        .sheet(isPresented: $model.overdueSweepPresented) {
+            OverdueSweepView()
+        }
         .alert(
             "Something went wrong",
             isPresented: Binding(

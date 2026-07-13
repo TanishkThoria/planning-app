@@ -126,6 +126,16 @@ struct TasksView: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
+            HeaderIconButton(icon: "magnifyingglass") {
+                model.searchPresented = true
+            }
+            .help("Search")
+            if visibleTasks.contains(where: { $0.isOverdue }) {
+                HeaderIconButton(icon: "calendar.badge.exclamationmark") {
+                    model.overdueSweepPresented = true
+                }
+                .help("Clear overdue")
+            }
             HeaderIconButton(icon: "plus", prominent: true) {
                 model.newTask(listID: defaultListID.isEmpty ? nil : defaultListID)
             }

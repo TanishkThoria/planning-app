@@ -123,6 +123,8 @@ final class AppModel: ObservableObject {
     @Published var templatesPresented = false
     @Published var budgetsPresented = false
     @Published var calendarFilterPresented = false
+    @Published var searchPresented = false
+    @Published var overdueSweepPresented = false
 
     /// Show/hide the backlog rail in the day planner (wide layouts).
     @Published var backlogVisible = true

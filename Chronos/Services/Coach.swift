@@ -32,7 +32,7 @@ enum Coach {
     /// is a doorway to doing the thing, not just advice.
     enum Action {
         case recalibrate, planDay, planWeek, reflow, openGrow, addHabit
-        case morningRitual, eveningRitual, focusTimer
+        case morningRitual, eveningRitual, focusTimer, overdueSweep
     }
 
     struct Suggestion: Identifiable {
@@ -194,9 +194,9 @@ enum Coach {
             out.append(.init(
                 tone: .warning,
                 title: "\(stats.overdueNow) tasks are overdue",
-                detail: "That's a lot of open loops. Run Plan My Day to auto-fit them, or bulk-move the ones that no longer matter into a later week from the Matrix.",
+                detail: "That's a lot of open loops. Sweep them across the next few days' free time in one move, then bulk-move whatever no longer matters from the Matrix.",
                 weight: 88,
-                action: .planDay, actionLabel: "Plan My Day"
+                action: .overdueSweep, actionLabel: "Clear Overdue"
             ))
         }
 

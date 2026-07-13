@@ -60,6 +60,11 @@ struct ChronosCommands: Commands {
     @ObservedObject var model: AppModel
 
     var body: some Commands {
+        CommandGroup(after: .textEditing) {
+            Button("Search…") { model.searchPresented = true }
+                .keyboardShortcut("f", modifiers: .command)
+        }
+
         CommandGroup(replacing: .newItem) {
             Button("Quick Add…") { model.quickAddPresented = true }
                 .keyboardShortcut("k", modifiers: .command)
