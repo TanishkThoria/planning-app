@@ -197,6 +197,7 @@ struct TimeBlockCard: View {
                 if case .second(true, let drag?) = value, abs(drag.translation.height) > 2 {
                     let final = proposedStartFor(offset: drag.translation.height)
                     dragOffset = nil
+                    Haptics.light()
                     onMove(final)
                 } else {
                     dragOffset = nil
@@ -210,7 +211,7 @@ struct TimeBlockCard: View {
             .onEnded { value in
                 let final = proposedStartFor(offset: value.translation.height)
                 dragOffset = nil
-                if abs(value.translation.height) > 2 { onMove(final) }
+                if abs(value.translation.height) > 2 { Haptics.light(); onMove(final) }
             }
     }
     #endif
@@ -234,6 +235,7 @@ struct TimeBlockCard: View {
                         let rawEnd = clampedInterval.end.addingTimeInterval(Double(value.translation.height / hourHeight) * 3600)
                         let newEnd = max(rawEnd.snapped(to: snapMinutes), block.start.adding(minutes: 5))
                         resizeOffset = nil
+                        Haptics.light()
                         onResize(newEnd)
                     }
             )

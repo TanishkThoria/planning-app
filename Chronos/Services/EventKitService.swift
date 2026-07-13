@@ -179,6 +179,8 @@ final class EventKitService: ObservableObject {
             if !component.isEmpty, component != "/" { linkedTaskID = component }
         }
 
+        let overrideColor = BlockMetadata.colorHex(from: event.notes)
+
         return TimeBlock(
             id: occurrenceID,
             eventID: eventID,
@@ -188,8 +190,8 @@ final class EventKitService: ObservableObject {
             isAllDay: event.isAllDay,
             calendarID: calendar.calendarIdentifier,
             calendarTitle: calendar.title,
-            color: color(of: calendar),
-            notes: event.notes,
+            color: overrideColor.map { Color(hex: $0) } ?? color(of: calendar),
+            notes: BlockMetadata.strippingTokens(event.notes),
             location: event.location,
             linkedTaskID: linkedTaskID,
             hasRecurrence: event.hasRecurrenceRules,
@@ -375,7 +377,7 @@ final class EventKitService: ObservableObject {
         event.endDate = draft.isAllDay ? max(draft.end, draft.start) : max(draft.end, draft.start.adding(minutes: 5))
         event.isAllDay = draft.isAllDay
         event.location = draft.location.isEmpty ? nil : draft.location
-        event.notes = draft.notes.isEmpty ? nil : draft.notes
+        event.notes = BlockMetadata.encode(notes: draft.notes, colorHex: draft.colorHex)
 
         if let taskID = draft.linkedTaskID {
             event.url = Self.taskLinkURL(for: taskID)
@@ -487,6 +489,7 @@ final class EventKitService: ObservableObject {
         draft.location = block.location ?? ""
         draft.urlString = urlString
         draft.notes = block.notes ?? ""
+        draft.colorHex = BlockMetadata.colorHex(from: event?.notes)
         draft.recurrence = recurrence
         draft.alarm = alarm
         draft.secondAlarm = secondAlarm

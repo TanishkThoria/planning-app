@@ -11,7 +11,7 @@ struct AgendaView: View {
 
     @AppStorage(Prefs.defaultBlockMinutes) private var defaultBlockMinutes = 30
 
-    private let daysShown = 14
+    private let daysShown = 7
 
     private var days: [Date] {
         (0..<daysShown).map { model.selectedDate.startOfDay.adding(days: $0) }
@@ -29,16 +29,26 @@ struct AgendaView: View {
             }
 
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 0) {
+                LazyVStack(alignment: .leading, spacing: 14) {
                     if model.selectedDate.isToday && !overdueTasks.isEmpty {
                         overdueSection
                     }
                     ForEach(days, id: \.self) { day in
                         daySection(day)
+                            .padding(14)
+                            .background(
+                                day.isToday ? Theme.surface : Theme.surface.opacity(0.5),
+                                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .strokeBorder(day.isToday ? Color.accentColor.opacity(0.3) : Theme.hairline, lineWidth: 1)
+                            )
                     }
                 }
                 .padding(.horizontal, 18)
-                .padding(.bottom, 24)
+                .padding(.top, 14)
+                .padding(.bottom, 28)
             }
             .scrollIndicators(.hidden)
         }
@@ -148,7 +158,9 @@ struct AgendaView: View {
                 .buttonStyle(.plain)
                 .help("Open in day planner")
             }
-            .padding(.top, 18)
+
+            Rectangle().fill(Theme.hairline).frame(height: 1)
+                .padding(.vertical, 2)
 
             if allDay.isEmpty && timed.isEmpty && due.isEmpty {
                 Text("Nothing planned")

@@ -55,7 +55,7 @@ struct TodayView: View {
         let entry = life.entry(for: today)
         let intentions = (entry?.intentions ?? []).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
         return Button {
-            model.journalPresented = true
+            model.morningRitualPresented = true
         } label: {
             VStack(alignment: .leading, spacing: intentions.isEmpty ? 0 : 8) {
                 HStack {
@@ -102,6 +102,7 @@ struct TodayView: View {
                         let isDone = life.doneToday(habit)
                         Button {
                             withAnimation(.snappy) { life.toggle(habit, on: today) }
+                            Haptics.success()
                         } label: {
                             HStack(spacing: 6) {
                                 Image(systemName: isDone ? "checkmark.circle.fill" : habit.iconName)
@@ -285,6 +286,7 @@ private struct TodayTaskRow: View {
     var body: some View {
         HStack(spacing: 10) {
             Button {
+                if !task.isCompleted { Haptics.success() }
                 withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
             } label: {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")

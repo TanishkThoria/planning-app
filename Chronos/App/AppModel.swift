@@ -74,12 +74,13 @@ final class AppModel: ObservableObject {
     /// The three ways of viewing the calendar, switched with a segmented
     /// control inside the Calendar screen.
     enum PlannerMode: String, CaseIterable, Identifiable {
-        case day, week, agenda
+        case day, week, month, agenda
         var id: String { rawValue }
         var title: String {
             switch self {
             case .day: return "Day"
             case .week: return "Week"
+            case .month: return "Month"
             case .agenda: return "Agenda"
             }
         }
@@ -87,6 +88,7 @@ final class AppModel: ObservableObject {
             switch self {
             case .day: return "calendar.day.timeline.left"
             case .week: return "calendar"
+            case .month: return "calendar"
             case .agenda: return "list.bullet.rectangle"
             }
         }
@@ -114,6 +116,8 @@ final class AppModel: ObservableObject {
     @Published var goalEditor: GoalEditContext?
     @Published var habitEditor: HabitEditContext?
     @Published var journalPresented = false
+    @Published var morningRitualPresented = false
+    @Published var eveningRitualPresented = false
     @Published var templatesPresented = false
     @Published var budgetsPresented = false
     @Published var calendarFilterPresented = false
@@ -152,17 +156,25 @@ final class AppModel: ObservableObject {
         selectedDate = Date().startOfDay
     }
 
-    /// Week mode steps a week at a time; day and agenda step a day.
+    /// Week steps a week; month steps a month; day and agenda step a day.
     private var navStride: Int {
         (screen == .calendar && plannerMode == .week) ? 7 : 1
     }
 
     func goForward() {
-        selectedDate = selectedDate.adding(days: navStride)
+        if screen == .calendar && plannerMode == .month {
+            selectedDate = Calendar.current.date(byAdding: .month, value: 1, to: selectedDate) ?? selectedDate
+        } else {
+            selectedDate = selectedDate.adding(days: navStride)
+        }
     }
 
     func goBackward() {
-        selectedDate = selectedDate.adding(days: -navStride)
+        if screen == .calendar && plannerMode == .month {
+            selectedDate = Calendar.current.date(byAdding: .month, value: -1, to: selectedDate) ?? selectedDate
+        } else {
+            selectedDate = selectedDate.adding(days: -navStride)
+        }
     }
 
     /// Jump to a specific day and show it in the day planner.

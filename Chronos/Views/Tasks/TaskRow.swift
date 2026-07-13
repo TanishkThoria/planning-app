@@ -26,6 +26,7 @@ struct TaskRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Button {
+                if !task.isCompleted { Haptics.success() }
                 withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
             } label: {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")

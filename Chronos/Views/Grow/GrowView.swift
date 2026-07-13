@@ -75,45 +75,49 @@ struct GrowView: View {
         let entry = life.entry(for: today)
         let morning = entry?.hasMorning ?? false
         let evening = entry?.hasEvening ?? false
-        return Button {
-            model.journalPresented = true
-        } label: {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Label("Journal", systemImage: "book.closed.fill")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Theme.textPrimary)
-                    Spacer()
-                    if life.journalStreak > 0 {
-                        Label("\(life.journalStreak)d", systemImage: "flame.fill")
-                            .font(.system(size: 11, weight: .semibold, design: .rounded))
-                            .foregroundStyle(Theme.warning)
-                    }
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label("Daily rituals", systemImage: "sparkles")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Spacer()
+                if life.journalStreak > 0 {
+                    Label("\(life.journalStreak)d", systemImage: "flame.fill")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Theme.warning)
                 }
-                HStack(spacing: 10) {
-                    journalPill("Morning intentions", done: morning, icon: "sunrise.fill")
-                    journalPill("Evening reflection", done: evening, icon: "moon.stars.fill")
+                Button { model.journalPresented = true } label: {
+                    Text("History").font(.system(size: 11, weight: .medium)).foregroundStyle(Color.accentColor)
                 }
+                .buttonStyle(.plain)
             }
-            .panel()
+            HStack(spacing: 10) {
+                ritualButton("Morning", subtitle: "Set intentions", done: morning,
+                             icon: "sunrise.fill", tint: Theme.warning) { model.morningRitualPresented = true }
+                ritualButton("Evening", subtitle: "Reflect", done: evening,
+                             icon: "moon.stars.fill", tint: Theme.accentChoices[0].color) { model.eveningRitualPresented = true }
+            }
         }
-        .buttonStyle(.plain)
+        .panel()
     }
 
-    private func journalPill(_ label: String, done: Bool, icon: String) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: done ? "checkmark.circle.fill" : icon)
-                .font(.system(size: 11))
-                .foregroundStyle(done ? Theme.success : Theme.textTertiary)
-            Text(label)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(done ? Theme.textPrimary : Theme.textSecondary)
-            Spacer(minLength: 0)
+    private func ritualButton(_ label: String, subtitle: String, done: Bool, icon: String, tint: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 9) {
+                Image(systemName: done ? "checkmark.circle.fill" : icon)
+                    .font(.system(size: 15))
+                    .foregroundStyle(done ? Theme.success : tint)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(label).font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                    Text(done ? "Done" : subtitle).font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 11).padding(.vertical, 9)
+            .frame(maxWidth: .infinity)
+            .background(done ? tint.opacity(0.1) : Theme.fill, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .frame(maxWidth: .infinity)
-        .background(Theme.fill, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .buttonStyle(.plain)
     }
 
     // MARK: Goals
@@ -242,6 +246,7 @@ struct GrowView: View {
         return HStack(spacing: 12) {
             Button {
                 withAnimation(.snappy) { life.toggle(habit, on: today) }
+                Haptics.success()
             } label: {
                 ZStack {
                     Circle().fill(done ? habit.color : Theme.fill)

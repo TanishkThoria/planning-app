@@ -57,6 +57,8 @@ struct BlockDraft {
     var location: String = ""
     var urlString: String = ""
     var notes: String = ""
+    /// Per-block color override (nil = use the calendar's color).
+    var colorHex: UInt32?
     var recurrence: RecurrenceOption = .none
     var alarm: AlarmOption = .none
     var secondAlarm: AlarmOption = .none
@@ -75,6 +77,39 @@ struct BlockDraft {
 
     var durationMinutes: Int {
         max(0, Int(end.timeIntervalSince(start) / 60))
+    }
+}
+
+/// Per-event metadata Chronos keeps inside the event's notes — currently a
+/// color override (`[color:7C8CF8]`) so blocks can be colour-coded
+/// independently of their calendar and still sync everywhere EventKit does.
+enum BlockMetadata {
+    private static let colorPattern = "\\[color:([0-9A-Fa-f]{6})\\]"
+
+    static func colorHex(from notes: String?) -> UInt32? {
+        guard let notes,
+              let regex = try? NSRegularExpression(pattern: colorPattern),
+              let match = regex.firstMatch(in: notes, range: NSRange(notes.startIndex..., in: notes)),
+              let range = Range(match.range(at: 1), in: notes)
+        else { return nil }
+        return UInt32(notes[range], radix: 16)
+    }
+
+    static func strippingTokens(_ notes: String?) -> String? {
+        guard let notes, let regex = try? NSRegularExpression(pattern: colorPattern) else { return notes }
+        let cleaned = regex.stringByReplacingMatches(
+            in: notes, range: NSRange(notes.startIndex..., in: notes), withTemplate: ""
+        ).trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleaned.isEmpty ? nil : cleaned
+    }
+
+    static func encode(notes: String, colorHex: UInt32?) -> String? {
+        let base = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        var parts: [String] = []
+        if !base.isEmpty { parts.append(base) }
+        if let colorHex { parts.append(String(format: "[color:%06X]", colorHex)) }
+        let joined = parts.joined(separator: "\n")
+        return joined.isEmpty ? nil : joined
     }
 }
 

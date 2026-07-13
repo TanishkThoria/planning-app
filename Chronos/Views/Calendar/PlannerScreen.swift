@@ -125,7 +125,7 @@ struct PlannerScreen: View {
     private var title: String {
         switch model.plannerMode {
         case .day: return Fmt.relativeDay(model.selectedDate)
-        case .week: return Fmt.monthTitle.string(from: model.selectedDate)
+        case .week, .month: return Fmt.monthTitle.string(from: model.selectedDate)
         case .agenda: return "Agenda"
         }
     }
@@ -137,8 +137,10 @@ struct PlannerScreen: View {
         case .week:
             guard let first = weekDays.first, let last = weekDays.last else { return "" }
             return "\(Fmt.monthDay.string(from: first)) – \(Fmt.monthDay.string(from: last))"
+        case .month:
+            return "Tap a day to plan it"
         case .agenda:
-            return "Next 14 days"
+            return "Next 7 days"
         }
     }
 
@@ -149,6 +151,7 @@ struct PlannerScreen: View {
         switch model.plannerMode {
         case .day: DayPlannerView(embedded: true)
         case .week: WeekPlannerView(embedded: true)
+        case .month: MonthView()
         case .agenda: AgendaView(embedded: true)
         }
     }

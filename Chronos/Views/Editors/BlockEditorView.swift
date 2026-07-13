@@ -39,6 +39,8 @@ struct BlockEditorView: View {
             VStack(spacing: 6) {
                 CalendarPickerRow(label: "Calendar", options: service.calendars, selection: $draft.calendarID)
 
+                colorRow
+
                 FieldRow(label: "All-day") {
                     Toggle("", isOn: $draft.isAllDay)
                         .labelsHidden()
@@ -224,6 +226,43 @@ struct BlockEditorView: View {
                 Button("Delete", role: .destructive) { delete(span: .thisEvent) }
             }
             Button("Cancel", role: .cancel) {}
+        }
+    }
+
+    /// Calendar-default color plus a palette of per-block overrides.
+    private var colorRow: some View {
+        FieldRow(label: "Color") {
+            HStack(spacing: 8) {
+                Button {
+                    draft.colorHex = nil
+                } label: {
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(service.calendarInfo(withID: draft.calendarID)?.color ?? Theme.textTertiary)
+                            .frame(width: 14, height: 14)
+                        if draft.colorHex == nil {
+                            Image(systemName: "checkmark").font(.system(size: 8, weight: .bold))
+                                .foregroundStyle(Theme.textPrimary)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+                .help("Calendar default")
+
+                ForEach(Palette.options, id: \.self) { hex in
+                    Button {
+                        draft.colorHex = hex
+                    } label: {
+                        Circle()
+                            .fill(Color(hex: hex))
+                            .frame(width: 14, height: 14)
+                            .overlay(
+                                Circle().strokeBorder(draft.colorHex == hex ? Theme.textPrimary : .clear, lineWidth: 2).padding(-2)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         }
     }
 

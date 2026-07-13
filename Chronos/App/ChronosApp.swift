@@ -80,6 +80,8 @@ struct ChronosCommands: Commands {
                 .keyboardShortcut("r", modifiers: [.command, .shift])
             Button("Start Focus Timer…") { model.startFocus(taskID: nil, title: "Focus") }
                 .keyboardShortcut("f", modifiers: [.command, .shift])
+            Button("Morning Ritual…") { model.morningRitualPresented = true }
+            Button("Evening Ritual…") { model.eveningRitualPresented = true }
             Button("Journal…") { model.journalPresented = true }
                 .keyboardShortcut("j", modifiers: [.command, .shift])
             Button("Templates…") { model.templatesPresented = true }

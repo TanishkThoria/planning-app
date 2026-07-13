@@ -99,6 +99,12 @@ struct RootView: View {
         .sheet(isPresented: $model.journalPresented) {
             JournalView()
         }
+        .sheet(isPresented: $model.morningRitualPresented) {
+            MorningRitualView()
+        }
+        .sheet(isPresented: $model.eveningRitualPresented) {
+            EveningRitualView()
+        }
         .sheet(isPresented: $model.templatesPresented) {
             TemplatesView()
         }
