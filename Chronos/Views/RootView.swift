@@ -45,6 +45,9 @@ struct RootView: View {
 
     private func lifecycle<Content: View>(_ content: Content) -> some View {
         content
+        .onOpenURL { url in
+            model.handleDeepLink(url)
+        }
         .task {
             // Route completed focus stretches into the persistent log.
             timer.onSessionComplete = { [weak focusLog] session in
@@ -94,6 +97,26 @@ struct RootView: View {
                 model.morningPlanningPresented = true
                 intentLauncher.pendingAction = nil
             }
+        }
+        .onChange(of: notifications.pendingRoute) { _, route in
+            guard let route else { return }
+            handleNotificationRoute(route)
+            notifications.pendingRoute = nil
+        }
+    }
+
+    private func handleNotificationRoute(_ route: NotificationService.Route) {
+        switch route {
+        case .checkIn:
+            model.screen = .today
+            model.reviewPresented = true
+        case .planMorning:
+            model.screen = .today
+            model.morningPlanningPresented = true
+        case .reflectEvening:
+            model.eveningRitualPresented = true
+        case .grow:
+            model.screen = .grow
         }
     }
 

@@ -214,6 +214,34 @@ final class AppModel: ObservableObject {
         focusTimerContext = FocusStartContext(taskID: taskID, title: title)
         focusTimerPresented = true
     }
+
+    /// Routes a `chronos://…` deep link from a widget, Live Activity, or
+    /// Shortcut to the right place in the app.
+    func handleDeepLink(_ url: URL) {
+        guard url.scheme == "chronos" else { return }
+        switch url.host {
+        case "today", nil:
+            screen = .today
+        case "focus":
+            screen = .today
+            focusTimerPresented = true
+        case "tasks":
+            screen = .tasks
+        case "calendar":
+            screen = .calendar
+        case "grow":
+            screen = .grow
+        case "insights":
+            screen = .insights
+        case "add":
+            quickAddPresented = true
+        case "plan":
+            screen = .today
+            morningPlanningPresented = true
+        default:
+            screen = .today
+        }
+    }
 }
 
 /// Seeds the focus timer sheet with an optional task to work on.

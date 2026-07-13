@@ -72,6 +72,7 @@ struct ChronosTodayWidget: Widget {
         StaticConfiguration(kind: "ChronosToday", provider: ChronosProvider()) { entry in
             ChronosTodayView(snapshot: entry.snapshot, now: entry.date)
                 .containerBackground(WTheme.bg, for: .widget)
+                .widgetURL(URL(string: "chronos://today"))
         }
         .configurationDisplayName("Today")
         .description("Your day at a glance — schedule, habits, and tasks.")
@@ -174,6 +175,7 @@ struct ChronosUpNextWidget: Widget {
         StaticConfiguration(kind: "ChronosUpNext", provider: ChronosProvider()) { entry in
             ChronosUpNextView(snapshot: entry.snapshot)
                 .containerBackground(WTheme.bg, for: .widget)
+                .widgetURL(URL(string: "chronos://today"))
         }
         .configurationDisplayName("Up Next")
         .description("The block you're in — or the one coming up.")
@@ -253,6 +255,7 @@ struct ChronosHabitsWidget: Widget {
         StaticConfiguration(kind: "ChronosHabits", provider: ChronosProvider()) { entry in
             ChronosHabitsView(snapshot: entry.snapshot)
                 .containerBackground(WTheme.bg, for: .widget)
+                .widgetURL(URL(string: "chronos://grow"))
         }
         .configurationDisplayName("Habits")
         .description("Today's habit rings.")

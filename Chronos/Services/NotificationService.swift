@@ -7,13 +7,24 @@ import Combine
 /// lands you in the app, where the block review flow asks what happened and
 /// offers to reschedule. All local — no server, no push tokens.
 @MainActor
-final class NotificationService: ObservableObject {
+final class NotificationService: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
 
     enum Authorization {
         case notDetermined, authorized, denied
     }
 
+    /// Where a tapped notification should take the user. RootView observes
+    /// this and navigates, then clears it.
+    enum Route: Equatable {
+        case checkIn(blockID: String)
+        case planMorning
+        case reflectEvening
+        case grow
+    }
+
     @Published private(set) var authorization: Authorization = .notDetermined
+    /// Set when the user taps a notification; consumed by RootView.
+    @Published var pendingRoute: Route?
     /// User's master switch (mirrors a preference; notifications are opt-in).
     @Published var enabled: Bool {
         didSet { UserDefaults.standard.set(enabled, forKey: Self.enabledKey) }
@@ -25,9 +36,46 @@ final class NotificationService: ObservableObject {
     private static let habitPrefix = "chronos.habit."
     private let center = UNUserNotificationCenter.current()
 
-    init() {
+    override init() {
         enabled = UserDefaults.standard.object(forKey: Self.enabledKey) as? Bool ?? false
+        super.init()
+        center.delegate = self
         Task { await refreshAuthorization() }
+    }
+
+    // MARK: Delegate — foreground presentation + tap routing
+
+    /// Show reminders as banners even while Chronos is open, instead of
+    /// silently swallowing them (the default).
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound, .list])
+    }
+
+    /// Route a tapped notification to the matching screen/flow.
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let id = response.notification.request.identifier
+        let blockID = response.notification.request.content.userInfo["blockID"] as? String
+        Task { @MainActor in
+            self.pendingRoute = Self.route(for: id, blockID: blockID)
+        }
+        completionHandler()
+    }
+
+    private static func route(for identifier: String, blockID: String?) -> Route {
+        if identifier.hasPrefix(checkInPrefix), let blockID {
+            return .checkIn(blockID: blockID)
+        }
+        if identifier == "\(ritualPrefix)morning" { return .planMorning }
+        if identifier == "\(ritualPrefix)evening" { return .reflectEvening }
+        return .grow
     }
 
     func refreshAuthorization() async {
