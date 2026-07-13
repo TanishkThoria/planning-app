@@ -1,5 +1,11 @@
 # Chronos
 
+[![CI](https://github.com/tanishkthoria/planning-app/actions/workflows/ci.yml/badge.svg)](https://github.com/tanishkthoria/planning-app/actions/workflows/ci.yml)
+
+> **Proprietary — © 2026 Tanishk Thoria. All rights reserved.** The source is
+> publicly visible for CI and reference only; no use, copying, or
+> redistribution is permitted without written permission. See [LICENSE](LICENSE).
+
 A minimalist, dark-mode timeblocking planner for iOS and macOS that uses **Apple Calendar and Apple Reminders as its only data store** — no separate database, no import/export, no sync conflicts. Every time block you draw is a real calendar event; every task is a real reminder. Edit anything in the Apple apps (or via Siri, or on another device) and it shows up in Chronos instantly, and vice-versa.
 
 Built for power users and serious planners: fast, keyboard-driven, and designed around the daily ritual of turning a task list into a realistic schedule.
@@ -103,6 +109,24 @@ A deep weekly review: headline tiles (timeblocked, focused, done, streak), three
 
 - **Xcode 16+** (the project uses filesystem-synchronized groups)
 - **iOS 17+ / macOS 14+** (EventKit full-access APIs)
+
+## Continuous integration
+
+Every push runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml) on free
+GitHub-hosted runners (standard runners are free on public repos):
+
+- **Build · iOS Simulator** and **Build · macOS** — compile the full app on the
+  real Apple SDKs (`xcodebuild`, code signing disabled, no secrets required).
+- **Core logic tests · Linux** — `swift test` runs the platform-agnostic
+  `ChronosCore` package (date math today; more as logic is decoupled from
+  SwiftUI) inside the official `swift` container.
+
+Locally, the pure logic can be tested without Xcode:
+
+```bash
+./scripts/setup-swift.sh   # one-time, Linux only
+swift test
+```
 
 ## Building
 

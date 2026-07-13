@@ -15,6 +15,18 @@ playground.xcworkspace
 # Swift Package Manager
 .build/
 .swiftpm/
+Package.resolved
+
+# Secrets / signing — never commit these
+*.p12
+*.mobileprovision
+*.cer
+*.certSigningRequest
+*.p8
+.env
+.env.*
+secrets/
+*.xcconfig.local
 
 # macOS
 .DS_Store
