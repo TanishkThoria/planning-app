@@ -122,18 +122,28 @@ struct CoachChatView: View {
 
     // MARK: Conversation
 
+    @ViewBuilder
     private var conversation: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    ForEach(store.messages) { message in
-                        MessageBubble(message: message) { perform($0) }
-                            .id(message.id)
+                if store.hasRealConversation {
+                    VStack(alignment: .leading, spacing: 14) {
+                        ForEach(store.messages) { message in
+                            MessageBubble(message: message) { perform($0) }
+                                .id(message.id)
+                        }
+                        if thinking { ThinkingBubble().id("thinking") }
                     }
-                    if thinking { ThinkingBubble().id("thinking") }
-                    if store.messages.count <= 1 && !thinking { starterChips }
+                    .padding(18)
+                } else {
+                    // Resting state: the same warm briefing as non-AI devices,
+                    // with example prompts so the chat is discoverable.
+                    VStack(alignment: .leading, spacing: 16) {
+                        BriefingContent()
+                        starterChips
+                    }
+                    .padding(18)
                 }
-                .padding(18)
             }
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)
@@ -154,9 +164,13 @@ struct CoachChatView: View {
 
     private var starterChips: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Try asking")
-                .font(.system(size: 11, weight: .semibold)).tracking(0.5)
-                .foregroundStyle(Theme.textTertiary)
+            HStack(spacing: 5) {
+                Image(systemName: "sparkles").font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+                Text("ASK YOUR COACH")
+                    .font(.system(size: 10.5, weight: .semibold)).tracking(1.2)
+                    .foregroundStyle(Theme.textTertiary)
+            }
             ForEach(Starter.allCases) { starter in
                 Button { send(starter.text) } label: {
                     HStack(spacing: 8) {

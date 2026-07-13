@@ -35,7 +35,7 @@ final class AppModel: ObservableObject {
             case .calendar: return "calendar"
             case .tasks: return "checklist"
             case .grow: return "leaf"
-            case .coach: return "sparkles"
+            case .coach: return "lightbulb"
             case .settings: return "gearshape"
             }
         }
@@ -47,7 +47,7 @@ final class AppModel: ObservableObject {
             case .calendar: return "calendar"
             case .tasks: return "checklist.checked"
             case .grow: return "leaf.fill"
-            case .coach: return "sparkles"
+            case .coach: return "lightbulb.fill"
             case .settings: return "gearshape.fill"
             }
         }
