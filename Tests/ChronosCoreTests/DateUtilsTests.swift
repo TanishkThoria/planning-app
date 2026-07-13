@@ -45,11 +45,16 @@ final class DateUtilsTests: XCTestCase {
         XCTAssertEqual(base.at(minutes: 37).snapped(to: 0).minutesSinceMidnight, 37)
     }
 
-    func testStartOfWeekIsSevenDayAligned() {
-        let a = date(2026, 3, 14).startOfWeek
-        let b = date(2026, 3, 14).adding(days: 3).startOfWeek
-        // Any two days within the same week share a week start.
-        XCTAssertTrue(Calendar.current.isDate(a, inSameDayAs: b))
+    func testStartOfWeek() {
+        let d = date(2026, 3, 14)          // a specific day
+        let s = d.startOfWeek
+        // The week start is at midnight, on/before the day, within 7 days,
+        // and idempotent — regardless of the locale's first weekday.
+        XCTAssertEqual(s.minutesSinceMidnight, 0)
+        XCTAssertTrue(s <= d.startOfDay)
+        XCTAssertTrue(s.startOfWeek.isSameDay(as: s))
+        let days = Calendar.current.dateComponents([.day], from: s, to: d.startOfDay).day ?? -1
+        XCTAssertTrue((0...6).contains(days))
     }
 
     func testDayKeyIsStableFormat() {

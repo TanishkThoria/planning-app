@@ -23,7 +23,7 @@ struct DayPlannerView: View {
 
     @State private var pendingDelete: TimeBlock?
     @State private var now = Date()
-    @State private var pinchBaseHeight: CGFloat?
+    @State private var pinchBaseHeight: Double?
     private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
     private var dayBlocks: [TimeBlock] {
@@ -246,7 +246,7 @@ struct DayPlannerView: View {
                     .onChanged { value in
                         let base = pinchBaseHeight ?? hourHeight
                         if pinchBaseHeight == nil { pinchBaseHeight = base }
-                        hourHeight = min(160, max(40, base * value.magnification))
+                        hourHeight = min(160, max(40, base * Double(value.magnification)))
                     }
                     .onEnded { _ in pinchBaseHeight = nil }
             )
