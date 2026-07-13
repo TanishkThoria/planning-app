@@ -8,6 +8,7 @@ struct RootView: View {
     @EnvironmentObject private var timer: FocusTimerController
     @EnvironmentObject private var notifications: NotificationService
     @EnvironmentObject private var life: LifeStore
+    @ObservedObject private var intentLauncher = IntentLauncher.shared
     @AppStorage(Prefs.accentName) private var accentName = "Indigo"
     @AppStorage(Prefs.morningReminderEnabled) private var morningReminderEnabled = false
     @AppStorage(Prefs.morningReminderMinutes) private var morningReminderMinutes = 8 * 60
@@ -59,6 +60,14 @@ struct RootView: View {
         .onChange(of: notifications.enabled) { _, _ in
             rescheduleRituals()
             rescheduleHabitReminders()
+        }
+        .onChange(of: intentLauncher.pendingAction) { _, action in
+            // A Siri/Shortcuts intent asked to open the app to plan today.
+            if action == .planToday {
+                model.screen = .today
+                model.morningPlanningPresented = true
+                intentLauncher.pendingAction = nil
+            }
         }
         .sheet(item: $model.blockEditor) { context in
             BlockEditorView(context: context)
