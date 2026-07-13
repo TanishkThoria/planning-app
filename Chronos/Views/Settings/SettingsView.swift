@@ -258,6 +258,24 @@ struct SettingsView: View {
                         .buttonStyle(.plain)
                         .padding(.horizontal, 4)
                     }
+
+                    settingsSection("About") {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Chronos")
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                .foregroundStyle(Theme.textPrimary)
+                            Text("Version \(Self.appVersion)")
+                                .font(.system(size: 12))
+                                .foregroundStyle(Theme.textSecondary)
+                            Text("Time-blocking built on Apple Calendar & Reminders.")
+                                .font(.system(size: 12))
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    }
                 }
                 .padding(18)
                 .frame(maxWidth: 560, alignment: .leading)
@@ -279,6 +297,12 @@ struct SettingsView: View {
             get: { Date().startOfDay.at(minutes: source.wrappedValue) },
             set: { source.wrappedValue = $0.minutesSinceMidnight }
         )
+    }
+
+    private static var appVersion: String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
+        return "\(version) (\(build))"
     }
 
     @ViewBuilder
