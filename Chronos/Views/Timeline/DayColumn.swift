@@ -24,9 +24,12 @@ struct DayColumn: View {
     var onFocusBlock: (TimeBlock) -> Void = { _ in }
     var onDeleteBlock: (TimeBlock) -> Void = { _ in }
     var onCreateAt: (Date) -> Void = { _ in }
+    var onCreateRange: (Date, Date) -> Void = { _, _ in }
     var onDropTask: (String, Date) -> Void = { _, _ in }
 
     @State private var now = Date()
+    @State private var createStartMinutes: Int?
+    @State private var createCurrentMinutes: Int?
 
     private let timer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
 
@@ -37,12 +40,18 @@ struct DayColumn: View {
 
                 routineBands(width: geo.size.width)
 
-                // Create layer — double tap/click an empty slot.
+                // Create layer — double-tap an empty slot, or long-press and
+                // drag to draw a block of an exact duration.
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture(count: 2, coordinateSpace: .local) { point in
                         onCreateAt(time(atY: point.y).snappedDown(to: snapMinutes))
                     }
+                    .gesture(dragCreateGesture)
+
+                if let range = createRange {
+                    dragCreatePreview(range)
+                }
 
                 ForEach(BlockLayout.place(blocks, on: date)) { placed in
                     TimeBlockCard(
@@ -128,5 +137,62 @@ struct DayColumn: View {
     private func time(atY y: CGFloat) -> Date {
         let minutes = max(0, min(Int(y / hourHeight * 60), 24 * 60 - 15))
         return date.at(minutes: minutes)
+    }
+
+    private func minutes(atY y: CGFloat) -> Int {
+        max(0, min(Int(y / hourHeight * 60), 24 * 60))
+    }
+
+    // MARK: Drag-to-create
+
+    /// The snapped (start, end) minutes of the block being drawn, if any.
+    private var createRange: (start: Int, end: Int)? {
+        guard let s = createStartMinutes, let c = createCurrentMinutes else { return nil }
+        let lo = min(s, c), hi = max(s, c)
+        let snappedLo = (lo / snapMinutes) * snapMinutes
+        let snappedHi = max(snappedLo + snapMinutes, Int(ceil(Double(hi) / Double(snapMinutes))) * snapMinutes)
+        return (snappedLo, min(snappedHi, 24 * 60))
+    }
+
+    private var dragCreateGesture: some Gesture {
+        LongPressGesture(minimumDuration: 0.3)
+            .sequenced(before: DragGesture(minimumDistance: 0))
+            .onChanged { value in
+                if case .second(true, let drag?) = value {
+                    if createStartMinutes == nil {
+                        createStartMinutes = minutes(atY: drag.startLocation.y)
+                    }
+                    createCurrentMinutes = minutes(atY: drag.location.y)
+                }
+            }
+            .onEnded { value in
+                if case .second(true, _) = value, let range = createRange {
+                    Haptics.light()
+                    onCreateRange(date.at(minutes: range.start), date.at(minutes: range.end))
+                }
+                createStartMinutes = nil
+                createCurrentMinutes = nil
+            }
+    }
+
+    private func dragCreatePreview(_ range: (start: Int, end: Int)) -> some View {
+        let y = CGFloat(range.start) / 60 * hourHeight
+        let height = max(CGFloat(range.end - range.start) / 60 * hourHeight, 12)
+        return RoundedRectangle(cornerRadius: 7, style: .continuous)
+            .fill(Color.accentColor.opacity(0.25))
+            .overlay(
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .strokeBorder(Color.accentColor, lineWidth: 1.5)
+            )
+            .overlay(alignment: .topLeading) {
+                Text(Fmt.timeRange(date.at(minutes: range.start), date.at(minutes: range.end)))
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Theme.textPrimary)
+                    .padding(.horizontal, 6).padding(.top, 3)
+            }
+            .frame(height: height)
+            .offset(y: y)
+            .padding(.horizontal, 2)
+            .allowsHitTesting(false)
     }
 }

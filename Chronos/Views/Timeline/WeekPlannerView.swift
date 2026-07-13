@@ -227,6 +227,13 @@ struct WeekPlannerView: View {
                     calendarID: defaultCalendarID.isEmpty ? nil : defaultCalendarID
                 )
             },
+            onCreateRange: { start, end in
+                model.newBlock(
+                    at: start,
+                    defaultMinutes: max(5, Int(end.timeIntervalSince(start) / 60)),
+                    calendarID: defaultCalendarID.isEmpty ? nil : defaultCalendarID
+                )
+            },
             onDropTask: { taskID, start in
                 guard let task = service.task(withID: taskID) else { return }
                 service.scheduleTask(
