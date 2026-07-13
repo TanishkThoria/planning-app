@@ -28,6 +28,13 @@ enum Coach {
         }
     }
 
+    /// An action the user can take straight from a suggestion, so the coach
+    /// is a doorway to doing the thing, not just advice.
+    enum Action {
+        case recalibrate, planDay, planWeek, reflow, openGrow, addHabit
+        case morningRitual, eveningRitual, focusTimer
+    }
+
     struct Suggestion: Identifiable {
         let id = UUID()
         let tone: Tone
@@ -35,6 +42,8 @@ enum Coach {
         let detail: String
         /// Sort weight — higher surfaces first.
         let weight: Int
+        var action: Action? = nil
+        var actionLabel: String? = nil
     }
 
     /// Personal signals drawn from the lifestyle layer + focus log, so the
@@ -69,7 +78,8 @@ enum Coach {
                 tone: .neutral,
                 title: "You focus best in the \(observed.rawValue.lowercased())",
                 detail: "Most of your timed work lands in the \(observed.rawValue.lowercased()), but your focus window is set to \(profile.focus.rawValue.lowercased()). Recalibrate and Plan My Day will aim deep work where you're actually sharpest.",
-                weight: 86
+                weight: 86,
+                action: .recalibrate, actionLabel: "Recalibrate"
             ))
         }
 
@@ -81,7 +91,8 @@ enum Coach {
                     tone: .warning,
                     title: "Habits are slipping (\(pct)%)",
                     detail: "You're completing under half your habits. Shrink them until they're almost too easy — a two-minute version you can't say no to. Consistency first, size later.",
-                    weight: 80
+                    weight: 80,
+                    action: .openGrow, actionLabel: "Review Habits"
                 ))
             } else if signals.habitConsistency >= 0.85 {
                 out.append(.init(
@@ -126,7 +137,8 @@ enum Coach {
                 tone: .neutral,
                 title: "Try an evening reflection",
                 detail: "Two minutes naming what went well and setting tomorrow's intention meaningfully lifts follow-through — and it's the fastest way to make this coach smarter about you.",
-                weight: 52
+                weight: 52,
+                action: .eveningRitual, actionLabel: "Reflect Now"
             ))
         }
 
@@ -183,7 +195,8 @@ enum Coach {
                 tone: .warning,
                 title: "\(stats.overdueNow) tasks are overdue",
                 detail: "That's a lot of open loops. Run Plan My Day to auto-fit them, or bulk-move the ones that no longer matter into a later week from the Matrix.",
-                weight: 88
+                weight: 88,
+                action: .planDay, actionLabel: "Plan My Day"
             ))
         }
 
@@ -204,7 +217,8 @@ enum Coach {
                 tone: .neutral,
                 title: "Try the focus timer",
                 detail: "You're planning blocks but not timing your work. Start a Pomodoro from any block to stay on track and unlock deeper stats on where your hours actually go.",
-                weight: 45
+                weight: 45,
+                action: .focusTimer, actionLabel: "Start Timer"
             ))
         } else if stats.focusMinutes > 0 {
             out.append(.init(
@@ -244,7 +258,8 @@ enum Coach {
                 tone: .neutral,
                 title: "Calibrate for smarter plans",
                 detail: "Tell Chronos your sleep, meals, routines and focus window (Settings → Calibrate) and every auto-plan will schedule around your real life.",
-                weight: 100
+                weight: 100,
+                action: .recalibrate, actionLabel: "Calibrate"
             ))
         }
 

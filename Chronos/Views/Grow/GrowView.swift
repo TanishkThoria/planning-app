@@ -58,6 +58,10 @@ struct GrowView: View {
                 Button { model.journalPresented = true } label: {
                     Label("Open Journal", systemImage: "book.closed")
                 }
+                Divider()
+                Button { model.weeklyReviewPresented = true } label: {
+                    Label("Weekly Review", systemImage: "calendar.badge.checkmark")
+                }
             } label: {
                 Image(systemName: "plus")
                     .font(.system(size: 12, weight: .semibold))

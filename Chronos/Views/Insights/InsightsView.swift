@@ -441,13 +441,13 @@ struct InsightsView: View {
                     .foregroundStyle(Theme.textTertiary)
                 Spacer()
             }
-            ForEach(suggestions.prefix(4)) { suggestion in
+            ForEach(suggestions.prefix(5)) { suggestion in
                 HStack(alignment: .top, spacing: 10) {
                     Image(systemName: suggestion.tone.icon)
                         .font(.system(size: 13))
                         .foregroundStyle(suggestion.tone.color)
                         .frame(width: 18)
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text(suggestion.title)
                             .font(.system(size: 12.5, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
@@ -455,12 +455,40 @@ struct InsightsView: View {
                             .font(.system(size: 11.5))
                             .foregroundStyle(Theme.textSecondary)
                             .fixedSize(horizontal: false, vertical: true)
+                        if let action = suggestion.action, let label = suggestion.actionLabel {
+                            Button {
+                                perform(action)
+                            } label: {
+                                Text(label)
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(Color.accentColor)
+                                    .padding(.horizontal, 10).padding(.vertical, 4)
+                                    .background(Color.accentColor.opacity(0.12), in: Capsule())
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.top, 1)
+                        }
                     }
                 }
-                .padding(.vertical, 2)
+                .padding(.vertical, 3)
             }
         }
         .panel()
+    }
+
+    /// Routes a coach suggestion's action to the right place in the app.
+    private func perform(_ action: Coach.Action) {
+        switch action {
+        case .recalibrate: model.calibrationPresented = true
+        case .planDay: model.planDayPresented = true
+        case .planWeek: model.planWeekPresented = true
+        case .reflow: model.reflowPresented = true
+        case .openGrow: model.screen = .grow
+        case .addHabit: model.habitEditor = HabitEditContext(habit: Habit(), isNew: true)
+        case .morningRitual: model.morningRitualPresented = true
+        case .eveningRitual: model.eveningRitualPresented = true
+        case .focusTimer: model.startFocus(taskID: nil, title: "Focus")
+        }
     }
 
     // MARK: Texture

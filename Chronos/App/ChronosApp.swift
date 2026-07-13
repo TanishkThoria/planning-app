@@ -84,6 +84,7 @@ struct ChronosCommands: Commands {
                 .keyboardShortcut("f", modifiers: [.command, .shift])
             Button("Morning Ritual…") { model.morningRitualPresented = true }
             Button("Evening Ritual…") { model.eveningRitualPresented = true }
+            Button("Weekly Review…") { model.weeklyReviewPresented = true }
             Button("Journal…") { model.journalPresented = true }
                 .keyboardShortcut("j", modifiers: [.command, .shift])
             Button("Templates…") { model.templatesPresented = true }

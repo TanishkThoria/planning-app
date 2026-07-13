@@ -119,6 +119,7 @@ final class AppModel: ObservableObject {
     @Published var journalPresented = false
     @Published var morningRitualPresented = false
     @Published var eveningRitualPresented = false
+    @Published var weeklyReviewPresented = false
     @Published var templatesPresented = false
     @Published var budgetsPresented = false
     @Published var calendarFilterPresented = false
