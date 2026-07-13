@@ -204,6 +204,10 @@ struct TodayView: View {
                 model.morningPlanningPresented = true
             }
             .help("Plan Today")
+            HeaderIconButton(icon: "arrow.triangle.2.circlepath") {
+                model.reflowPresented = true
+            }
+            .help("Reflow — reschedule what slipped")
             HeaderIconButton(icon: "checkmark.circle") {
                 model.reviewPresented = true
             }

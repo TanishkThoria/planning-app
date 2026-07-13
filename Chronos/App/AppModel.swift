@@ -105,6 +105,7 @@ final class AppModel: ObservableObject {
     @Published var calibrationPresented = false
     @Published var morningPlanningPresented = false
     @Published var reviewPresented = false
+    @Published var reflowPresented = false
     /// iOS presents Settings as a sheet (macOS uses the sidebar + ⌘,).
     @Published var settingsPresented = false
     @Published var focusTimerPresented = false

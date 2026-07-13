@@ -93,6 +93,9 @@ struct RootView: View {
         .sheet(isPresented: $model.reviewPresented) {
             DayReviewView(day: model.selectedDate.isToday ? model.selectedDate : Date().startOfDay)
         }
+        .sheet(isPresented: $model.reflowPresented) {
+            ReflowView()
+        }
         .sheet(isPresented: $model.focusTimerPresented, onDismiss: { model.focusTimerContext = nil }) {
             FocusTimerView(
                 presetTaskID: model.focusTimerContext?.taskID,
