@@ -244,13 +244,15 @@ struct TodayView: View {
                     Text(Fmt.time.string(from: block.start))
                         .font(.system(size: 11.5, weight: .semibold, design: .rounded))
                         .foregroundStyle(block.isNow ? Color.accentColor : Theme.textSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                     if block.isNow {
                         Text("now")
                             .font(.system(size: 8.5, weight: .bold))
                             .foregroundStyle(Color.accentColor)
                     }
                 }
-                .frame(width: 52, alignment: .trailing)
+                .frame(width: 62, alignment: .trailing)
 
                 RoundedRectangle(cornerRadius: 2).fill(block.color).frame(width: 3, height: 26)
 

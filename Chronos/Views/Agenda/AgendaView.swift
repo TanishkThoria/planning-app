@@ -250,11 +250,15 @@ private struct AgendaBlockRow: View {
                     Text(Fmt.time.string(from: block.start))
                         .font(.system(size: 11.5, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.textSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                     Text(Fmt.time.string(from: block.end))
                         .font(.system(size: 10, design: .rounded))
                         .foregroundStyle(Theme.textTertiary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
-                .frame(width: 58, alignment: .trailing)
+                .frame(width: 60, alignment: .trailing)
 
                 RoundedRectangle(cornerRadius: 2)
                     .fill(block.color)

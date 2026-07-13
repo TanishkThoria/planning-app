@@ -255,6 +255,8 @@ struct MorningPlanningView: View {
                             Text(Fmt.time.string(from: proposal.start))
                                 .font(.system(size: 12, weight: .semibold, design: .rounded))
                                 .foregroundStyle(Color.accentColor)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
                                 .frame(width: 62, alignment: .leading)
                             if proposal.task.energy != .none {
                                 Image(systemName: proposal.task.energy.icon)

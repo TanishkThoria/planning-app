@@ -115,4 +115,5 @@ enum Prefs {
     static let morningReminderMinutes = "pref.morningReminderMinutes"
     static let eveningReminderEnabled = "pref.eveningReminderEnabled"
     static let eveningReminderMinutes = "pref.eveningReminderMinutes"
+    static let coachEnabled = "pref.coachEnabled"                 // show the AI Coach tab
 }

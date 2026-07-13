@@ -11,6 +11,7 @@ struct RootView: View {
     @ObservedObject private var intentLauncher = IntentLauncher.shared
     @ObservedObject private var tour = TourController.shared
     @AppStorage(Prefs.accentName) private var accentName = "Indigo"
+    @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
     @AppStorage("chronos.onboardingComplete") private var onboardingComplete = false
     @AppStorage(Prefs.morningReminderEnabled) private var morningReminderEnabled = false
     @AppStorage(Prefs.morningReminderMinutes) private var morningReminderMinutes = 8 * 60
@@ -35,6 +36,12 @@ struct RootView: View {
                 // After the tour wraps up, nudge new users into calibration.
                 if !active, service.hasFullAccess, !profileStore.profile.isCalibrated {
                     model.calibrationPresented = true
+                }
+            }
+            .onChange(of: coachEnabled) { _, enabled in
+                // If the Coach tab is hidden while it's showing, fall back to Today.
+                if !enabled, model.screen == .coach {
+                    model.screen = .today
                 }
             }
     }
@@ -276,10 +283,15 @@ struct RootView: View {
         .background(Theme.bg)
     }
 
+    /// The primary tabs, minus the Coach when the user has turned it off.
+    private var visibleTabs: [AppModel.Screen] {
+        AppModel.Screen.compactTabs.filter { coachEnabled || $0 != .coach }
+    }
+
     #if os(iOS)
     private var compactLayout: some View {
         TabView(selection: $model.screen) {
-            ForEach(AppModel.Screen.compactTabs) { screen in
+            ForEach(visibleTabs) { screen in
                 screenView(screen)
                     .tabItem {
                         Label(screen.title, systemImage: model.screen == screen ? screen.iconFilled : screen.icon)

@@ -22,6 +22,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.defaultCalendarID) private var defaultCalendarID = ""
     @AppStorage(Prefs.defaultListID) private var defaultListID = ""
     @AppStorage(Prefs.dimPastBlocks) private var dimPastBlocks = true
+    @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
 
     private var defaultCalendarBinding: Binding<String?> {
         Binding(
@@ -231,6 +232,23 @@ struct SettingsView: View {
                             Toggle("", isOn: $dimPastBlocks)
                                 .labelsHidden()
                                 .toggleStyle(.switch)
+                        }
+                    }
+
+                    settingsSection("AI Coach") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            FieldRow(label: "Show Coach tab") {
+                                Toggle("", isOn: $coachEnabled)
+                                    .labelsHidden()
+                                    .toggleStyle(.switch)
+                            }
+                            Text(coachEnabled
+                                 ? "The Coach is a conversational planner. When your device supports Apple Intelligence it runs a private, on-device model; otherwise it uses fast built-in guidance."
+                                 : "The Coach tab is hidden. Turn it back on anytime to chat with your planning companion.")
+                                .font(.system(size: 11))
+                                .foregroundStyle(Theme.textTertiary)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.horizontal, 2)
                         }
                     }
 

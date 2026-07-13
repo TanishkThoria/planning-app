@@ -5,6 +5,11 @@ import SwiftUI
 struct SidebarView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
+    @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
+
+    private var sidebarScreens: [AppModel.Screen] {
+        AppModel.Screen.sidebarCases.filter { coachEnabled || $0 != .coach }
+    }
 
     var body: some View {
         ScrollView {
@@ -12,7 +17,7 @@ struct SidebarView: View {
                 header
 
                 VStack(alignment: .leading, spacing: 2) {
-                    ForEach(AppModel.Screen.sidebarCases) { screen in
+                    ForEach(sidebarScreens) { screen in
                         navRow(screen)
                     }
                 }

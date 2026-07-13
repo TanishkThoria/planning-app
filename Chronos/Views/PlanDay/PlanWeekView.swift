@@ -161,6 +161,8 @@ struct PlanWeekView: View {
                     Text(Fmt.time.string(from: proposal.start))
                         .font(.system(size: 11.5, weight: .semibold, design: .rounded))
                         .foregroundStyle(Color.accentColor)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                         .frame(width: 60, alignment: .leading)
                     Text(proposal.task.title)
                         .font(.system(size: 12.5)).foregroundStyle(Theme.textPrimary).lineLimit(1)

@@ -101,7 +101,9 @@ struct OverdueSweepView: View {
                 HStack(spacing: 10) {
                     Text(Fmt.time.string(from: p.start))
                         .font(.system(size: 11.5, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color.accentColor).frame(width: 60, alignment: .leading)
+                        .foregroundStyle(Color.accentColor)
+                        .lineLimit(1).minimumScaleFactor(0.8)
+                        .frame(width: 60, alignment: .leading)
                     Text(p.task.title).font(.system(size: 12.5)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                     Spacer()
                     Text(Fmt.duration(minutes: p.minutes)).font(.system(size: 10.5, design: .rounded))
