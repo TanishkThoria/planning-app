@@ -1,5 +1,5 @@
 import SwiftUI
-#if canImport(ActivityKit)
+#if os(iOS)
 import ActivityKit
 #endif
 
@@ -14,7 +14,7 @@ final class LiveActivityController: ObservableObject {
     /// Accent color hex, refreshed from the app so the activity matches the theme.
     var accentHex: UInt32 = 0x7C8CF8
 
-    #if canImport(ActivityKit)
+    #if os(iOS)
     private var activity: Activity<FocusActivityAttributes>?
 
     private var areActivitiesEnabled: Bool {

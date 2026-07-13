@@ -1,5 +1,5 @@
 import Foundation
-#if canImport(ActivityKit)
+#if os(iOS)
 import ActivityKit
 
 /// The Live Activity shown on the Lock Screen / Dynamic Island while a focus
@@ -8,8 +8,9 @@ import ActivityKit
 ///
 /// IMPORTANT: this file must be a member of BOTH the Chronos app target and
 /// the ChronosWidget target (tick both in the File Inspector). ActivityKit is
-/// iOS-only, so everything here is guarded by `#if canImport(ActivityKit)` and
-/// simply drops out of the macOS build.
+/// ActivityKit's types are unavailable on macOS (the module imports but the
+/// symbols are marked unavailable), so everything here is guarded by
+/// `#if os(iOS)` and simply drops out of the macOS build.
 struct FocusActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         /// What's being focused on.

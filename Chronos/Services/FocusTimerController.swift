@@ -121,19 +121,19 @@ final class FocusTimerController: ObservableObject {
     // MARK: Live Activity mirroring
 
     private func startLiveActivity() {
-        #if canImport(ActivityKit)
+        #if os(iOS)
         LiveActivityController.shared.start(activityState())
         #endif
     }
 
     private func syncLiveActivity() {
-        #if canImport(ActivityKit)
+        #if os(iOS)
         guard isActive else { return }
         LiveActivityController.shared.update(activityState())
         #endif
     }
 
-    #if canImport(ActivityKit)
+    #if os(iOS)
     private func activityState() -> FocusActivityAttributes.ContentState {
         let now = Date()
         return FocusActivityAttributes.ContentState(
