@@ -32,6 +32,8 @@ struct TasksView: View {
         var id: String { rawValue }
     }
     @State private var mode: Mode = .list
+    @State private var selectionMode = false
+    @State private var selected: Set<String> = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -84,11 +86,18 @@ struct TasksView: View {
                                     .padding(.top, 12)
                                     .padding(.horizontal, 4)
                                 ForEach(group.tasks) { task in
-                                    TaskRow(task: task)
+                                    TaskRow(
+                                        task: task,
+                                        selectionMode: selectionMode,
+                                        isSelected: selected.contains(task.id),
+                                        onToggleSelection: { toggleSelection(task.id) }
+                                    )
                                     // Open subtasks ride along under their parent.
-                                    ForEach(service.subtasks(of: task.id).filter { !$0.isCompleted }) { subtask in
-                                        SubtaskRow(task: subtask)
-                                            .padding(.leading, 28)
+                                    if !selectionMode {
+                                        ForEach(service.subtasks(of: task.id).filter { !$0.isCompleted }) { subtask in
+                                            SubtaskRow(task: subtask)
+                                                .padding(.leading, 28)
+                                        }
                                     }
                                 }
                             }
@@ -99,8 +108,90 @@ struct TasksView: View {
                 .padding(.bottom, 24)
             }
             .scrollIndicators(.hidden)
+
+            if selectionMode && !selected.isEmpty {
+                bulkActionBar
+            }
         }
         .background(Theme.bg)
+    }
+
+    // MARK: Bulk selection
+
+    private func toggleSelection(_ id: String) {
+        if selected.contains(id) { selected.remove(id) } else { selected.insert(id) }
+        Haptics.selection()
+    }
+
+    private var selectedTasks: [TaskItem] {
+        visibleTasks.filter { selected.contains($0.id) }
+    }
+
+    private var bulkActionBar: some View {
+        HStack(spacing: 4) {
+            bulkButton("Done", "checkmark.circle") {
+                for id in selected where service.task(withID: id)?.isCompleted == false {
+                    service.toggleTaskCompletion(id: id)
+                }
+                Haptics.success(); exitSelection()
+            }
+            Menu {
+                ForEach(TaskPriority.allCases) { p in
+                    Button(p.label) { applyPriority(p) }
+                }
+            } label: { bulkLabel("Priority", "exclamationmark.circle") }
+
+            Menu {
+                ForEach(service.taskLists.filter(\.isEditable)) { list in
+                    Button(list.title) { moveToList(list.id) }
+                }
+            } label: { bulkLabel("List", "tray.and.arrow.down") }
+
+            bulkButton("Delete", "trash", tint: Theme.danger) {
+                for id in selected { service.deleteTask(id: id) }
+                exitSelection()
+            }
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .background(.ultraThinMaterial)
+        .overlay(alignment: .top) { Rectangle().fill(Theme.hairline).frame(height: 1) }
+    }
+
+    private func bulkButton(_ label: String, _ icon: String, tint: Color = Theme.textPrimary, action: @escaping () -> Void) -> some View {
+        Button(action: action) { bulkLabel(label, icon, tint: tint) }.buttonStyle(.plain)
+    }
+
+    private func bulkLabel(_ label: String, _ icon: String, tint: Color = Theme.textPrimary) -> some View {
+        VStack(spacing: 3) {
+            Image(systemName: icon).font(.system(size: 15))
+            Text("\(label)").font(.system(size: 9.5, weight: .medium))
+        }
+        .foregroundStyle(tint)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 4)
+    }
+
+    private func applyPriority(_ priority: TaskPriority) {
+        for task in selectedTasks {
+            var ctx = service.editorContext(for: task)
+            ctx.draft.priority = priority
+            if let id = ctx.existingID { service.updateTask(id: id, with: ctx.draft) }
+        }
+        Haptics.success(); exitSelection()
+    }
+
+    private func moveToList(_ listID: String) {
+        for task in selectedTasks {
+            var ctx = service.editorContext(for: task)
+            ctx.draft.listID = listID
+            if let id = ctx.existingID { service.updateTask(id: id, with: ctx.draft) }
+        }
+        Haptics.success(); exitSelection()
+    }
+
+    private func exitSelection() {
+        selected.removeAll()
+        selectionMode = false
     }
 
     private var emptyMessage: String {
@@ -126,6 +217,13 @@ struct TasksView: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
+            if mode == .list {
+                HeaderIconButton(icon: selectionMode ? "checkmark.circle.fill" : "checklist") {
+                    selectionMode.toggle()
+                    if !selectionMode { selected.removeAll() }
+                }
+                .help("Select multiple")
+            }
             HeaderIconButton(icon: "magnifyingglass") {
                 model.searchPresented = true
             }

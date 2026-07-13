@@ -4,6 +4,9 @@ import SwiftUI
 /// or use the bolt button / context menu to schedule it.
 struct TaskRow: View {
     let task: TaskItem
+    var selectionMode = false
+    var isSelected = false
+    var onToggleSelection: () -> Void = {}
 
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
@@ -25,20 +28,27 @@ struct TaskRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            Button {
-                if !task.isCompleted { Haptics.success() }
-                withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
-            } label: {
-                Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundStyle(
-                        task.isCompleted
-                            ? Theme.success
-                            : (task.priority == .none ? Theme.textTertiary : task.priority.color)
-                    )
+            if selectionMode {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 16))
+                    .foregroundStyle(isSelected ? Color.accentColor : Theme.textTertiary)
+                    .padding(.top, 1)
+            } else {
+                Button {
+                    if !task.isCompleted { Haptics.success() }
+                    withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
+                } label: {
+                    Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 16, weight: .regular))
+                        .foregroundStyle(
+                            task.isCompleted
+                                ? Theme.success
+                                : (task.priority == .none ? Theme.textTertiary : task.priority.color)
+                        )
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 1)
             }
-            .buttonStyle(.plain)
-            .padding(.top, 1)
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
@@ -104,7 +114,7 @@ struct TaskRow: View {
 
             Spacer(minLength: 4)
 
-            if !task.isCompleted {
+            if !task.isCompleted && !selectionMode {
                 Button {
                     scheduleNextFree(dayOffset: 0)
                 } label: {
@@ -120,11 +130,18 @@ struct TaskRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(
+            isSelected ? Color.accentColor.opacity(0.12) : Theme.surface,
+            in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+        )
         .contentShape(Rectangle())
         .draggable(task.id)
         .onTapGesture {
-            model.taskEditor = service.editorContext(for: task)
+            if selectionMode {
+                onToggleSelection()
+            } else {
+                model.taskEditor = service.editorContext(for: task)
+            }
         }
         .contextMenu {
             Button {
