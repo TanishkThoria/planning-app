@@ -56,7 +56,50 @@ struct InsightsView: View {
     }
 
     private var suggestions: [Coach.Suggestion] {
-        Coach.suggestions(stats: stats, profile: profileStore.profile, tasks: service.tasks)
+        Coach.suggestions(
+            stats: stats,
+            profile: profileStore.profile,
+            tasks: service.tasks,
+            signals: coachSignals
+        )
+    }
+
+    /// Draws habit, journal, and focus-timing signals from the lifestyle
+    /// layer so the coach can reason about the whole person.
+    private var coachSignals: Coach.Signals {
+        var s = Coach.Signals()
+        let habits = life.activeHabits
+        s.habitCount = habits.count
+        s.bestHabitStreak = habits.map { life.streak($0) }.max() ?? 0
+        // Consistency: completed ÷ due over the last 7 days.
+        var due = 0, done = 0
+        for offset in 0..<7 {
+            let day = Date().adding(days: -offset)
+            for habit in habits where habit.isDue(on: day) {
+                due += 1
+                if life.isDone(habit, on: day) { done += 1 }
+            }
+        }
+        s.habitConsistency = due == 0 ? 0 : Double(done) / Double(due)
+        s.journalStreak = life.journalStreak
+
+        // Average mood/energy from the last 7 journal entries.
+        let recent = (0..<7).compactMap { life.entry(for: Date().adding(days: -$0)) }
+        let moods = recent.compactMap { $0.mood }
+        let energies = recent.compactMap { $0.energy }
+        if !moods.isEmpty { s.avgMood7 = Double(moods.reduce(0, +)) / Double(moods.count) }
+        if !energies.isEmpty { s.avgEnergy7 = Double(energies.reduce(0, +)) / Double(energies.count) }
+
+        // Where timed focus actually lands, bucketed by period.
+        var byPeriod: [FocusPeriod: Int] = [:]
+        for session in focusLog.sessions(inLast: 21) {
+            let hour = Calendar.current.component(.hour, from: session.start)
+            let period: FocusPeriod = hour < 12 ? .morning : (hour < 17 ? .afternoon : .evening)
+            byPeriod[period, default: 0] += session.actualMinutes
+            s.focusSampleMinutes += session.actualMinutes
+        }
+        s.observedFocus = byPeriod.max { $0.value < $1.value }?.key
+        return s
     }
 
     private var minutesByCalendar: [(calendar: CalendarInfo, minutes: Int)] {

@@ -37,8 +37,98 @@ enum Coach {
         let weight: Int
     }
 
-    static func suggestions(stats: StatsEngine.Stats, profile: PlannerProfile, tasks: [TaskItem]) -> [Suggestion] {
+    /// Personal signals drawn from the lifestyle layer + focus log, so the
+    /// coach can reason about habits, mood/energy, and when you actually do
+    /// your best work — not just the calendar.
+    struct Signals {
+        var habitCount = 0
+        var bestHabitStreak = 0
+        var habitConsistency: Double = 0     // 0…1 over the last 7 due-days
+        var journalStreak = 0
+        var avgEnergy7: Double?              // 1…5, last 7 journal days
+        var avgMood7: Double?                // 1…5
+        /// Focus period where the most timer minutes actually landed.
+        var observedFocus: FocusPeriod?
+        var focusSampleMinutes = 0
+    }
+
+    static func suggestions(
+        stats: StatsEngine.Stats,
+        profile: PlannerProfile,
+        tasks: [TaskItem],
+        signals: Signals = Signals()
+    ) -> [Suggestion] {
         var out: [Suggestion] = []
+
+        // MARK: Personal signals (habits, energy, focus timing)
+
+        // Observed vs. declared focus window — the app *noticing* your rhythm.
+        if profile.isCalibrated, signals.focusSampleMinutes >= 120,
+           let observed = signals.observedFocus, observed != profile.focus {
+            out.append(.init(
+                tone: .neutral,
+                title: "You focus best in the \(observed.rawValue.lowercased())",
+                detail: "Most of your timed work lands in the \(observed.rawValue.lowercased()), but your focus window is set to \(profile.focus.rawValue.lowercased()). Recalibrate and Plan My Day will aim deep work where you're actually sharpest.",
+                weight: 86
+            ))
+        }
+
+        // Habit consistency (Atomic Habits: make it easy / the 2-minute rule).
+        if signals.habitCount >= 2 {
+            let pct = Int((signals.habitConsistency * 100).rounded())
+            if signals.habitConsistency < 0.5 {
+                out.append(.init(
+                    tone: .warning,
+                    title: "Habits are slipping (\(pct)%)",
+                    detail: "You're completing under half your habits. Shrink them until they're almost too easy — a two-minute version you can't say no to. Consistency first, size later.",
+                    weight: 80
+                ))
+            } else if signals.habitConsistency >= 0.85 {
+                out.append(.init(
+                    tone: .positive,
+                    title: "Rock-solid habits (\(pct)%)",
+                    detail: "You're showing up almost every day. This is where real change compounds. Consider stacking one small new habit onto an existing one.",
+                    weight: 58
+                ))
+            }
+        }
+        if signals.bestHabitStreak >= 21 {
+            out.append(.init(
+                tone: .positive,
+                title: "\(signals.bestHabitStreak)-day habit streak",
+                detail: "Three weeks-plus of consistency — this is becoming part of who you are, not just something you do.",
+                weight: 62
+            ))
+        }
+
+        // Energy-aware load management.
+        if let energy = signals.avgEnergy7, energy > 0 {
+            if energy <= 2.2 {
+                out.append(.init(
+                    tone: .warning,
+                    title: "Your energy has been low",
+                    detail: "The last week's check-ins average low energy. Protect sleep, lighten the plan, and put one genuinely restorative block on the calendar — rest is part of the system, not a reward for finishing it.",
+                    weight: 84
+                ))
+            } else if energy >= 4.2 {
+                out.append(.init(
+                    tone: .positive,
+                    title: "You've been running strong",
+                    detail: "High energy all week. A good moment to take a swing at that ambitious goal you've been circling.",
+                    weight: 46
+                ))
+            }
+        }
+
+        // Reflection habit.
+        if signals.journalStreak == 0 && stats.blockCount >= 3 {
+            out.append(.init(
+                tone: .neutral,
+                title: "Try an evening reflection",
+                detail: "Two minutes naming what went well and setting tomorrow's intention meaningfully lifts follow-through — and it's the fastest way to make this coach smarter about you.",
+                weight: 52
+            ))
+        }
 
         // Plan adherence
         if stats.adherenceEligible >= 3 {
