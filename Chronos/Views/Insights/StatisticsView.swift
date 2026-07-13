@@ -1,13 +1,16 @@
 import SwiftUI
 
-/// Weekly review, deepened: headline stat tiles, three behavioural rings
-/// (completion / on-time / plan adherence), a single-hue planned-vs-focused
-/// day strip, time-by-calendar identity bars, a deep/shallow split, and the
-/// on-device Coach's prioritized suggestions.
-struct InsightsView: View {
+/// Detailed account statistics, reached from a menu rather than a primary
+/// tab: headline stat tiles, three behavioural rings (completion / on-time /
+/// plan adherence), a single-hue planned-vs-focused day strip, time-by-calendar
+/// identity bars, a deep/shallow split, budgets, and achievements. The
+/// interactive coaching lives in the Coach tab now.
+struct StatisticsView: View {
+    /// When presented as a sheet, shows a close button in the header.
+    var onClose: (() -> Void)?
+
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
-    @EnvironmentObject private var profileStore: ProfileStore
     @EnvironmentObject private var focusLog: FocusLog
     @EnvironmentObject private var life: LifeStore
 
@@ -55,53 +58,6 @@ struct InsightsView: View {
         )
     }
 
-    private var suggestions: [Coach.Suggestion] {
-        Coach.suggestions(
-            stats: stats,
-            profile: profileStore.profile,
-            tasks: service.tasks,
-            signals: coachSignals
-        )
-    }
-
-    /// Draws habit, journal, and focus-timing signals from the lifestyle
-    /// layer so the coach can reason about the whole person.
-    private var coachSignals: Coach.Signals {
-        var s = Coach.Signals()
-        let habits = life.activeHabits
-        s.habitCount = habits.count
-        s.bestHabitStreak = habits.map { life.streak($0) }.max() ?? 0
-        // Consistency: completed ÷ due over the last 7 days.
-        var due = 0, done = 0
-        for offset in 0..<7 {
-            let day = Date().adding(days: -offset)
-            for habit in habits where habit.isDue(on: day) {
-                due += 1
-                if life.isDone(habit, on: day) { done += 1 }
-            }
-        }
-        s.habitConsistency = due == 0 ? 0 : Double(done) / Double(due)
-        s.journalStreak = life.journalStreak
-
-        // Average mood/energy from the last 7 journal entries.
-        let recent = (0..<7).compactMap { life.entry(for: Date().adding(days: -$0)) }
-        let moods = recent.compactMap { $0.mood }
-        let energies = recent.compactMap { $0.energy }
-        if !moods.isEmpty { s.avgMood7 = Double(moods.reduce(0, +)) / Double(moods.count) }
-        if !energies.isEmpty { s.avgEnergy7 = Double(energies.reduce(0, +)) / Double(energies.count) }
-
-        // Where timed focus actually lands, bucketed by period.
-        var byPeriod: [FocusPeriod: Int] = [:]
-        for session in focusLog.sessions(inLast: 21) {
-            let hour = Calendar.current.component(.hour, from: session.start)
-            let period: FocusPeriod = hour < 12 ? .morning : (hour < 17 ? .afternoon : .evening)
-            byPeriod[period, default: 0] += session.actualMinutes
-            s.focusSampleMinutes += session.actualMinutes
-        }
-        s.observedFocus = byPeriod.max { $0.value < $1.value }?.key
-        return s
-    }
-
     private var minutesByCalendar: [(calendar: CalendarInfo, minutes: Int)] {
         var totals: [String: Int] = [:]
         for day in weekDays {
@@ -134,7 +90,6 @@ struct InsightsView: View {
                     if stats.deepMinutes + stats.shallowMinutes > 0 { energySplitCard }
                     timeByCalendarCard
                     achievementsCard
-                    coachCard
                     detailCard
                 }
                 .padding(18)
@@ -147,7 +102,7 @@ struct InsightsView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Insights")
+                Text("Statistics")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.textPrimary)
                 if let first = weekDays.first, let last = weekDays.last {
@@ -158,6 +113,14 @@ struct InsightsView: View {
             }
             Spacer()
             DateNavigator()
+            if let onClose {
+                Button(action: onClose) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 
@@ -428,68 +391,6 @@ struct InsightsView: View {
             }
         }
         .panel()
-    }
-
-    // MARK: Coach
-
-    private var coachCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
-                Image(systemName: "sparkles").font(.system(size: 12)).foregroundStyle(Color.accentColor)
-                Text("COACH")
-                    .font(.system(size: 10.5, weight: .semibold)).tracking(1.2)
-                    .foregroundStyle(Theme.textTertiary)
-                Spacer()
-            }
-            ForEach(suggestions.prefix(5)) { suggestion in
-                HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: suggestion.tone.icon)
-                        .font(.system(size: 13))
-                        .foregroundStyle(suggestion.tone.color)
-                        .frame(width: 18)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(suggestion.title)
-                            .font(.system(size: 12.5, weight: .semibold))
-                            .foregroundStyle(Theme.textPrimary)
-                        Text(suggestion.detail)
-                            .font(.system(size: 11.5))
-                            .foregroundStyle(Theme.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                        if let action = suggestion.action, let label = suggestion.actionLabel {
-                            Button {
-                                perform(action)
-                            } label: {
-                                Text(label)
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(Color.accentColor)
-                                    .padding(.horizontal, 10).padding(.vertical, 4)
-                                    .background(Color.accentColor.opacity(0.12), in: Capsule())
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.top, 1)
-                        }
-                    }
-                }
-                .padding(.vertical, 3)
-            }
-        }
-        .panel()
-    }
-
-    /// Routes a coach suggestion's action to the right place in the app.
-    private func perform(_ action: Coach.Action) {
-        switch action {
-        case .recalibrate: model.calibrationPresented = true
-        case .planDay: model.planDayPresented = true
-        case .planWeek: model.planWeekPresented = true
-        case .reflow: model.reflowPresented = true
-        case .openGrow: model.screen = .grow
-        case .addHabit: model.habitEditor = HabitEditContext(habit: Habit(), isNew: true)
-        case .morningRitual: model.morningRitualPresented = true
-        case .eveningRitual: model.eveningRitualPresented = true
-        case .focusTimer: model.startFocus(taskID: nil, title: "Focus")
-        case .overdueSweep: model.overdueSweepPresented = true
-        }
     }
 
     // MARK: Texture

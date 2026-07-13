@@ -13,7 +13,7 @@ final class AppModel: ObservableObject {
         case calendar
         case tasks
         case grow
-        case insights
+        case coach
         case settings
 
         var id: String { rawValue }
@@ -24,7 +24,7 @@ final class AppModel: ObservableObject {
             case .calendar: return "Calendar"
             case .tasks: return "Tasks"
             case .grow: return "Grow"
-            case .insights: return "Insights"
+            case .coach: return "Coach"
             case .settings: return "Settings"
             }
         }
@@ -35,7 +35,7 @@ final class AppModel: ObservableObject {
             case .calendar: return "calendar"
             case .tasks: return "checklist"
             case .grow: return "leaf"
-            case .insights: return "chart.bar.xaxis"
+            case .coach: return "sparkles"
             case .settings: return "gearshape"
             }
         }
@@ -47,7 +47,7 @@ final class AppModel: ObservableObject {
             case .calendar: return "calendar"
             case .tasks: return "checklist.checked"
             case .grow: return "leaf.fill"
-            case .insights: return "chart.bar.xaxis"
+            case .coach: return "sparkles"
             case .settings: return "gearshape.fill"
             }
         }
@@ -58,17 +58,17 @@ final class AppModel: ObservableObject {
             case .calendar: return "2"
             case .tasks: return "3"
             case .grow: return "4"
-            case .insights: return "5"
+            case .coach: return "5"
             case .settings: return nil
             }
         }
 
         /// Screens listed in the macOS/iPad sidebar.
-        static let sidebarCases: [Screen] = [.today, .calendar, .tasks, .grow, .insights, .settings]
+        static let sidebarCases: [Screen] = [.today, .calendar, .tasks, .grow, .coach, .settings]
         /// The five primary iPhone tabs — Settings is reached from a toolbar
         /// gear, so nothing hides behind a "More" overflow. (Matrix lives as
         /// a mode inside Tasks.)
-        static let compactTabs: [Screen] = [.today, .calendar, .tasks, .grow, .insights]
+        static let compactTabs: [Screen] = [.today, .calendar, .tasks, .grow, .coach]
     }
 
     /// The three ways of viewing the calendar, switched with a segmented
@@ -125,6 +125,8 @@ final class AppModel: ObservableObject {
     @Published var calendarFilterPresented = false
     @Published var searchPresented = false
     @Published var overdueSweepPresented = false
+    /// Detailed account statistics (relocated out of the primary tabs).
+    @Published var statsPresented = false
 
     /// Show/hide the backlog rail in the day planner (wide layouts).
     @Published var backlogVisible = true
@@ -231,8 +233,8 @@ final class AppModel: ObservableObject {
             screen = .calendar
         case "grow":
             screen = .grow
-        case "insights":
-            screen = .insights
+        case "insights", "coach":
+            screen = .coach
         case "add":
             quickAddPresented = true
         case "plan":

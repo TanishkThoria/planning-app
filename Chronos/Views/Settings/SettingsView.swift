@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var profileStore: ProfileStore
     @EnvironmentObject private var notifications: NotificationService
@@ -257,6 +258,35 @@ struct SettingsView: View {
                         }
                         .buttonStyle(.plain)
                         .padding(.horizontal, 4)
+                    }
+
+                    settingsSection("Account") {
+                        Button {
+                            model.statsPresented = true
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: "chart.bar.xaxis")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(Color.accentColor)
+                                    .frame(width: 20)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text("Statistics")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundStyle(Theme.textPrimary)
+                                    Text("Completion, focus, budgets, achievements")
+                                        .font(.system(size: 11))
+                                        .foregroundStyle(Theme.textTertiary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(Theme.textTertiary)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 11)
+                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     settingsSection("About") {

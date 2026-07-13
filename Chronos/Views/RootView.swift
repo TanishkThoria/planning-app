@@ -10,6 +10,7 @@ struct RootView: View {
     @EnvironmentObject private var life: LifeStore
     @ObservedObject private var intentLauncher = IntentLauncher.shared
     @AppStorage(Prefs.accentName) private var accentName = "Indigo"
+    @AppStorage("chronos.onboardingComplete") private var onboardingComplete = false
     @AppStorage(Prefs.morningReminderEnabled) private var morningReminderEnabled = false
     @AppStorage(Prefs.morningReminderMinutes) private var morningReminderMinutes = 8 * 60
     @AppStorage(Prefs.eveningReminderEnabled) private var eveningReminderEnabled = false
@@ -23,7 +24,33 @@ struct RootView: View {
     // modifier chain (it times out past a certain size). Each helper has an
     // explicit `some View` body that's checked independently.
     var body: some View {
-        errorAlert(sheets(lifecycle(rootContent)))
+        onboardingGate(errorAlert(sheets(lifecycle(rootContent))))
+    }
+
+    private var onboardingBinding: Binding<Bool> {
+        Binding(get: { !onboardingComplete }, set: { if !$0 { onboardingComplete = true } })
+    }
+
+    private func finishOnboarding() {
+        onboardingComplete = true
+        if service.hasFullAccess && !profileStore.profile.isCalibrated {
+            model.calibrationPresented = true
+        }
+    }
+
+    private func onboardingGate<Content: View>(_ content: Content) -> some View {
+        content
+        #if os(iOS)
+        .fullScreenCover(isPresented: onboardingBinding) {
+            OnboardingView(onFinish: finishOnboarding)
+                .interactiveDismissDisabled()
+        }
+        #else
+        .sheet(isPresented: onboardingBinding) {
+            OnboardingView(onFinish: finishOnboarding)
+                .interactiveDismissDisabled()
+        }
+        #endif
     }
 
     private var rootContent: some View {
@@ -53,9 +80,13 @@ struct RootView: View {
             timer.onSessionComplete = { [weak focusLog] session in
                 focusLog?.record(session)
             }
-            await service.requestAccess()
-            if service.hasFullAccess && !profileStore.profile.isCalibrated {
-                model.calibrationPresented = true
+            // Onboarding owns the first-run permission flow; only auto-request
+            // here once it's been completed, so we never double-prompt.
+            if onboardingComplete {
+                await service.requestAccess()
+                if service.hasFullAccess && !profileStore.profile.isCalibrated {
+                    model.calibrationPresented = true
+                }
             }
             await notifications.refreshAuthorization()
             rescheduleRituals()
@@ -188,6 +219,10 @@ struct RootView: View {
         .sheet(isPresented: $model.overdueSweepPresented) {
             OverdueSweepView()
         }
+        .sheet(isPresented: $model.statsPresented) {
+            StatisticsView(onClose: { model.statsPresented = false })
+                .preferredColorScheme(.dark)
+        }
     }
 
     private func errorAlert<Content: View>(_ content: Content) -> some View {
@@ -268,7 +303,7 @@ struct RootView: View {
         case .calendar: PlannerScreen()
         case .tasks: TasksView()
         case .grow: GrowView()
-        case .insights: InsightsView()
+        case .coach: CoachView()
         case .settings: SettingsView()
         }
     }
