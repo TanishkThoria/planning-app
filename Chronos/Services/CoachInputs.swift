@@ -3,6 +3,7 @@ import Foundation
 /// Builds the behavioural `Coach.Signals` from the lifestyle + focus layers.
 /// Shared by the Coach tab and the Statistics screen so the two never drift.
 enum CoachInputs {
+    @MainActor
     static func signals(life: LifeStore, focusLog: FocusLog, now: Date = Date()) -> Coach.Signals {
         var s = Coach.Signals()
         let habits = life.activeHabits
