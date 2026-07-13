@@ -40,14 +40,19 @@ struct DayColumn: View {
 
                 routineBands(width: geo.size.width)
 
-                // Create layer — double-tap an empty slot, or long-press and
-                // drag to draw a block of an exact duration.
+                // Create layer — double-tap an empty slot to make a block.
+                // On macOS you can also long-press and drag to draw an exact
+                // duration; that gesture is intentionally NOT attached on iOS,
+                // where a full-cover drag gesture starves the ScrollView's pan
+                // and breaks vertical scrolling.
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture(count: 2, coordinateSpace: .local) { point in
                         onCreateAt(time(atY: point.y).snappedDown(to: snapMinutes))
                     }
+                    #if os(macOS)
                     .gesture(dragCreateGesture)
+                    #endif
 
                 if let range = createRange {
                     dragCreatePreview(range)
