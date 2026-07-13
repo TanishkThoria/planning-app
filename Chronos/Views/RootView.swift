@@ -10,6 +10,7 @@ struct RootView: View {
     @EnvironmentObject private var life: LifeStore
     @ObservedObject private var intentLauncher = IntentLauncher.shared
     @ObservedObject private var tour = TourController.shared
+    @ObservedObject private var lms = LMSStore.shared
     @AppStorage(Prefs.accentName) private var accentName = "Indigo"
     @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
     @AppStorage("chronos.onboardingComplete") private var onboardingComplete = false
@@ -50,10 +51,13 @@ struct RootView: View {
         Binding(get: { !onboardingComplete }, set: { if !$0 { onboardingComplete = true } })
     }
 
-    private func finishOnboarding() {
+    private func finishOnboarding(connectLMS: Bool) {
         onboardingComplete = true
-        // Hand new users straight into the interactive tour of the live app.
-        if service.hasFullAccess {
+        if connectLMS {
+            // Students opted in — take them straight to the school connect flow.
+            model.lmsSetupPresented = true
+        } else if service.hasFullAccess {
+            // Otherwise hand them into the interactive tour of the live app.
             withAnimation(.snappy) { tour.start() }
         }
     }
@@ -113,6 +117,12 @@ struct RootView: View {
             rescheduleHabitReminders()
             LiveActivityController.shared.accentHex = Theme.accent(named: accentName).hexRGB
             refreshWidgetSnapshot()
+            // Keep hidden assignment events hidden immediately, then pull any
+            // new LMS assignments in the background.
+            lms.applyHidden(to: service)
+            if lms.isConfigured, service.hasFullAccess {
+                await lms.sync(service: service)
+            }
         }
         .onChange(of: morningReminderEnabled) { _, _ in rescheduleRituals() }
         .onChange(of: morningReminderMinutes) { _, _ in rescheduleRituals() }
@@ -242,6 +252,9 @@ struct RootView: View {
         .sheet(isPresented: $model.statsPresented) {
             StatisticsView(onClose: { model.statsPresented = false })
                 .preferredColorScheme(.dark)
+        }
+        .sheet(isPresented: $model.lmsSetupPresented) {
+            LMSSetupView()
         }
     }
 

@@ -127,6 +127,8 @@ final class AppModel: ObservableObject {
     @Published var overdueSweepPresented = false
     /// Detailed account statistics (relocated out of the primary tabs).
     @Published var statsPresented = false
+    /// School LMS (Canvas/Schoology) connect flow.
+    @Published var lmsSetupPresented = false
 
     /// Show/hide the backlog rail in the day planner (wide layouts).
     @Published var backlogVisible = true

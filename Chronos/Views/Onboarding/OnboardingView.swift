@@ -5,7 +5,8 @@ import SwiftUI
 /// behaves identically on iOS and macOS. Shown once, gated by the
 /// `chronos.onboardingComplete` preference in RootView.
 struct OnboardingView: View {
-    var onFinish: () -> Void
+    /// Passes back whether the student opted to connect their school LMS.
+    var onFinish: (_ connectLMS: Bool) -> Void
 
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var notifications: NotificationService
@@ -14,6 +15,7 @@ struct OnboardingView: View {
     @State private var step = 0
     @State private var requestingAccess = false
     @State private var requestingNotifications = false
+    @State private var wantsLMS = false
 
     private let pages = OnboardingPage.all
 
@@ -172,6 +174,33 @@ struct OnboardingView: View {
                     granted: notifications.authorization == .authorized,
                     busy: requestingNotifications
                 ) { requestNotifications() }
+
+                Button { wantsLMS.toggle() } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "graduationcap.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 26)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("I'm a student")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(Theme.textPrimary)
+                            Text("Connect Canvas or Schoology after setup — assignments become reminders automatically.")
+                                .font(.system(size: 11.5))
+                                .foregroundStyle(Theme.textTertiary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer(minLength: 8)
+                        Image(systemName: wantsLMS ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 20))
+                            .foregroundStyle(wantsLMS ? Theme.success : Theme.textTertiary)
+                    }
+                    .padding(.horizontal, 14).padding(.vertical, 12)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(wantsLMS ? Color.accentColor.opacity(0.4) : Color.clear, lineWidth: 1))
+                }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 8)
             Spacer()
@@ -254,7 +283,7 @@ struct OnboardingView: View {
     }
 
     private func finish() {
-        onFinish()
+        onFinish(wantsLMS)
     }
 
     private func requestAccess() {

@@ -131,7 +131,8 @@ final class EventKitService: ObservableObject {
             title: calendar.title,
             color: color(of: calendar),
             isEditable: calendar.allowsContentModifications,
-            sourceTitle: calendar.source?.title ?? ""
+            sourceTitle: calendar.source?.title ?? "",
+            isSubscribed: calendar.type == .subscription || calendar.type == .calDAV && !calendar.allowsContentModifications
         )
     }
 
@@ -273,13 +274,68 @@ final class EventKitService: ObservableObject {
         calendars.first { $0.id == id }
     }
 
-    /// Blocks that occur (fully or partially) on the given day.
+    /// Blocks that occur (fully or partially) on the given day. Events whose
+    /// underlying calendar event has been converted into an LMS assignment
+    /// reminder are hidden here so they don't show twice.
     func blocks(on day: Date, hiddenCalendars: Set<String> = []) -> [TimeBlock] {
         let dayStart = day.startOfDay
         let dayEnd = dayStart.adding(days: 1)
         return blocks.filter {
-            !hiddenCalendars.contains($0.calendarID) && $0.start < dayEnd && $0.end > dayStart
+            !hiddenCalendars.contains($0.calendarID)
+                && !hiddenEventIDs.contains($0.eventID)
+                && $0.start < dayEnd && $0.end > dayStart
         }
+    }
+
+    // MARK: - LMS (Canvas / Schoology) support
+
+    /// Event identifiers hidden from Chronos because they've been turned into
+    /// assignment reminders. Maintained by `LMSStore`.
+    @Published private(set) var hiddenEventIDs: Set<String> = []
+
+    func setHiddenEventIDs(_ ids: Set<String>) { hiddenEventIDs = ids }
+
+    /// Every read-only subscribed event calendar (candidate LMS feeds).
+    func subscribedCalendars() -> [CalendarInfo] {
+        calendars.filter { $0.isSubscribed || !$0.isEditable }
+    }
+
+    /// Raw events from one calendar over a window — used by LMS sync.
+    func events(inCalendar calendarID: String, from: Date, to: Date) -> [EKEvent] {
+        guard let cal = store.calendar(withIdentifier: calendarID) else { return [] }
+        let predicate = store.predicateForEvents(withStart: from, end: to, calendars: [cal])
+        return store.events(matching: predicate)
+    }
+
+    /// Create a reminder mirroring an assignment. Returns its identifier.
+    /// Pass `commit: false` in a batch, then call `commitStore()` once.
+    @discardableResult
+    func createAssignmentReminder(title: String, due: Date, hasTime: Bool, notes: String?, url: URL?, listID: String?, commit: Bool = true) -> String? {
+        guard let list = writableList(for: listID) else { return nil }
+        let reminder = EKReminder(eventStore: store)
+        reminder.calendar = list
+        reminder.title = title.isEmpty ? "Assignment" : title
+        var comps: Set<Calendar.Component> = [.year, .month, .day]
+        if hasTime { comps.formUnion([.hour, .minute]) }
+        reminder.dueDateComponents = Calendar.current.dateComponents(comps, from: due)
+        if let notes, !notes.isEmpty { reminder.notes = notes }
+        reminder.url = url
+        if hasTime { reminder.addAlarm(EKAlarm(relativeOffset: 0)) }
+        do {
+            try store.save(reminder, commit: commit)
+            return reminder.calendarItemIdentifier
+        } catch {
+            return nil
+        }
+    }
+
+    func commitStore() {
+        do { try store.commit() } catch { fail("Couldn't finish importing assignments", error) }
+        refresh()
+    }
+
+    func reminderExists(_ id: String) -> Bool {
+        (store.calendarItem(withIdentifier: id) as? EKReminder) != nil
     }
 
     /// The occurrence ids of every block linked to the given task.

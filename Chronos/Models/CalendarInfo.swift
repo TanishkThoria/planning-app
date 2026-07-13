@@ -8,6 +8,8 @@ struct CalendarInfo: Identifiable, Hashable {
     var color: Color
     var isEditable: Bool
     var sourceTitle: String
+    /// True for read-only subscribed feeds (e.g. a Canvas/Schoology .ics).
+    var isSubscribed: Bool = false
 }
 
 /// Free/busy status shown to others — mirrors EKEventAvailability.
