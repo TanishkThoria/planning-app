@@ -19,7 +19,14 @@ struct RootView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     #endif
 
+    // Split into staged helpers so the type-checker isn't handed one giant
+    // modifier chain (it times out past a certain size). Each helper has an
+    // explicit `some View` body that's checked independently.
     var body: some View {
+        errorAlert(sheets(lifecycle(rootContent)))
+    }
+
+    private var rootContent: some View {
         Group {
             if service.hasFullAccess {
                 mainInterface
@@ -34,6 +41,10 @@ struct RootView: View {
         .background(Theme.bg.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .tint(Theme.accent(named: accentName))
+    }
+
+    private func lifecycle<Content: View>(_ content: Content) -> some View {
+        content
         .task {
             // Route completed focus stretches into the persistent log.
             timer.onSessionComplete = { [weak focusLog] session in
@@ -84,6 +95,10 @@ struct RootView: View {
                 intentLauncher.pendingAction = nil
             }
         }
+    }
+
+    private func sheets<Content: View>(_ content: Content) -> some View {
+        content
         .sheet(item: $model.blockEditor) { context in
             BlockEditorView(context: context)
         }
@@ -150,6 +165,10 @@ struct RootView: View {
         .sheet(isPresented: $model.overdueSweepPresented) {
             OverdueSweepView()
         }
+    }
+
+    private func errorAlert<Content: View>(_ content: Content) -> some View {
+        content
         .alert(
             "Something went wrong",
             isPresented: Binding(
