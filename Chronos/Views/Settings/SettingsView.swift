@@ -287,6 +287,34 @@ struct SettingsView: View {
                             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                         }
                         .buttonStyle(.plain)
+
+                        Button {
+                            model.settingsPresented = false
+                            TourController.shared.start()
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: "map")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(Color.accentColor)
+                                    .frame(width: 20)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text("Take the tour")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundStyle(Theme.textPrimary)
+                                    Text("A guided walkthrough of every screen")
+                                        .font(.system(size: 11))
+                                        .foregroundStyle(Theme.textTertiary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(Theme.textTertiary)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 11)
+                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     settingsSection("About") {

@@ -9,6 +9,7 @@ struct RootView: View {
     @EnvironmentObject private var notifications: NotificationService
     @EnvironmentObject private var life: LifeStore
     @ObservedObject private var intentLauncher = IntentLauncher.shared
+    @ObservedObject private var tour = TourController.shared
     @AppStorage(Prefs.accentName) private var accentName = "Indigo"
     @AppStorage("chronos.onboardingComplete") private var onboardingComplete = false
     @AppStorage(Prefs.morningReminderEnabled) private var morningReminderEnabled = false
@@ -25,6 +26,17 @@ struct RootView: View {
     // explicit `some View` body that's checked independently.
     var body: some View {
         onboardingGate(errorAlert(sheets(lifecycle(rootContent))))
+            .overlay {
+                if tour.isActive {
+                    TourOverlay().transition(.opacity)
+                }
+            }
+            .onChange(of: tour.isActive) { _, active in
+                // After the tour wraps up, nudge new users into calibration.
+                if !active, service.hasFullAccess, !profileStore.profile.isCalibrated {
+                    model.calibrationPresented = true
+                }
+            }
     }
 
     private var onboardingBinding: Binding<Bool> {
@@ -33,8 +45,9 @@ struct RootView: View {
 
     private func finishOnboarding() {
         onboardingComplete = true
-        if service.hasFullAccess && !profileStore.profile.isCalibrated {
-            model.calibrationPresented = true
+        // Hand new users straight into the interactive tour of the live app.
+        if service.hasFullAccess {
+            withAnimation(.snappy) { tour.start() }
         }
     }
 
