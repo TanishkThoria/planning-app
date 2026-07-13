@@ -14,6 +14,7 @@ struct RootView: View {
     @AppStorage(Prefs.morningReminderMinutes) private var morningReminderMinutes = 8 * 60
     @AppStorage(Prefs.eveningReminderEnabled) private var eveningReminderEnabled = false
     @AppStorage(Prefs.eveningReminderMinutes) private var eveningReminderMinutes = 21 * 60
+    @Environment(\.scenePhase) private var scenePhase
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     #endif
@@ -45,6 +46,8 @@ struct RootView: View {
             await notifications.refreshAuthorization()
             rescheduleRituals()
             rescheduleHabitReminders()
+            LiveActivityController.shared.accentHex = Theme.accent(named: accentName).hexRGB
+            refreshWidgetSnapshot()
         }
         .onChange(of: morningReminderEnabled) { _, _ in rescheduleRituals() }
         .onChange(of: morningReminderMinutes) { _, _ in rescheduleRituals() }
@@ -55,8 +58,20 @@ struct RootView: View {
         }
         .onChange(of: service.blocks) { _, blocks in
             notifications.rescheduleCheckIns(for: blocks)
+            refreshWidgetSnapshot()
         }
-        .onChange(of: life.habits) { _, _ in rescheduleHabitReminders() }
+        .onChange(of: service.tasks) { _, _ in refreshWidgetSnapshot() }
+        .onChange(of: life.habits) { _, _ in
+            rescheduleHabitReminders()
+            refreshWidgetSnapshot()
+        }
+        .onChange(of: life.habitCompletions) { _, _ in refreshWidgetSnapshot() }
+        .onChange(of: accentName) { _, name in
+            LiveActivityController.shared.accentHex = Theme.accent(named: name).hexRGB
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { refreshWidgetSnapshot() }
+        }
         .onChange(of: notifications.enabled) { _, _ in
             rescheduleRituals()
             rescheduleHabitReminders()
@@ -223,6 +238,10 @@ struct RootView: View {
             morningMinutes: morningReminderEnabled ? morningReminderMinutes : nil,
             eveningMinutes: eveningReminderEnabled ? eveningReminderMinutes : nil
         )
+    }
+
+    private func refreshWidgetSnapshot() {
+        SnapshotWriter.refresh(service: service, life: life, accentName: accentName)
     }
 
     private func rescheduleHabitReminders() {

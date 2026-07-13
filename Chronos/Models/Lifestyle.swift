@@ -157,7 +157,7 @@ final class LifeStore: ObservableObject {
 
     @Published var goals: [Goal] { didSet { save() } }
     @Published var habits: [Habit] { didSet { save() } }
-    @Published private var habitCompletions: Set<String> { didSet { save() } }
+    @Published private(set) var habitCompletions: Set<String> { didSet { save() } }
     @Published var journal: [JournalEntry] { didSet { save() } }
     @Published var templates: [DayTemplate] { didSet { save() } }
     @Published var budgets: [TimeBudget] { didSet { save() } }

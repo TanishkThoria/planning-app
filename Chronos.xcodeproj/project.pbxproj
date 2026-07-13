@@ -253,6 +253,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Chronos reads and writes your calendars so your time blocks stay in perfect sync with Apple Calendar.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Chronos reads and writes your reminders so your tasks stay in perfect sync with Apple Reminders.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -295,6 +296,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Chronos reads and writes your calendars so your time blocks stay in perfect sync with Apple Calendar.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Chronos reads and writes your reminders so your tasks stay in perfect sync with Apple Reminders.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

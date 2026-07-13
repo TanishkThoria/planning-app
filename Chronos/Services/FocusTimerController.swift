@@ -64,18 +64,21 @@ final class FocusTimerController: ObservableObject {
         lastResumeEpoch = focusStartEpoch
         isActive = true
         isRunning = true
+        startLiveActivity()
     }
 
     func pause() {
         guard isRunning else { return }
         accumulated = elapsed()
         isRunning = false
+        syncLiveActivity()
     }
 
     func resume() {
         guard isActive, !isRunning else { return }
         lastResumeEpoch = Date().timeIntervalSince1970
         isRunning = true
+        syncLiveActivity()
     }
 
     func toggle() { isRunning ? pause() : resume() }
@@ -99,6 +102,7 @@ final class FocusTimerController: ObservableObject {
         accumulated = 0
         lastResumeEpoch = Date().timeIntervalSince1970
         isRunning = true
+        syncLiveActivity()
     }
 
     /// Stop everything, logging any focus time in progress.
@@ -111,7 +115,39 @@ final class FocusTimerController: ObservableObject {
         taskID = nil
         accumulated = 0
         phase = .focus
+        LiveActivityController.shared.end()
     }
+
+    // MARK: Live Activity mirroring
+
+    private func startLiveActivity() {
+        #if canImport(ActivityKit)
+        LiveActivityController.shared.start(activityState())
+        #endif
+    }
+
+    private func syncLiveActivity() {
+        #if canImport(ActivityKit)
+        guard isActive else { return }
+        LiveActivityController.shared.update(activityState())
+        #endif
+    }
+
+    #if canImport(ActivityKit)
+    private func activityState() -> FocusActivityAttributes.ContentState {
+        let now = Date()
+        return FocusActivityAttributes.ContentState(
+            title: taskTitle,
+            phaseEndEpoch: now.addingTimeInterval(remaining(at: now)).timeIntervalSince1970,
+            phaseStartEpoch: now.addingTimeInterval(-elapsed(at: now)).timeIntervalSince1970,
+            phaseLabel: phase == .focus ? "Focus" : "Break",
+            isCountdown: mode == .pomodoro,
+            isPaused: !isRunning,
+            frozenSeconds: mode == .pomodoro ? remaining(at: now) : elapsed(at: now),
+            completedPomodoros: completedPomodoros
+        )
+    }
+    #endif
 
     private func logFocus(completedFull: Bool) {
         let now = Date().timeIntervalSince1970
