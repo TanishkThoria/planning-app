@@ -297,125 +297,62 @@ struct SettingsView: View {
                         .padding(.horizontal, 4)
                     }
 
-                    settingsSection("Chronos+") {
-                        Button {
-                            model.settingsPresented = false
-                            model.chronosPlusPresented = true
-                        } label: {
-                            HStack(spacing: 10) {
-                                Image(systemName: "sparkles")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(Color.accentColor)
-                                    .frame(width: 20)
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text("iCloud sync, leaderboards & friends")
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundStyle(Theme.textPrimary)
-                                    Text(PaidFeatures.shared.anyCapabilityEntitled
-                                         ? "Manage your Chronos+ features"
-                                         : "Built in — see how to turn it on")
-                                        .font(.system(size: 11))
-                                        .foregroundStyle(Theme.textTertiary)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(Theme.textTertiary)
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 11)
-                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    settingsSection("Insights & Reports") {
+                        linkRow("chart.bar.xaxis", "Statistics", "Completion, focus, streaks & achievements") {
+                            closeSettings(); model.statsPresented = true
                         }
-                        .buttonStyle(.plain)
+                        linkRow("clock.arrow.circlepath", "Time Report", "Where your hours actually went") {
+                            closeSettings(); model.timeReportPresented = true
+                        }
+                        linkRow("chart.pie", "Time Budgets", "Set weekly hour targets by category") {
+                            closeSettings(); model.budgetsPresented = true
+                        }
+                        linkRow("chart.line.uptrend.xyaxis", "Trends", "Mood, habits & goals over time") {
+                            closeSettings(); model.trendsPresented = true
+                        }
+                        linkRow("sparkles", "Year in Review", "Your year in time, wrapped up") {
+                            closeSettings(); model.wrappedPresented = true
+                        }
                     }
 
-                    settingsSection("Account") {
-                        Button {
-                            model.statsPresented = true
-                        } label: {
-                            HStack(spacing: 10) {
-                                Image(systemName: "chart.bar.xaxis")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(Color.accentColor)
-                                    .frame(width: 20)
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text("Statistics")
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundStyle(Theme.textPrimary)
-                                    Text("Completion, focus, budgets, achievements")
-                                        .font(.system(size: 11))
-                                        .foregroundStyle(Theme.textTertiary)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(Theme.textTertiary)
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 11)
-                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    settingsSection("Planning Tools") {
+                        linkRow("square.on.square", "Day Templates", "Apply a saved shape to any day") {
+                            closeSettings(); model.templatesPresented = true
                         }
-                        .buttonStyle(.plain)
+                        linkRow("calendar.badge.clock", "Plan Deadlines", "Work backwards from every due date") {
+                            closeSettings(); model.deadlinePlanPresented = true
+                        }
+                        linkRow("square.and.arrow.up", "Share Availability", "Copy your free slots as text") {
+                            closeSettings(); model.availabilityPresented = true
+                        }
+                    }
 
-                        Button {
+                    settingsSection("Connections") {
+                        linkRow("sparkles", "Chronos+",
+                                PaidFeatures.shared.anyCapabilityEntitled
+                                    ? "iCloud sync, leaderboards & friends"
+                                    : "iCloud sync, leaderboards & friends — see how to turn it on") {
+                            closeSettings(); model.chronosPlusPresented = true
+                        }
+                        linkRow("graduationcap.fill",
+                                LMSStore.shared.isConfigured ? "Manage Schools" : "Connect Your School",
+                                "Canvas & Schoology — assignments become reminders") {
+                            closeSettings()
                             if LMSStore.shared.isConfigured {
                                 model.lmsManagePresented = true
                             } else {
                                 model.lmsSetupPresented = true
                             }
-                            model.settingsPresented = false
-                        } label: {
-                            HStack(spacing: 10) {
-                                Image(systemName: "graduationcap.fill")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(Color.accentColor)
-                                    .frame(width: 20)
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(LMSStore.shared.isConfigured ? "Manage schools" : "Connect your school")
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundStyle(Theme.textPrimary)
-                                    Text("Canvas, Schoology — assignments become reminders")
-                                        .font(.system(size: 11))
-                                        .foregroundStyle(Theme.textTertiary)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(Theme.textTertiary)
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 11)
-                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                         }
-                        .buttonStyle(.plain)
+                    }
 
-                        Button {
-                            model.settingsPresented = false
-                            TourController.shared.start()
-                        } label: {
-                            HStack(spacing: 10) {
-                                Image(systemName: "map")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(Color.accentColor)
-                                    .frame(width: 20)
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text("Take the tour")
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundStyle(Theme.textPrimary)
-                                    Text("A guided walkthrough of every screen")
-                                        .font(.system(size: 11))
-                                        .foregroundStyle(Theme.textTertiary)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(Theme.textTertiary)
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 11)
-                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    settingsSection("Help") {
+                        linkRow("map", "Take the Tour", "A guided walkthrough of every screen") {
+                            closeSettings(); TourController.shared.start()
                         }
-                        .buttonStyle(.plain)
+                        linkRow("command", "Command Bar", "Jump to any action — also ⌘K on Mac") {
+                            closeSettings(); model.commandBarPresented = true
+                        }
                     }
 
                     settingsSection("Backup") {
@@ -516,6 +453,45 @@ struct SettingsView: View {
                 .padding(.horizontal, 4)
             content()
         }
+    }
+
+    /// A tappable settings row: icon, title, subtitle, chevron. Used for every
+    /// destination that opens a sheet, so the reorganized Settings reads as one
+    /// consistent list instead of a pile of bespoke buttons.
+    private func linkRow(_ icon: String, _ title: String, _ subtitle: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+                    .frame(width: 20)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(subtitle)
+                        .font(.system(size: 11))
+                        .foregroundStyle(Theme.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 11)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// iOS presents most destinations as sheets from RootView, so Settings must
+    /// dismiss itself first; macOS keeps Settings open in its own window.
+    private func closeSettings() {
+        #if os(iOS)
+        model.settingsPresented = false
+        #endif
     }
 
     private func hourPicker(selection: Binding<Int>, range: ClosedRange<Int>) -> some View {

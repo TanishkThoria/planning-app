@@ -48,8 +48,23 @@ struct GrowView: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
-            HeaderIconButton(icon: "chart.line.uptrend.xyaxis", label: "Trends") {
-                model.trendsPresented = true
+            OverflowMenu {
+                Button { model.morningRitualPresented = true } label: {
+                    Label("Morning Ritual", systemImage: "sunrise.fill")
+                }
+                Button { model.eveningRitualPresented = true } label: {
+                    Label("Evening Ritual", systemImage: "moon.stars.fill")
+                }
+                Button { model.journalPresented = true } label: {
+                    Label("Journal", systemImage: "book.closed")
+                }
+                Divider()
+                Button { model.weeklyReviewPresented = true } label: {
+                    Label("Weekly Review", systemImage: "calendar.badge.checkmark")
+                }
+                Button { model.trendsPresented = true } label: {
+                    Label("Trends — mood, habits & goals over time", systemImage: "chart.line.uptrend.xyaxis")
+                }
             }
             Menu {
                 Button { model.goalEditor = GoalEditContext(goal: Goal(), isNew: true) } label: {
@@ -57,13 +72,6 @@ struct GrowView: View {
                 }
                 Button { model.habitEditor = HabitEditContext(habit: Habit(), isNew: true) } label: {
                     Label("New Habit", systemImage: "repeat")
-                }
-                Button { model.journalPresented = true } label: {
-                    Label("Open Journal", systemImage: "book.closed")
-                }
-                Divider()
-                Button { model.weeklyReviewPresented = true } label: {
-                    Label("Weekly Review", systemImage: "calendar.badge.checkmark")
                 }
             } label: {
                 Image(systemName: "plus")

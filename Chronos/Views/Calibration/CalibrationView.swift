@@ -289,6 +289,56 @@ struct CalibrationView: View {
                 .font(.system(size: 12.5))
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(3)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("WHERE THINGS LIVE")
+                    .font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                    .foregroundStyle(Theme.textTertiary)
+                mapRow("sun.max.fill", "Today", "Your command center — Plan, Review & Focus in the ••• menu")
+                mapRow("calendar", "Calendar", "Timeline in Day / Week / Month / Agenda, plus planning tools")
+                mapRow("checklist", "Tasks", "Reminders, the Eisenhower matrix & deadline planning")
+                mapRow("leaf.fill", "Grow", "Habits, goals, journal and daily rituals")
+                mapRow("sparkles", "Coach", "Ask anything — and all your stats & reports")
+                mapRow("command", "⌘K & •••", "The command bar and each screen's menu find everything else")
+            }
+            .padding(12)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            Button {
+                // Commit the profile first so the post-tour gate doesn't
+                // bounce the user straight back into calibration.
+                draft.isCalibrated = true
+                profileStore.profile = draft
+                dismiss()
+                TourController.shared.start()
+            } label: {
+                Label("Take the guided tour", systemImage: "map")
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 11)
+                    .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func mapRow(_ icon: String, _ title: String, _ subtitle: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 13))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 22)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text(subtitle)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
         }
     }
 

@@ -221,26 +221,24 @@ struct TasksView: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
-            if mode == .list {
-                HeaderIconButton(icon: selectionMode ? "checkmark.circle.fill" : "checklist") {
-                    selectionMode.toggle()
-                    if !selectionMode { selected.removeAll() }
+            OverflowMenu {
+                if mode == .list {
+                    Button {
+                        selectionMode.toggle()
+                        if !selectionMode { selected.removeAll() }
+                    } label: {
+                        Label(selectionMode ? "Done selecting" : "Select multiple",
+                              systemImage: selectionMode ? "checkmark.circle.fill" : "checklist")
+                    }
                 }
-                .help("Select multiple")
-            }
-            HeaderIconButton(icon: "calendar.badge.clock") {
-                model.deadlinePlanPresented = true
-            }
-            .help("Plan deadlines — schedule study sessions before every due date")
-            HeaderIconButton(icon: "magnifyingglass") {
-                model.searchPresented = true
-            }
-            .help("Search")
-            if visibleTasks.contains(where: { $0.isOverdue }) {
-                HeaderIconButton(icon: "calendar.badge.exclamationmark") {
-                    model.overdueSweepPresented = true
+                Button { model.deadlinePlanPresented = true } label: {
+                    Label("Plan Deadlines — study before due dates", systemImage: "calendar.badge.clock")
                 }
-                .help("Clear overdue")
+                if visibleTasks.contains(where: { $0.isOverdue }) {
+                    Button { model.overdueSweepPresented = true } label: {
+                        Label("Sweep Overdue into open time", systemImage: "calendar.badge.exclamationmark")
+                    }
+                }
             }
             HeaderIconButton(icon: "plus", prominent: true) {
                 model.newTask(listID: defaultListID.isEmpty ? nil : defaultListID)

@@ -12,8 +12,12 @@ Built for power users and serious planners: fast, keyboard-driven, and designed 
 
 ## Navigation
 
-- **macOS / iPad** — a sidebar with Today, Calendar, Tasks, Matrix, Insights, Settings, a mini-month for jumping around, and per-calendar/list visibility toggles. Full menu-bar keyboard control.
-- **iPhone** — five primary tabs (Today, Calendar, Tasks, Matrix, Insights) with nothing hidden behind an overflow menu; Settings opens from a gear on the home screen. The **Calendar** tab carries a segmented **Day / Week / Agenda** switch so all three planner modes live in one place. Pinch the day timeline to zoom.
+Five primary destinations — **Today, Calendar, Tasks, Grow, Coach** — as tabs on iPhone and a sidebar on macOS/iPad. Everything else follows one predictable rule so nothing feels buried:
+
+- **Every screen has the same header shape** — a title, one **••• overflow menu** of that screen's actions, and one prominent **＋** for the primary create action. Each ••• menu ends with the same universal section (Command Bar, Search, Settings, Take the Tour), so app-wide tools are always in the same place.
+- **Tools are grouped by purpose.** Planning tools (Plan My Day/Week, Templates, Deadlines, Share Availability, Reflow) live in the **Calendar** menu; every report and stat (Statistics, Time Report, Budgets, Trends, Year in Review) lives in the **Coach** menu under *Insights & Reports*; goals/habits/journal/rituals live in **Grow**. **Settings** groups the same reports, planning tools, your school (Canvas/Schoology) connect, and Chronos+ so there's always a second, findable home.
+- **The Command Bar (⌘K)** fuzzy-searches every action and destination in the app — one keystroke to anywhere, one to anything.
+- **Calendar** carries a segmented **Day / Week / Month / Agenda** switch so all planner modes live in one place. Pinch the day timeline to zoom. macOS keeps full menu-bar keyboard control.
 
 The app ships a minimal, memorable app icon — a single indigo time block crossed by the red "now" line on a faint hour grid — with dedicated dark and tinted variants for iOS icon theming.
 

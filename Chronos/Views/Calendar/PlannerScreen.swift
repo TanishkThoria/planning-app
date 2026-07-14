@@ -66,7 +66,7 @@ struct PlannerScreen: View {
     }
 
     private var actionsMenu: some View {
-        Menu {
+        OverflowMenu {
             Button {
                 model.morningPlanningPresented = true
             } label: { Label("Plan Today", systemImage: "sunrise") }
@@ -84,19 +84,23 @@ struct PlannerScreen: View {
             Button { model.reviewPresented = true } label: {
                 Label("Review Day", systemImage: "checkmark.circle")
             }
+            Button { model.reflowPresented = true } label: {
+                Label("Reflow — reschedule what slipped", systemImage: "arrow.triangle.2.circlepath")
+            }
+
+            Divider()
             Button { model.startFocus(taskID: nil, title: "Focus") } label: {
                 Label("Focus Timer", systemImage: "timer")
             }
             Button { model.templatesPresented = true } label: {
                 Label("Day Templates", systemImage: "square.grid.3x3")
             }
-
-            #if os(iOS)
-            Divider()
-            Button { model.settingsPresented = true } label: {
-                Label("Settings", systemImage: "gearshape")
+            Button { model.deadlinePlanPresented = true } label: {
+                Label("Plan Deadlines", systemImage: "calendar.badge.clock")
             }
-            #endif
+            Button { model.availabilityPresented = true } label: {
+                Label("Share Availability", systemImage: "square.and.arrow.up")
+            }
 
             if model.plannerMode == .day {
                 Divider()
@@ -110,14 +114,7 @@ struct PlannerScreen: View {
                     Label("Zoom Out", systemImage: "minus.magnifyingglass")
                 }
             }
-        } label: {
-            Image(systemName: "ellipsis")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Theme.textSecondary)
-                .frame(width: 28, height: 26)
-                .background(Theme.fill, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
         }
-        .menuIndicator(.hidden)
     }
 
     // MARK: Title text

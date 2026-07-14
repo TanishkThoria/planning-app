@@ -57,40 +57,32 @@ struct TourStep: Identifiable {
         TourStep(
             screen: .today,
             icon: "sun.max.fill",
-            title: "Today, at a glance",
-            message: "Your home base. See what's happening now, what's next, and jump straight into your day.",
-            demoLabel: "Quick-add anything",
+            title: "Today — your home base",
+            message: "What's next, what's overdue, your frog, intentions and habits, all on one screen. The ••• menu up top holds Plan Today, Review, Reflow, and Focus; the + button quick-adds anything.",
+            demoLabel: "Try quick-add",
             demo: .quickAdd
         ),
         TourStep(
             screen: .calendar, mode: .day,
             icon: "calendar.day.timeline.left",
             title: "The day timeline",
-            message: "Every block is a real Apple Calendar event. Double-tap an empty slot to create one; drag to move or resize.",
+            message: "Every block is a real Apple Calendar event. Double-tap an empty slot to create one; drag to move or resize. The ••• menu is your planning toolkit — Plan My Day, Templates, Deadlines, and more.",
             demoLabel: "Plan my day for me",
             demo: .planDay
         ),
         TourStep(
             screen: .calendar, mode: .week,
             icon: "calendar",
-            title: "Zoom out to the week",
-            message: "Switch modes up top. Week shows all seven days on one scale so you can balance your load.",
-            demoLabel: nil,
-            demo: nil
-        ),
-        TourStep(
-            screen: .calendar, mode: .month,
-            icon: "square.grid.3x3",
-            title: "Month & agenda",
-            message: "Step back to the month for the big picture, or use Agenda for a clean, scannable list of what's ahead.",
+            title: "Day · Week · Month · Agenda",
+            message: "One Calendar tab, four views — switch with the segmented control. Week balances your load across seven days; Month is the big picture; Agenda is a clean scannable list.",
             demoLabel: nil,
             demo: nil
         ),
         TourStep(
             screen: .tasks,
             icon: "checklist",
-            title: "Tasks, your way",
-            message: "Your Apple Reminders with estimates, energy, and priority. Toggle the Eisenhower matrix to triage what truly matters.",
+            title: "Tasks & the matrix",
+            message: "Your Apple Reminders with estimates, energy, and priority. Flip to the Eisenhower Matrix with the toggle up top. The ••• menu has Plan Deadlines and Sweep Overdue for when things pile up.",
             demoLabel: "Search everything",
             demo: .search
         ),
@@ -98,37 +90,37 @@ struct TourStep: Identifiable {
             screen: .grow,
             icon: "leaf.fill",
             title: "Grow every day",
-            message: "Habits, goals, a journal, and morning & evening rituals — the part of you behind the schedule.",
+            message: "Habits with streaks, goals, and a journal. The ••• menu opens your morning & evening rituals, the Weekly Review, and long-term Trends. The + button adds a goal or habit.",
             demoLabel: "Try a morning ritual",
             demo: .morningRitual
         ),
         TourStep(
             screen: .coach,
             icon: "sparkles",
-            title: "Meet your Coach",
-            message: "Ask anything about your day. It answers from your real schedule and tasks — and plans any of it with a tap.",
-            demoLabel: nil,
-            demo: nil
+            title: "Coach — ask & reflect",
+            message: "Ask anything about your day; it answers from your real schedule and plans it with a tap. Its ••• menu is your Insights & Reports home — Statistics, Time Report, Budgets, Trends, and Year in Review all live here.",
+            demoLabel: "Open your Statistics",
+            demo: .stats
         ),
         TourStep(
             screen: .today,
             icon: "timer",
-            title: "Focus when it counts",
-            message: "Start a Pomodoro or open timer anytime. It rides along on your Lock Screen and Dynamic Island as a Live Activity.",
+            title: "Focus & Now mode",
+            message: "Start a Pomodoro or open timer from any block or task — it rides along on your Lock Screen as a Live Activity. Need zero distractions? Now mode strips everything down to just this moment.",
             demoLabel: "Start a focus session",
             demo: .focusTimer
         ),
         TourStep(
-            screen: .coach,
-            icon: "chart.bar.xaxis",
-            title: "See your progress",
-            message: "Your stats — focus, completion, streaks, budgets, and achievements — live one tap away. That's the whole tour!",
-            demoLabel: "Open Statistics",
-            demo: .stats
+            screen: .today,
+            icon: "command",
+            title: "Find anything, instantly",
+            message: "Two things to remember: every screen's ••• menu ends with Command Bar, Search, Settings, and this Tour — and the Command Bar (⌘K) jumps to any action in one keystroke. Settings groups your reports, planning tools, school connect, and Chronos+. That's the tour!",
+            demoLabel: "Open the Command Bar",
+            demo: .commandBar
         )
     ]
 }
 
 enum TourDemo {
-    case quickAdd, planDay, focusTimer, morningRitual, search, stats
+    case quickAdd, planDay, focusTimer, morningRitual, search, stats, commandBar
 }

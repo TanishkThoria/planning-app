@@ -153,6 +153,7 @@ struct TourOverlay: View {
         case .morningRitual: model.morningRitualPresented = true
         case .search: model.searchPresented = true
         case .stats: model.statsPresented = true
+        case .commandBar: model.commandBarPresented = true
         }
     }
 }

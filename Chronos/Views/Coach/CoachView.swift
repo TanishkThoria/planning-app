@@ -93,7 +93,7 @@ struct CoachChatView: View {
                 }
             }
             Spacer()
-            HeaderIconButton(icon: "chart.bar.xaxis") { model.statsPresented = true }
+            OverflowMenu { InsightsMenu() }
             HeaderIconButton(icon: "square.and.pencil") { newConversation() }
         }
     }

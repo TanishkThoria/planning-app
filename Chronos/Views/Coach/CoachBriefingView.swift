@@ -40,8 +40,8 @@ struct CoachBriefingView: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
-            HeaderIconButton(icon: "chart.bar.xaxis") { model.statsPresented = true }
-            HeaderIconButton(icon: "slider.horizontal.3") { model.calibrationPresented = true }
+            OverflowMenu { InsightsMenu() }
+            HeaderIconButton(icon: "chart.bar.xaxis", prominent: true) { model.statsPresented = true }
         }
     }
 }

@@ -202,6 +202,85 @@ struct HeaderIconButton: View {
     }
 }
 
+// MARK: - Universal overflow menu
+
+/// The app-wide tools appended to the bottom of every screen's ••• menu, so
+/// "where do I find X" always has the same answer: the overflow menu, then
+/// the ⌘K command bar for anything else. Keeping this identical everywhere is
+/// what makes the reorganized app feel predictable rather than scattered.
+struct AppToolsMenu: View {
+    @EnvironmentObject private var model: AppModel
+
+    var body: some View {
+        Button { model.commandBarPresented = true } label: {
+            Label("Command Bar — find anything", systemImage: "command")
+        }
+        Button { model.searchPresented = true } label: {
+            Label("Search", systemImage: "magnifyingglass")
+        }
+        Button {
+            #if os(iOS)
+            model.settingsPresented = true
+            #else
+            model.screen = .settings
+            #endif
+        } label: {
+            Label("Settings", systemImage: "gearshape")
+        }
+        Button { TourController.shared.start() } label: {
+            Label("Take the tour", systemImage: "map")
+        }
+    }
+}
+
+/// The "Insights & Reports" cluster — every read-only analytics surface in
+/// one predictable place. The Coach is that place (its overflow menu), and
+/// Settings surfaces the same set, so numbers never hide in a random corner.
+struct InsightsMenu: View {
+    @EnvironmentObject private var model: AppModel
+
+    var body: some View {
+        Button { model.statsPresented = true } label: {
+            Label("Statistics", systemImage: "chart.bar.xaxis")
+        }
+        Button { model.timeReportPresented = true } label: {
+            Label("Time Report — where your hours went", systemImage: "clock.arrow.circlepath")
+        }
+        Button { model.budgetsPresented = true } label: {
+            Label("Time Budgets", systemImage: "chart.pie")
+        }
+        Button { model.trendsPresented = true } label: {
+            Label("Trends over time", systemImage: "chart.line.uptrend.xyaxis")
+        }
+        Button { model.wrappedPresented = true } label: {
+            Label("Year in Review", systemImage: "sparkles")
+        }
+    }
+}
+
+/// Standard ••• overflow button used in every hub header: the screen's own
+/// actions on top, then a divider and the shared `AppToolsMenu` below. This
+/// replaces the row-of-icons headers that had grown cluttered, collapsing
+/// each screen to a single, well-organized menu plus one primary action.
+struct OverflowMenu<Content: View>: View {
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        Menu {
+            content
+            Divider()
+            AppToolsMenu()
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Theme.textSecondary)
+                .frame(width: 28, height: 26)
+                .background(Theme.fill, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+        }
+        .menuIndicator(.hidden)
+    }
+}
+
 /// Completion ring used in headers and insights.
 struct ProgressRing: View {
     let fraction: Double

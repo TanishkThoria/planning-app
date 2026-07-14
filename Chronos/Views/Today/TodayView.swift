@@ -357,31 +357,27 @@ struct TodayView: View {
                     .foregroundStyle(remainingCount == 0 ? Theme.success : Theme.textSecondary)
             }
             Spacer()
-            HeaderIconButton(icon: "circle.circle") {
-                model.nowModePresented = true
+            OverflowMenu {
+                Button { model.morningPlanningPresented = true } label: {
+                    Label("Plan Today", systemImage: "sunrise")
+                }
+                Button { model.planDayPresented = true } label: {
+                    Label("Plan My Day", systemImage: "wand.and.stars")
+                }
+                Button { model.reviewPresented = true } label: {
+                    Label("Review Day", systemImage: "checkmark.circle")
+                }
+                Button { model.reflowPresented = true } label: {
+                    Label("Reflow — reschedule what slipped", systemImage: "arrow.triangle.2.circlepath")
+                }
+                Divider()
+                Button { model.startFocus(taskID: nil, title: "Focus") } label: {
+                    Label("Start Focus Timer", systemImage: "timer")
+                }
+                Button { model.nowModePresented = true } label: {
+                    Label("Now — distraction-free focus", systemImage: "circle.circle")
+                }
             }
-            .help("Now — distraction-free focus")
-            HeaderIconButton(icon: "command") {
-                model.commandBarPresented = true
-            }
-            .help("Command bar")
-            #if os(iOS)
-            HeaderIconButton(icon: "gearshape") {
-                model.settingsPresented = true
-            }
-            #endif
-            HeaderIconButton(icon: "sunrise") {
-                model.morningPlanningPresented = true
-            }
-            .help("Plan Today")
-            HeaderIconButton(icon: "arrow.triangle.2.circlepath") {
-                model.reflowPresented = true
-            }
-            .help("Reflow — reschedule what slipped")
-            HeaderIconButton(icon: "checkmark.circle") {
-                model.reviewPresented = true
-            }
-            .help("Review Day")
             HeaderIconButton(icon: "plus", prominent: true) {
                 model.quickAddPresented = true
             }
