@@ -1,8 +1,5 @@
 import Foundation
 import Combine
-#if canImport(Security)
-import Security
-#endif
 #if canImport(CloudKit)
 import CloudKit
 #endif
@@ -70,32 +67,22 @@ enum PaidCapability: String, CaseIterable, Identifiable {
     }
 }
 
-/// Reads the running binary's code-signing entitlements at runtime. This is the
-/// safe way to know whether a paid capability is actually available *before*
-/// touching CloudKit/GameKit — constructing a `CKContainer` without the iCloud
-/// entitlement would otherwise raise an uncatchable exception. On the free
-/// account these all return false and the paid services never run.
+/// Whether this build actually ships the paid Apple capabilities. It's driven
+/// by the `CHRONOS_PLUS` compilation condition, which the upgrade guide has you
+/// add in Xcode at the same time you add the iCloud, App Group and Game Center
+/// capabilities (see docs/CHRONOS_PLUS_SETUP.md).
+///
+/// This is deliberately a compile-time flag rather than a runtime entitlement
+/// probe: it means the free account's binary can *never* reach a `CKContainer`
+/// or GameKit call (which would crash without the matching entitlement), while
+/// the code itself still compiles everywhere so CI keeps validating it.
 enum AppEntitlements {
-    static func value(for key: String) -> Any? {
-        #if canImport(Security)
-        guard let task = SecTaskCreateFromSelf(nil) else { return nil }
-        return SecTaskCopyValueForEntitlement(task, key as CFString, nil)
-        #else
-        return nil
-        #endif
-    }
-
-    /// True when the entitlement is present and non-empty (arrays) / true (bools).
-    static func has(_ key: String) -> Bool {
-        guard let value = value(for: key) else { return false }
-        if let array = value as? [Any] { return !array.isEmpty }
-        if let flag = value as? Bool { return flag }
-        if let string = value as? String { return !string.isEmpty }
+    static var chronosPlusBuild: Bool {
+        #if CHRONOS_PLUS
         return true
-    }
-
-    static var iCloudContainer: String? {
-        (value(for: "com.apple.developer.icloud-container-identifiers") as? [String])?.first
+        #else
+        return false
+        #endif
     }
 }
 
@@ -128,7 +115,10 @@ final class PaidFeatures: ObservableObject {
     // MARK: Entitlement presence (compile-time capability actually shipped)
 
     func isEntitled(_ capability: PaidCapability) -> Bool {
-        AppEntitlements.has(capability.entitlementKey)
+        // The upgrade adds all paid capabilities together with the CHRONOS_PLUS
+        // flag, so one gate covers them. On the free build this is always false
+        // and no paid framework is ever touched.
+        AppEntitlements.chronosPlusBuild
     }
 
     /// Any paid capability shipped in this build? (false on the free account)

@@ -128,7 +128,8 @@ struct ChronosPlusView: View {
             VStack(alignment: .leading, spacing: 8) {
                 guideStep(1, "In Xcode, select the Chronos target → Signing & Capabilities.")
                 guideStep(2, "Add iCloud (CloudKit + the container), App Groups (group.app.chronos.planner), and Game Center.")
-                guideStep(3, "Reopen this screen — the master switch appears and everything turns on with one tap.")
+                guideStep(3, "Add CHRONOS_PLUS to Active Compilation Conditions (the safety interlock).")
+                guideStep(4, "Reopen this screen — the master switch appears and everything turns on with one tap.")
             }
             .padding(12)
             .background(Theme.elevated, in: RoundedRectangle(cornerRadius: 10, style: .continuous))

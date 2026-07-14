@@ -75,7 +75,20 @@ finished file contains:
 <true/>
 ```
 
-## Step 2 — Turn it on in the app
+## Step 2 — Flip on the code path
+
+The app only reaches CloudKit/GameKit when the build is compiled with the
+**`CHRONOS_PLUS`** flag. This is a safety interlock: without it, the free
+account's binary can never touch a paid framework (which would crash without the
+matching entitlement).
+
+In the **Chronos** target → **Build Settings** → **Active Compilation
+Conditions**, add **`CHRONOS_PLUS`** (to Debug and Release).
+
+> Add this flag **only after** all three capabilities above are in place — it
+> tells the app every paid capability is present.
+
+## Step 3 — Turn it on in the app
 
 1. Build & run on your device.
 2. **Settings › Chronos+** — the master switch now appears (it's hidden until a
@@ -93,11 +106,10 @@ already on and everything activates the moment the entitled build launches.
 Every paid path gates on `PaidFeatures.shared.isReady(_:)`, which is true only
 when **all three** hold:
 
-1. **Entitled** — `AppEntitlements.has(...)` reads the running binary's
-   code-signing entitlements via `SecTaskCopyValueForEntitlement`. On the free
-   account these are absent, so the check is false and the CloudKit/GameKit APIs
-   are never called (constructing a `CKContainer` without the entitlement would
-   otherwise crash — this is why we detect *before* touching it).
+1. **Entitled** — `AppEntitlements.chronosPlusBuild` is the `CHRONOS_PLUS`
+   compile flag. On the free build it's false, so the CloudKit/GameKit APIs are
+   never called (constructing a `CKContainer` without the entitlement would
+   otherwise crash — this is why we gate *before* touching it).
 2. **Account available** — for iCloud features, `CKContainer.accountStatus`
    reports `.available`.
 3. **User opted in** — the `Prefs.chronosPlusEnabled` master toggle (plus the
