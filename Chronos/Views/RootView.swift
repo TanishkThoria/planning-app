@@ -126,7 +126,7 @@ struct RootView: View {
             // new LMS assignments in the background.
             lms.applyHidden(to: service)
             if lms.isConfigured, service.hasFullAccess {
-                await lms.sync(service: service)
+                await lms.autoSyncIfStale(service: service)
             }
         }
     }
@@ -141,6 +141,9 @@ struct RootView: View {
             notifications.rescheduleCheckIns(for: blocks, startAlerts: startAlertsEnabled)
             refreshWidgetSnapshot()
             syncBlockActivity()
+            // Feed updates arrive as calendar changes — pull new assignments
+            // (throttled so our own imports don't loop it).
+            Task { await lms.autoSyncIfStale(service: service, minInterval: 30 * 60) }
         }
         .onChange(of: service.tasks) { _, _ in refreshWidgetSnapshot() }
         .onChange(of: life.habits) { _, _ in
@@ -154,6 +157,9 @@ struct RootView: View {
             if phase == .active {
                 refreshWidgetSnapshot()
                 syncBlockActivity()
+                // Guarantees at-least-daily assignment imports for anyone who
+                // opens the app daily; 6h staleness keeps it fresher than that.
+                Task { await lms.autoSyncIfStale(service: service) }
             }
         }
     }
@@ -177,12 +183,23 @@ struct RootView: View {
             rescheduleHabitReminders()
         }
         .onChange(of: intentLauncher.pendingAction) { _, action in
-            // A Siri/Shortcuts intent asked to open the app to plan today.
-            if action == .planToday {
+            // A Siri/Shortcuts intent asked to open the app somewhere specific.
+            switch action {
+            case .planToday:
                 model.screen = .today
                 model.morningPlanningPresented = true
-                intentLauncher.pendingAction = nil
+            case .eatFrog:
+                model.screen = .today
+                if let frogID = model.frogTaskID,
+                   let frog = service.task(withID: frogID), !frog.isCompleted {
+                    timer.focusMinutes = 5
+                    timer.start(taskID: frog.id, title: frog.title, mode: .pomodoro)
+                    model.focusTimerPresented = true
+                }
+            case nil:
+                break
             }
+            if action != nil { intentLauncher.pendingAction = nil }
         }
         .onChange(of: notifications.pendingRoute) { _, route in
             guard let route else { return }
@@ -294,8 +311,17 @@ struct RootView: View {
         .sheet(isPresented: $model.lmsSetupPresented) {
             LMSSetupView()
         }
+        .sheet(isPresented: $model.lmsManagePresented) {
+            LMSManageView()
+        }
         .sheet(isPresented: $model.trendsPresented) {
             TrendsView()
+        }
+        .sheet(isPresented: $model.deadlinePlanPresented) {
+            DeadlinePlanView()
+        }
+        .sheet(isPresented: $model.availabilityPresented) {
+            AvailabilityView()
         }
     }
 

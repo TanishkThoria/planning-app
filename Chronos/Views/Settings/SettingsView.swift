@@ -321,7 +321,11 @@ struct SettingsView: View {
                         .buttonStyle(.plain)
 
                         Button {
-                            model.lmsSetupPresented = true
+                            if LMSStore.shared.isConfigured {
+                                model.lmsManagePresented = true
+                            } else {
+                                model.lmsSetupPresented = true
+                            }
                             model.settingsPresented = false
                         } label: {
                             HStack(spacing: 10) {
@@ -330,7 +334,7 @@ struct SettingsView: View {
                                     .foregroundStyle(Color.accentColor)
                                     .frame(width: 20)
                                 VStack(alignment: .leading, spacing: 1) {
-                                    Text(LMSStore.shared.isConfigured ? "School connected" : "Connect your school")
+                                    Text(LMSStore.shared.isConfigured ? "Manage schools" : "Connect your school")
                                         .font(.system(size: 13, weight: .semibold))
                                         .foregroundStyle(Theme.textPrimary)
                                     Text("Canvas, Schoology — assignments become reminders")

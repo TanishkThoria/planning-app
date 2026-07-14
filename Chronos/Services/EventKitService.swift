@@ -132,7 +132,8 @@ final class EventKitService: ObservableObject {
             color: color(of: calendar),
             isEditable: calendar.allowsContentModifications,
             sourceTitle: calendar.source?.title ?? "",
-            isSubscribed: calendar.type == .subscription || calendar.type == .calDAV && !calendar.allowsContentModifications
+            isSubscribed: calendar.type == .subscription || calendar.type == .calDAV && !calendar.allowsContentModifications,
+            isLocalSubscription: calendar.source?.sourceType == .subscribed || calendar.source?.sourceType == .local
         )
     }
 
@@ -260,7 +261,8 @@ final class EventKitService: ObservableObject {
             estimateMinutes: TaskMetadata.estimate(from: reminder.notes),
             sessionMinutes: TaskMetadata.session(from: reminder.notes),
             energy: TaskMetadata.energy(from: reminder.notes),
-            parentID: TaskMetadata.parentID(from: reminder.notes)
+            parentID: TaskMetadata.parentID(from: reminder.notes),
+            puntCount: TaskMetadata.puntCount(from: reminder.notes)
         )
     }
 
@@ -336,6 +338,23 @@ final class EventKitService: ObservableObject {
 
     func reminderExists(_ id: String) -> Bool {
         (store.calendarItem(withIdentifier: id) as? EKReminder) != nil
+    }
+
+    /// Record that a task was punted to a later day — bumps the `[punt:N]`
+    /// counter in its notes so the app can be honest about repeat deferrals.
+    func bumpPuntCount(id: String) {
+        guard let reminder = liveReminder(withID: id) else { return }
+        let current = TaskMetadata.puntCount(from: reminder.notes)
+        let display = TaskMetadata.strippingTokens(reminder.notes) ?? ""
+        reminder.notes = TaskMetadata.encode(
+            notes: display,
+            estimateMinutes: TaskMetadata.estimate(from: reminder.notes),
+            sessionMinutes: TaskMetadata.session(from: reminder.notes),
+            energy: TaskMetadata.energy(from: reminder.notes),
+            parentID: TaskMetadata.parentID(from: reminder.notes),
+            puntCount: current + 1
+        )
+        try? store.save(reminder, commit: true)
     }
 
     /// The occurrence ids of every block linked to the given task.
@@ -606,7 +625,8 @@ final class EventKitService: ObservableObject {
             estimateMinutes: draft.estimateMinutes,
             sessionMinutes: draft.sessionMinutes,
             energy: draft.energy,
-            parentID: draft.parentID
+            parentID: draft.parentID,
+            puntCount: draft.puntCount
         )
 
         if draft.hasDue {
@@ -676,6 +696,7 @@ final class EventKitService: ObservableObject {
         draft.notes = task.notes ?? ""
         draft.isCompleted = task.isCompleted
         draft.parentID = task.parentID
+        draft.puntCount = task.puntCount
         let recurrence = RecurrenceOption.from(rules: liveReminder(withID: task.id)?.recurrenceRules)
         draft.recurrence = recurrence
         draft.originalRecurrence = recurrence

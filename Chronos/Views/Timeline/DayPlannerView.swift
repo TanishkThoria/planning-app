@@ -174,6 +174,15 @@ struct DayPlannerView: View {
 
             Spacer()
 
+            DayPulseChip(result: DayPulse.analyze(
+                blocks: timedBlocks,
+                day: model.selectedDate,
+                workStartMinutes: workStartMinutes,
+                workEndMinutes: workEndMinutes,
+                profile: profileStore.profile,
+                taskLookup: { service.task(withID: $0) }
+            ))
+
             DateNavigator()
 
             HeaderIconButton(icon: "minus.magnifyingglass") {

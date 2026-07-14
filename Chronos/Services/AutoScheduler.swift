@@ -134,6 +134,7 @@ enum AutoScheduler {
         defaultMinutes: Int,
         gapPaddingMinutes: Int = 0,
         profile: PlannerProfile? = nil,
+        orderByDeadline: Bool = false,
         now: Date = Date()
     ) -> [Proposal] {
         var gaps = freeGaps(
@@ -157,6 +158,16 @@ enum AutoScheduler {
         }()
 
         let ordered = tasks.sorted { a, b in
+            if orderByDeadline {
+                // Earliest-deadline-first — used by the deadline work-back
+                // planner so the most urgent due date always claims slots.
+                switch (a.dueDate, b.dueDate) {
+                case let (da?, db?) where da != db: return da < db
+                case (_?, nil): return true
+                case (nil, _?): return false
+                default: break
+                }
+            }
             if a.priority.sortRank != b.priority.sortRank { return a.priority.sortRank < b.priority.sortRank }
             switch (a.dueDate, b.dueDate) {
             case let (da?, db?): return da < db
@@ -263,6 +274,87 @@ enum AutoScheduler {
                 let total = max(task.estimateMinutes ?? defaultMinutes, 10)
                 let left = total - placed
                 guard left >= 10 else { return nil }   // fully (or near-fully) scheduled
+                var trimmed = task
+                trimmed.estimateMinutes = left
+                return trimmed
+            }
+        }
+        return byDay
+    }
+
+    /// Deadline work-back: spreads estimated, due-dated work across the days
+    /// leading up to each deadline. Earliest deadlines claim slots first, no
+    /// session lands after its task's due moment, and a per-day cap keeps the
+    /// plan humane instead of frontloading a study marathon.
+    static func planDeadlines(
+        tasks: [TaskItem],
+        existing: [TimeBlock],
+        horizonDays: Int,
+        maxDailyMinutes: Int,
+        workStartMinutes: Int,
+        workEndMinutes: Int,
+        snapMinutes: Int,
+        defaultMinutes: Int,
+        gapPaddingMinutes: Int = 0,
+        profile: PlannerProfile? = nil,
+        now: Date = Date()
+    ) -> [Date: [Proposal]] {
+        var remaining = tasks.filter { $0.dueDate != nil }
+        var byDay: [Date: [Proposal]] = [:]
+        var proposedBlocks: [TimeBlock] = []
+
+        for offset in 0..<max(horizonDays, 1) {
+            guard !remaining.isEmpty else { break }
+            let day = now.startOfDay.adding(days: offset)
+
+            // Only work on tasks whose deadline hasn't passed by this day.
+            let eligible = remaining.filter { task in
+                guard let due = task.dueDate else { return false }
+                return due.startOfDay >= day
+            }
+            guard !eligible.isEmpty else { continue }
+
+            var proposals = plan(
+                tasks: eligible,
+                existing: existing + proposedBlocks,
+                on: day,
+                workStartMinutes: workStartMinutes,
+                workEndMinutes: workEndMinutes,
+                snapMinutes: snapMinutes,
+                defaultMinutes: defaultMinutes,
+                gapPaddingMinutes: gapPaddingMinutes,
+                profile: profile,
+                orderByDeadline: true,
+                now: now
+            )
+
+            // Never schedule a session past its own due moment.
+            proposals = proposals.filter { proposal in
+                guard let due = proposal.task.dueDate else { return true }
+                let cutoff = proposal.task.dueHasTime ? due : due.endOfDay
+                return proposal.end <= cutoff
+            }
+
+            // Humane daily cap — trim the latest sessions past the budget.
+            var budget = maxDailyMinutes
+            proposals = proposals.sorted { $0.start < $1.start }.filter { proposal in
+                guard budget >= proposal.minutes else { return false }
+                budget -= proposal.minutes
+                return true
+            }
+            guard !proposals.isEmpty else { continue }
+            byDay[day] = proposals
+
+            var placedMinutesByTask: [String: Int] = [:]
+            for proposal in proposals {
+                placedMinutesByTask[proposal.task.id, default: 0] += proposal.minutes
+                proposedBlocks.append(syntheticBlock(from: proposal))
+            }
+            remaining = remaining.compactMap { task in
+                guard let placed = placedMinutesByTask[task.id] else { return task }
+                let total = max(task.estimateMinutes ?? defaultMinutes, 10)
+                let left = total - placed
+                guard left >= 10 else { return nil }
                 var trimmed = task
                 trimmed.estimateMinutes = left
                 return trimmed

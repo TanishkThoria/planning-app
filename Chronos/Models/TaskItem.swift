@@ -111,8 +111,17 @@ struct TaskItem: Identifiable, Hashable {
     var energy: TaskEnergy
     /// Set when this reminder is a Chronos subtask of another reminder.
     var parentID: String?
+    /// How many times this task has been punted to a later day — an honest
+    /// procrastination signal ("you've moved this 4 times").
+    var puntCount: Int = 0
 
     var isSubtask: Bool { parentID != nil }
+
+    /// Whole days past the due date (0 when not overdue).
+    var daysOverdue: Int {
+        guard let due = dueDate, isOverdue else { return 0 }
+        return max(0, Calendar.current.dateComponents([.day], from: due.startOfDay, to: Date().startOfDay).day ?? 0)
+    }
 
     /// How the task should be broken up: nil = single block; otherwise the
     /// per-session length (never larger than the estimate).
@@ -162,6 +171,7 @@ struct TaskDraft {
     var notes: String = ""
     var isCompleted: Bool = false
     var parentID: String?
+    var puntCount: Int = 0
     var recurrence: RecurrenceOption = .none
     var originalRecurrence: RecurrenceOption = .none
 }
@@ -184,8 +194,9 @@ enum TaskMetadata {
     private static let chunkPattern = "\\[chunk:(\\d+)m\\]"
     private static let energyPattern = "\\[energy:(deep|shallow)\\]"
     private static let parentPattern = "\\[sub:([^\\]]+)\\]"
+    private static let puntPattern = "\\[punt:(\\d+)\\]"
 
-    private static let allPatterns = [estimatePattern, chunkPattern, energyPattern, parentPattern]
+    private static let allPatterns = [estimatePattern, chunkPattern, energyPattern, parentPattern, puntPattern]
 
     private static func firstGroup(_ pattern: String, in notes: String?) -> String? {
         guard let notes,
@@ -212,6 +223,11 @@ enum TaskMetadata {
         firstGroup(parentPattern, in: notes)
     }
 
+    /// How many times this task has been rescheduled/punted.
+    static func puntCount(from notes: String?) -> Int {
+        firstGroup(puntPattern, in: notes).flatMap { Int($0) } ?? 0
+    }
+
     static func strippingTokens(_ notes: String?) -> String? {
         guard var text = notes else { return nil }
         for pattern in allPatterns {
@@ -232,7 +248,8 @@ enum TaskMetadata {
         estimateMinutes: Int?,
         sessionMinutes: Int?,
         energy: TaskEnergy,
-        parentID: String?
+        parentID: String?,
+        puntCount: Int = 0
     ) -> String? {
         let base = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         var parts: [String] = []
@@ -242,6 +259,7 @@ enum TaskMetadata {
         if let session = sessionMinutes, session > 0 { tokens.append("[chunk:\(session)m]") }
         if energy != .none { tokens.append("[energy:\(energy.rawValue)]") }
         if let parentID, !parentID.isEmpty { tokens.append("[sub:\(parentID)]") }
+        if puntCount > 0 { tokens.append("[punt:\(puntCount)]") }
         if !tokens.isEmpty { parts.append(tokens.joined(separator: " ")) }
         let joined = parts.joined(separator: "\n")
         return joined.isEmpty ? nil : joined

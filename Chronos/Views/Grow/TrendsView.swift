@@ -163,6 +163,7 @@ struct TrendsView: View {
                 ForEach(days, id: \.self) { day in
                     RoundedRectangle(cornerRadius: 2, style: .continuous)
                         .fill(life.isDone(habit, on: day) ? habit.color
+                              : life.isFrozen(habit, on: day) ? Color.cyan.opacity(0.55)
                               : habit.isDue(on: day) ? Theme.fill : Theme.fill.opacity(0.4))
                         .frame(maxWidth: .infinity)
                         .frame(height: 10)

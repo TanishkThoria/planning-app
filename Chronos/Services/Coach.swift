@@ -69,6 +69,20 @@ enum Coach {
     ) -> [Suggestion] {
         var out: [Suggestion] = []
 
+        // The most-punted open task — repeated deferral is the clearest
+        // procrastination tell there is, and it usually means the task is
+        // too big or too vague, not that the person is lazy.
+        if let punted = tasks
+            .filter({ !$0.isCompleted && !$0.isSubtask && $0.puntCount >= 3 })
+            .max(by: { $0.puntCount < $1.puntCount }) {
+            out.append(.init(
+                tone: .warning,
+                title: "\u{201C}\(punted.title)\u{201D} has been moved \(punted.puntCount) times",
+                detail: "A task that keeps sliding is usually too big or too fuzzy. Split it into a concrete 15-minute first step, shrink the estimate, or decide it doesn't matter and drop it — all three beat moving it again.",
+                weight: 88
+            ))
+        }
+
         // MARK: Personal signals (habits, energy, focus timing)
 
         // Observed vs. declared focus window — the app *noticing* your rhythm.

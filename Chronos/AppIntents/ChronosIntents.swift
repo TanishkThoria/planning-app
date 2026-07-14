@@ -124,11 +124,28 @@ struct PlanTodayIntent: AppIntent {
     }
 }
 
+/// "Eat my frog" — opens the app and starts a 5-minute session on today's
+/// frog (the one task you're most tempted to avoid).
+struct EatFrogIntent: AppIntent {
+    static var title: LocalizedStringResource = "Eat the Frog"
+    static var description = IntentDescription(
+        "Starts a 5-minute focus session on today's frog — the task you're most likely to avoid.",
+        categoryName: "Planning"
+    )
+    static var openAppWhenRun = true
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        IntentLauncher.shared.pendingAction = .eatFrog
+        return .result()
+    }
+}
+
 /// Bridges an intent that opens the app to a UI action once it's foreground.
 @MainActor
 final class IntentLauncher: ObservableObject {
     static let shared = IntentLauncher()
-    enum Action: Equatable { case planToday }
+    enum Action: Equatable { case planToday, eatFrog }
     @Published var pendingAction: Action?
 }
 
@@ -162,6 +179,15 @@ struct ChronosShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Plan Today",
             systemImageName: "sunrise"
+        )
+        AppShortcut(
+            intent: EatFrogIntent(),
+            phrases: [
+                "Eat my frog in \(.applicationName)",
+                "Start my frog in \(.applicationName)",
+            ],
+            shortTitle: "Eat the Frog",
+            systemImageName: "bolt.fill"
         )
     }
 }

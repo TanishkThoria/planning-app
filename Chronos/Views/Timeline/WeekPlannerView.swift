@@ -110,6 +110,10 @@ struct WeekPlannerView: View {
             }
             Spacer()
             DateNavigator()
+            HeaderIconButton(icon: "square.and.arrow.up") {
+                model.availabilityPresented = true
+            }
+            .help("Share availability — copy your free slots as text")
             HeaderIconButton(icon: "wand.and.stars", label: "Plan Week") {
                 model.planWeekPresented = true
             }

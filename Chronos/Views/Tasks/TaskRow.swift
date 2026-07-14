@@ -82,6 +82,21 @@ struct TaskRow: View {
                             .font(.system(size: 10.5, design: .rounded))
                             .foregroundStyle(task.isOverdue ? Theme.danger : Theme.textTertiary)
                     }
+                    if task.daysOverdue >= 2 {
+                        Text("\(task.daysOverdue)d late")
+                            .font(.system(size: 9.5, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.danger)
+                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .background(Theme.danger.opacity(task.daysOverdue >= 7 ? 0.22 : 0.12), in: Capsule())
+                    }
+                    if task.puntCount >= 2 && !task.isCompleted {
+                        Label("moved \(task.puntCount)×", systemImage: "arrow.uturn.forward")
+                            .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                            .foregroundStyle(task.puntCount >= 4 ? Theme.danger : Theme.warning)
+                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .background((task.puntCount >= 4 ? Theme.danger : Theme.warning).opacity(0.12), in: Capsule())
+                            .help("This task has been rescheduled \(task.puntCount) times — consider splitting it or dropping it.")
+                    }
                     if let est = task.estimateMinutes {
                         Label("~\(Fmt.duration(minutes: est))", systemImage: "timer")
                             .font(.system(size: 10.5, design: .rounded))

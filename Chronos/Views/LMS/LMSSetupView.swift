@@ -165,6 +165,18 @@ struct LMSSetupView: View {
             Text("This opens the system Calendar and asks you to confirm the subscription. Come back here when you're done.")
                 .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
                 .fixedSize(horizontal: false, vertical: true)
+
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "icloud")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+                Text("Want it on every device? Add the subscription at icloud.com/calendar (or in Calendar on a Mac with Location: iCloud) instead — it then syncs everywhere automatically. Subscribing on iPhone keeps it on this device only.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(10)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
     }
 
@@ -193,8 +205,14 @@ struct LMSSetupView: View {
                         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 } else {
                     ForEach(subscribed) { cal in
-                        selectRow(title: cal.title, subtitle: cal.sourceTitle, color: cal.color,
-                                  selected: selectedCalendarID == cal.id) {
+                        selectRow(
+                            title: cal.title,
+                            subtitle: cal.isLocalSubscription
+                                ? "\(cal.sourceTitle) · this device only"
+                                : cal.sourceTitle,
+                            color: cal.color,
+                            selected: selectedCalendarID == cal.id
+                        ) {
                             selectedCalendarID = cal.id
                         }
                     }

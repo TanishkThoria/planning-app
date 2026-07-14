@@ -72,6 +72,10 @@ struct TasksView: View {
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 6, pinnedViews: []) {
+                    if filter != .done {
+                        CrunchRadar()
+                            .padding(.top, 12)
+                    }
                     let groups = sections()
                     if groups.allSatisfy({ $0.tasks.isEmpty }) {
                         EmptyStateView(
@@ -224,6 +228,10 @@ struct TasksView: View {
                 }
                 .help("Select multiple")
             }
+            HeaderIconButton(icon: "calendar.badge.clock") {
+                model.deadlinePlanPresented = true
+            }
+            .help("Plan deadlines — schedule study sessions before every due date")
             HeaderIconButton(icon: "magnifyingglass") {
                 model.searchPresented = true
             }

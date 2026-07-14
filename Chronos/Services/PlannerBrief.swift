@@ -4,6 +4,7 @@ import SwiftUI
 /// non-AI briefing screen.
 enum QuickAction {
     case planDay, planWeek, reflow, review, focus, overdueSweep, openStats, recalibrate
+    case deadlines, availability
 }
 
 @MainActor
@@ -17,6 +18,8 @@ func performCoachAction(_ action: QuickAction, on model: AppModel) {
     case .overdueSweep: model.overdueSweepPresented = true
     case .openStats: model.statsPresented = true
     case .recalibrate: model.calibrationPresented = true
+    case .deadlines: model.deadlinePlanPresented = true
+    case .availability: model.availabilityPresented = true
     }
 }
 

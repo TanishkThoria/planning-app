@@ -145,6 +145,9 @@ private struct LifeData: Codable {
     var journal: [JournalEntry] = []
     var templates: [DayTemplate] = []
     var budgets: [TimeBudget] = []
+    /// "habitID#yyyy-MM-dd" days preserved by a streak freeze. Optional so
+    /// blobs written before freezes existed still decode.
+    var habitFreezes: [String]? = nil
 }
 
 /// One local store for the whole lifestyle layer — goals, habits, journal,
@@ -158,6 +161,7 @@ final class LifeStore: ObservableObject {
     @Published var goals: [Goal] { didSet { save() } }
     @Published var habits: [Habit] { didSet { save() } }
     @Published private(set) var habitCompletions: Set<String> { didSet { save() } }
+    @Published private(set) var habitFreezes: Set<String> { didSet { save() } }
     @Published var journal: [JournalEntry] { didSet { save() } }
     @Published var templates: [DayTemplate] { didSet { save() } }
     @Published var budgets: [TimeBudget] { didSet { save() } }
@@ -168,6 +172,7 @@ final class LifeStore: ObservableObject {
             goals = decoded.goals
             habits = decoded.habits
             habitCompletions = Set(decoded.habitCompletions)
+            habitFreezes = Set(decoded.habitFreezes ?? [])
             journal = decoded.journal
             templates = decoded.templates
             budgets = decoded.budgets
@@ -175,6 +180,7 @@ final class LifeStore: ObservableObject {
             goals = []
             habits = []
             habitCompletions = []
+            habitFreezes = []
             journal = []
             templates = []
             budgets = []
@@ -185,7 +191,8 @@ final class LifeStore: ObservableObject {
         let data = LifeData(
             goals: goals, habits: habits,
             habitCompletions: Array(habitCompletions),
-            journal: journal, templates: templates, budgets: budgets
+            journal: journal, templates: templates, budgets: budgets,
+            habitFreezes: Array(habitFreezes)
         )
         if let encoded = try? JSONEncoder().encode(data) {
             UserDefaults.standard.set(encoded, forKey: Self.key)
@@ -229,6 +236,32 @@ final class LifeStore: ObservableObject {
         else { habitCompletions.insert(token) }
     }
 
+    // MARK: Streak freezes (2 per habit per calendar month)
+
+    func isFrozen(_ habit: Habit, on day: Date) -> Bool {
+        habitFreezes.contains(completionToken(habit.id, day))
+    }
+
+    /// Freezes used by this habit in `day`'s calendar month.
+    func freezesUsed(_ habit: Habit, inMonthOf day: Date = Date()) -> Int {
+        let monthPrefix = "\(habit.id)#" + String(Fmt.dayKey(day).prefix(7))
+        return habitFreezes.filter { $0.hasPrefix(monthPrefix) }.count
+    }
+
+    func canFreeze(_ habit: Habit, on day: Date) -> Bool {
+        habit.isDue(on: day)
+            && !isDone(habit, on: day)
+            && !isFrozen(habit, on: day)
+            && freezesUsed(habit, inMonthOf: day) < 2
+    }
+
+    /// Preserve the streak across a missed day. Duolingo-style grace: life
+    /// happens, and one bad day shouldn't erase three weeks of showing up.
+    func freeze(_ habit: Habit, on day: Date) {
+        guard canFreeze(habit, on: day) else { return }
+        habitFreezes.insert(completionToken(habit.id, day))
+    }
+
     func isCompleted(habitID: UUID, on day: Date) -> Bool {
         habitCompletions.contains("\(habitID)#\(Fmt.dayKey(day))")
     }
@@ -245,7 +278,7 @@ final class LifeStore: ObservableObject {
         while guardCount < 400 {
             guardCount += 1
             if habit.isDue(on: cursor) {
-                if isDone(habit, on: cursor) { streak += 1 } else { break }
+                if isDone(habit, on: cursor) || isFrozen(habit, on: cursor) { streak += 1 } else { break }
             }
             cursor = cursor.adding(days: -1)
         }

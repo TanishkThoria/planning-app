@@ -5,7 +5,12 @@ import SwiftUI
 /// timestamps in the controller, so it's accurate across backgrounding.
 struct FocusTimerView: View {
     @EnvironmentObject private var timer: FocusTimerController
+    @EnvironmentObject private var service: EventKitService
     @Environment(\.dismiss) private var dismiss
+    @AppStorage(Prefs.defaultListID) private var defaultListID = ""
+
+    @State private var parkedThought = ""
+    @State private var showParkedConfirmation = false
 
     /// Optional task to focus on (from a block or task context menu).
     var presetTaskID: String?
@@ -129,6 +134,43 @@ struct FocusTimerView: View {
                     }
                 }
             }
+
+            parkAThought
+        }
+    }
+
+    /// Distraction capture: a stray thought lands in your task inbox without
+    /// you ever leaving the session — write it down, let it go, stay in.
+    private var parkAThought: some View {
+        HStack(spacing: 8) {
+            Image(systemName: showParkedConfirmation ? "checkmark.circle.fill" : "tray.and.arrow.down")
+                .font(.system(size: 13))
+                .foregroundStyle(showParkedConfirmation ? Theme.success : Theme.textTertiary)
+            TextField("Park a thought — it becomes a task", text: $parkedThought)
+                .textFieldStyle(.plain)
+                .font(.system(size: 12.5))
+                .foregroundStyle(Theme.textPrimary)
+                .submitLabel(.done)
+                .onSubmit { parkThought() }
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+    }
+
+    private func parkThought() {
+        let trimmed = parkedThought.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        var draft = TaskDraft()
+        draft.title = trimmed
+        draft.listID = defaultListID.isEmpty ? nil : defaultListID
+        service.createTask(draft)
+        parkedThought = ""
+        Haptics.success()
+        withAnimation(.snappy) { showParkedConfirmation = true }
+        Task {
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            withAnimation(.snappy) { showParkedConfirmation = false }
         }
     }
 

@@ -10,6 +10,10 @@ struct CalendarInfo: Identifiable, Hashable {
     var sourceTitle: String
     /// True for read-only subscribed feeds (e.g. a Canvas/Schoology .ics).
     var isSubscribed: Bool = false
+    /// True when the calendar lives only on this device (a local `webcal`
+    /// subscription) rather than in iCloud — meaning it won't appear on the
+    /// user's other devices.
+    var isLocalSubscription: Bool = false
 }
 
 /// Free/busy status shown to others — mirrors EKEventAvailability.

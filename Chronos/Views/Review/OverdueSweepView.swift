@@ -126,6 +126,9 @@ struct OverdueSweepView: View {
                     for p in proposals {
                         service.scheduleTask(p.task, at: p.start, minutes: p.minutes,
                                              calendarID: defaultCalendarID.isEmpty ? nil : defaultCalendarID)
+                        // Sweeping an overdue task forward is a punt — keep
+                        // the honest tally.
+                        service.bumpPuntCount(id: p.task.id)
                     }
                 }
                 Haptics.success()

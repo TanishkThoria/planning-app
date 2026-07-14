@@ -143,10 +143,12 @@ struct BriefingContent: View {
             LazyVGrid(columns: columns, spacing: 10) {
                 actionTile("Plan my day", "wand.and.stars", .planDay)
                 actionTile("Plan my week", "calendar.badge.clock", .planWeek)
+                actionTile("Plan deadlines", "graduationcap", .deadlines)
                 actionTile("Reflow today", "arrow.triangle.2.circlepath", .reflow)
                 actionTile("Review day", "checkmark.circle", .review)
                 actionTile("Start focus", "timer", .focus)
                 actionTile("Sweep overdue", "tray.and.arrow.down", .overdueSweep)
+                actionTile("Share availability", "square.and.arrow.up", .availability)
             }
         }
         .panel()

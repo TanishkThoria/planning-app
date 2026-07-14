@@ -286,6 +286,15 @@ struct GrowView: View {
             Button { model.habitEditor = HabitEditContext(habit: habit, isNew: false) } label: {
                 Label("Edit", systemImage: "pencil")
             }
+            if life.canFreeze(habit, on: today.adding(days: -1)) {
+                Button {
+                    withAnimation(.snappy) { life.freeze(habit, on: today.adding(days: -1)) }
+                    Haptics.light()
+                } label: {
+                    Label("Freeze yesterday (\(2 - life.freezesUsed(habit)) left this month)",
+                          systemImage: "snowflake")
+                }
+            }
             Button(role: .destructive) { life.deleteHabit(habit.id) } label: {
                 Label("Delete", systemImage: "trash")
             }

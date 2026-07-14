@@ -129,6 +129,12 @@ final class AppModel: ObservableObject {
     @Published var statsPresented = false
     /// School LMS (Canvas/Schoology) connect flow.
     @Published var lmsSetupPresented = false
+    /// LMS management (connected schools, sync, unlink).
+    @Published var lmsManagePresented = false
+    /// Deadline work-back study planner.
+    @Published var deadlinePlanPresented = false
+    /// "Copy availability" free-slot composer.
+    @Published var availabilityPresented = false
     /// Long-horizon growth trends (mood, habits, goals, reflections).
     @Published var trendsPresented = false
 
