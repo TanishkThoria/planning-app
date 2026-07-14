@@ -126,6 +126,32 @@ struct DayTemplate: Codable, Identifiable, Hashable {
     var name: String
     var blocks: [TemplateBlock]
     var createdEpoch: TimeInterval = 0
+
+    /// Portable (id- and calendar-free) payload for sharing.
+    private struct Portable: Codable {
+        var name: String
+        var blocks: [TemplateBlock]
+    }
+
+    /// A compact, shareable code — paste it into another Chronos to import the
+    /// same day shape.
+    var shareCode: String? {
+        let portable = Portable(name: name, blocks: blocks.map {
+            TemplateBlock(title: $0.title, startMinutes: $0.startMinutes, durationMinutes: $0.durationMinutes, calendarID: nil)
+        })
+        guard let data = try? JSONEncoder().encode(portable) else { return nil }
+        return "chronos-tpl:" + data.base64EncodedString()
+    }
+
+    static func fromShareCode(_ code: String) -> DayTemplate? {
+        let trimmed = code.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.hasPrefix("chronos-tpl:"),
+              let data = Data(base64Encoded: String(trimmed.dropFirst("chronos-tpl:".count))),
+              let portable = try? JSONDecoder().decode(Portable.self, from: data),
+              !portable.blocks.isEmpty
+        else { return nil }
+        return DayTemplate(name: portable.name, blocks: portable.blocks)
+    }
 }
 
 // MARK: - Time budgets
@@ -188,15 +214,41 @@ final class LifeStore: ObservableObject {
     }
 
     private func save() {
-        let data = LifeData(
+        if let encoded = try? JSONEncoder().encode(snapshot) {
+            UserDefaults.standard.set(encoded, forKey: Self.key)
+        }
+    }
+
+    private var snapshot: LifeData {
+        LifeData(
             goals: goals, habits: habits,
             habitCompletions: Array(habitCompletions),
             journal: journal, templates: templates, budgets: budgets,
             habitFreezes: Array(habitFreezes)
         )
-        if let encoded = try? JSONEncoder().encode(data) {
-            UserDefaults.standard.set(encoded, forKey: Self.key)
-        }
+    }
+
+    // MARK: Backup / restore (portable JSON — goals, habits, journal, …)
+
+    func exportJSON() -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        return (try? encoder.encode(snapshot))
+            .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
+    }
+
+    @discardableResult
+    func importJSON(_ string: String) -> Bool {
+        guard let data = string.data(using: .utf8),
+              let decoded = try? JSONDecoder().decode(LifeData.self, from: data) else { return false }
+        goals = decoded.goals
+        habits = decoded.habits
+        habitCompletions = Set(decoded.habitCompletions)
+        journal = decoded.journal
+        templates = decoded.templates
+        budgets = decoded.budgets
+        habitFreezes = Set(decoded.habitFreezes ?? [])
+        return true
     }
 
     // MARK: Goals

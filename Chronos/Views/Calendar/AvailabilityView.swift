@@ -21,6 +21,7 @@ struct AvailabilityView: View {
     @State private var minSlotMinutes = 30
     @State private var skipWeekends = true
     @State private var copied = false
+    @State private var showQR = false
 
     private struct DaySlots: Identifiable {
         let day: Date
@@ -66,6 +67,17 @@ struct AvailabilityView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     controls
                     preview
+                    if showQR, !slots.isEmpty, let qr = QRCode.image(from: composedText) {
+                        VStack(spacing: 8) {
+                            qr.interpolation(.none).resizable()
+                                .frame(width: 160, height: 160)
+                                .padding(10)
+                                .background(Color.white, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            Text("Have someone scan this to grab your free slots.")
+                                .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
                 }
                 .padding(18)
             }
@@ -180,6 +192,17 @@ struct AvailabilityView: View {
                     .padding(.vertical, 12)
                     .background(copied ? Theme.success.opacity(0.15) : Color.accentColor,
                                 in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .disabled(slots.isEmpty)
+
+            Button { withAnimation(.snappy) { showQR.toggle() } } label: {
+                Image(systemName: showQR ? "qrcode.viewfinder" : "qrcode")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(showQR ? Theme.bg : Color.accentColor)
+                    .frame(width: 46, height: 44)
+                    .background(showQR ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Color.accentColor.opacity(0.12)),
+                               in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .buttonStyle(.plain)
             .disabled(slots.isEmpty)

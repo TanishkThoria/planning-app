@@ -24,6 +24,7 @@ struct BriefingContent: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             if showsGreeting { greetingCard }
+            MomentumCard()
             insightCard(PlannerBrief.focus(context))
             insightCard(PlannerBrief.load(context))
             if let loose = PlannerBrief.looseEnds(context) {

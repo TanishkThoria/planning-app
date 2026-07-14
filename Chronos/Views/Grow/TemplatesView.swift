@@ -14,6 +14,9 @@ struct TemplatesView: View {
     @State private var namingTemplate = false
     @State private var newName = ""
     @State private var applyTarget: DayTemplate?
+    @State private var importing = false
+    @State private var importCode = ""
+    @State private var importError = false
 
     private var day: Date { model.selectedDate }
 
@@ -71,6 +74,25 @@ struct TemplatesView: View {
             }
             Button("Cancel", role: .cancel) { applyTarget = nil }
         }
+        .alert("Import a template", isPresented: $importing) {
+            TextField("Paste a chronos-tpl: code", text: $importCode)
+            Button("Import") {
+                if let template = DayTemplate.fromShareCode(importCode) {
+                    life.addTemplate(template)
+                    Haptics.success()
+                } else {
+                    importError = true
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Paste a template code someone shared with you.")
+        }
+        .alert("That code didn't work", isPresented: $importError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Make sure you copied the whole code, starting with \u{201C}chronos-tpl:\u{201D}.")
+        }
     }
 
     private var headerBar: some View {
@@ -80,7 +102,8 @@ struct TemplatesView: View {
             Spacer()
             Text("Templates").font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
             Spacer()
-            Text("Close").font(.system(size: 13)).hidden()
+            Button("Import") { importCode = ""; importing = true }
+                .buttonStyle(.plain).font(.system(size: 13, weight: .semibold)).foregroundStyle(Color.accentColor)
         }
         .padding(.horizontal, 16).padding(.vertical, 12)
     }
@@ -132,6 +155,11 @@ struct TemplatesView: View {
         }
         .buttonStyle(.plain)
         .contextMenu {
+            if let code = template.shareCode {
+                ShareLink(item: code) {
+                    Label("Share Template Code", systemImage: "square.and.arrow.up")
+                }
+            }
             Button(role: .destructive) { life.deleteTemplate(template.id) } label: {
                 Label("Delete", systemImage: "trash")
             }

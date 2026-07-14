@@ -5,6 +5,11 @@ struct SettingsView: View {
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var profileStore: ProfileStore
     @EnvironmentObject private var notifications: NotificationService
+    @EnvironmentObject private var life: LifeStore
+
+    @State private var restoring = false
+    @State private var restoreText = ""
+    @State private var restoreFailed = false
 
     @AppStorage(Prefs.morningReminderEnabled) private var morningReminderEnabled = false
     @AppStorage(Prefs.morningReminderMinutes) private var morningReminderMinutes = 8 * 60
@@ -381,6 +386,37 @@ struct SettingsView: View {
                         .buttonStyle(.plain)
                     }
 
+                    settingsSection("Backup") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 10) {
+                                ShareLink(item: life.exportJSON()) {
+                                    Label("Back up Grow data", systemImage: "square.and.arrow.up")
+                                        .font(.system(size: 12.5, weight: .semibold))
+                                        .foregroundStyle(Color.accentColor)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 10)
+                                        .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                }
+                                Button {
+                                    restoreText = ""; restoring = true
+                                } label: {
+                                    Label("Restore", systemImage: "square.and.arrow.down")
+                                        .font(.system(size: 12.5, weight: .semibold))
+                                        .foregroundStyle(Theme.textSecondary)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 10)
+                                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            Text("Exports your goals, habits, journal, templates & budgets as JSON. Blocks and tasks already live in Apple Calendar & Reminders.")
+                                .font(.system(size: 11))
+                                .foregroundStyle(Theme.textTertiary)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.horizontal, 2)
+                        }
+                    }
+
                     settingsSection("About") {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Chronos")
@@ -407,6 +443,20 @@ struct SettingsView: View {
         .background(Theme.bg)
         .sheet(isPresented: $showingCalibration) {
             CalibrationView()
+        }
+        .alert("Restore from backup", isPresented: $restoring) {
+            TextField("Paste backup JSON", text: $restoreText)
+            Button("Restore", role: .destructive) {
+                if life.importJSON(restoreText) { Haptics.success() } else { restoreFailed = true }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This replaces your current goals, habits, journal, templates & budgets.")
+        }
+        .alert("Couldn't restore", isPresented: $restoreFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("That doesn't look like a valid Chronos backup.")
         }
     }
 

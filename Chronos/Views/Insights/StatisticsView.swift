@@ -58,6 +58,17 @@ struct StatisticsView: View {
         )
     }
 
+    private var lastWeekStats: StatsEngine.Stats {
+        let previous = weekDays.map { $0.adding(days: -7) }
+        return StatsEngine.compute(
+            days: previous,
+            blocks: { service.blocks(on: $0, hiddenCalendars: model.hiddenCalendarIDs) },
+            allTasks: service.tasks,
+            taskLookup: { service.task(withID: $0) },
+            sessions: focusLog.sessions
+        )
+    }
+
     private var minutesByCalendar: [(calendar: CalendarInfo, minutes: Int)] {
         var totals: [String: Int] = [:]
         for day in weekDays {
@@ -84,6 +95,7 @@ struct StatisticsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     statTiles
+                    weekOverWeekCard
                     ringsCard
                     budgetsCard
                     hoursPerDayCard
@@ -132,6 +144,50 @@ struct StatisticsView: View {
             statTile(Fmt.duration(minutes: stats.focusMinutes), "Focused")
             statTile("\(stats.tasksCompleted)", "Done")
             statTile("\(stats.streakDays)d", "Streak")
+        }
+    }
+
+    // MARK: Week over week
+
+    private var weekOverWeekCard: some View {
+        let this = stats
+        let last = lastWeekStats
+        return VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "This week vs last")
+            VStack(spacing: 10) {
+                compareRow("Focused", "timer", this.focusMinutes, last.focusMinutes, isMinutes: true)
+                compareRow("Timeblocked", "rectangle.stack", this.plannedMinutes, last.plannedMinutes, isMinutes: true)
+                compareRow("Tasks done", "checkmark.circle", this.tasksCompleted, last.tasksCompleted, isMinutes: false)
+                compareRow("Deep work", "brain.head.profile", this.deepMinutes, last.deepMinutes, isMinutes: true)
+            }
+        }
+        .panel()
+    }
+
+    private func compareRow(_ label: String, _ icon: String, _ current: Int, _ previous: Int, isMinutes: Bool) -> some View {
+        let delta = current - previous
+        let pct = previous > 0 ? Int((Double(delta) / Double(previous) * 100).rounded()) : (current > 0 ? 100 : 0)
+        let up = delta >= 0
+        return HStack(spacing: 10) {
+            Image(systemName: icon).font(.system(size: 12)).foregroundStyle(Theme.textTertiary).frame(width: 18)
+            Text(label).font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
+            Spacer()
+            Text(isMinutes ? Fmt.duration(minutes: current) : "\(current)")
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(Theme.textPrimary)
+            if delta != 0 {
+                HStack(spacing: 2) {
+                    Image(systemName: up ? "arrow.up.right" : "arrow.down.right")
+                        .font(.system(size: 9, weight: .bold))
+                    Text("\(abs(pct))%")
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                }
+                .foregroundStyle(up ? Theme.success : Theme.danger)
+                .frame(width: 52, alignment: .trailing)
+            } else {
+                Text("—").font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                    .frame(width: 52, alignment: .trailing)
+            }
         }
     }
 
