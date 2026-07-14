@@ -12,6 +12,7 @@ struct TodayView: View {
 
     @State private var now = Date()
     private let clock = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
+    @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
 
     private var today: Date { Date().startOfDay }
 
@@ -297,6 +298,7 @@ struct TodayView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
+                    dayActionsRow
                     frogCard
                     intentionsCard
                     if !dueHabits.isEmpty { habitsStrip }
@@ -357,35 +359,54 @@ struct TodayView: View {
                     .foregroundStyle(remainingCount == 0 ? Theme.success : Theme.textSecondary)
             }
             Spacer()
-            HeaderIconButton(icon: "circle.circle") {
-                model.nowModePresented = true
-            }
-            .help("Now — distraction-free focus")
             HeaderIconButton(icon: "command") {
                 model.commandBarPresented = true
             }
-            .help("Command bar")
+            .help("Command bar (⌘K)")
             #if os(iOS)
             HeaderIconButton(icon: "gearshape") {
                 model.settingsPresented = true
             }
+            .help("Settings")
             #endif
-            HeaderIconButton(icon: "sunrise") {
-                model.morningPlanningPresented = true
-            }
-            .help("Plan Today")
-            HeaderIconButton(icon: "arrow.triangle.2.circlepath") {
-                model.reflowPresented = true
-            }
-            .help("Reflow — reschedule what slipped")
-            HeaderIconButton(icon: "checkmark.circle") {
-                model.reviewPresented = true
-            }
-            .help("Review Day")
             HeaderIconButton(icon: "plus", prominent: true) {
                 model.quickAddPresented = true
             }
+            .help("Quick add")
         }
+    }
+
+    /// The frequent day actions, as a labeled scrollable row — nothing hidden
+    /// behind an unlabeled icon or a "More" menu. Anything rarer lives one tap
+    /// away in the ⌘K command bar.
+    private var dayActionsRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                actionChip("Plan", "sunrise") { model.morningPlanningPresented = true }
+                actionChip("Reflow", "arrow.triangle.2.circlepath") { model.reflowPresented = true }
+                actionChip("Review", "checkmark.circle") { model.reviewPresented = true }
+                actionChip("Focus", "timer") { model.startFocus(taskID: nil, title: "Focus") }
+                actionChip("Now", "circle.circle") { model.nowModePresented = true }
+                if coachEnabled {
+                    actionChip("Coach", "sparkles") { model.coachPresented = true }
+                }
+            }
+            .padding(.horizontal, 2)
+            .padding(.vertical, 2)
+        }
+    }
+
+    private func actionChip(_ title: String, _ icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 5) {
+                Image(systemName: icon).font(.system(size: 11.5, weight: .semibold))
+                Text(title).font(.system(size: 12.5, weight: .semibold))
+            }
+            .foregroundStyle(Color.accentColor)
+            .padding(.horizontal, 12).padding(.vertical, 8)
+            .background(Color.accentColor.opacity(0.12), in: Capsule())
+        }
+        .buttonStyle(.plain)
     }
 
     private func sectionLabel(_ title: String, color: Color, count: Int) -> some View {

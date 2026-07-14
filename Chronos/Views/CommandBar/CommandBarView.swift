@@ -8,6 +8,7 @@ struct CommandBarView: View {
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var timer: FocusTimerController
     @Environment(\.dismiss) private var dismiss
+    @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
 
     @State private var query = ""
     @FocusState private var focused: Bool
@@ -253,12 +254,20 @@ struct CommandBarView: View {
         })
         add("tour", "Take the Tour", "Guided walkthrough", "map", "Tools", "tour help walkthrough", { TourController.shared.start() })
 
+        // Chronos+ (paid layer — discoverable here even before it's turned on)
+        add("chronos-plus", "Chronos+", "iCloud sync, leaderboards & friends", "sparkles", "Chronos+", "plus premium icloud sync social", { model.chronosPlusPresented = true })
+        add("leaderboard", "Leaderboard", "Weekly focus & momentum, ranked", "trophy", "Chronos+", "leaderboard rank compete game center", { model.leaderboardPresented = true })
+        add("friends", "Friends", "See what friends are focusing on", "person.2", "Chronos+", "friends presence social", { model.friendsPresented = true })
+
         // Navigate
         add("go-today", "Go to Today", "", "sun.max", "Go to", "today home", { model.screen = .today })
         add("go-calendar", "Go to Calendar", "", "calendar", "Go to", "calendar timeline", { model.screen = .calendar })
         add("go-tasks", "Go to Tasks", "", "checklist", "Go to", "tasks reminders", { model.screen = .tasks })
         add("go-grow", "Go to Grow", "", "leaf", "Go to", "grow habits goals", { model.screen = .grow })
-        add("go-coach", "Go to Coach", "", "lightbulb", "Go to", "coach assistant ai", { model.screen = .coach })
+        add("go-insights", "Go to Insights", "", "chart.bar", "Go to", "insights stats progress momentum", { model.screen = .insights })
+        if coachEnabled {
+            add("go-coach", "Open Coach", "", "lightbulb", "Go to", "coach assistant ai chat", { openCoach() })
+        }
         add("go-settings", "Settings", "", "gearshape", "Go to", "settings preferences", { openSettings() })
         add("view-day", "Day View", "", "calendar.day.timeline.left", "Go to", "day", { model.screen = .calendar; model.plannerMode = .day })
         add("view-week", "Week View", "", "calendar", "Go to", "week", { model.screen = .calendar; model.plannerMode = .week })
@@ -275,6 +284,14 @@ struct CommandBarView: View {
         model.settingsPresented = true
         #else
         model.screen = .settings
+        #endif
+    }
+
+    private func openCoach() {
+        #if os(iOS)
+        model.coachPresented = true
+        #else
+        model.screen = .coach
         #endif
     }
 }

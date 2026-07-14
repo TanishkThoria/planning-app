@@ -45,7 +45,6 @@ struct PlannerScreen: View {
                     model.calendarFilterPresented = true
                 }
                 .help("Show & hide calendars")
-                actionsMenu
                 HeaderIconButton(icon: "plus", prominent: true) {
                     model.quickAddPresented = true
                 }
@@ -59,65 +58,68 @@ struct PlannerScreen: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
+
+            actionsRow
         }
         .padding(.horizontal, 16)
         .padding(.top, 12)
         .padding(.bottom, 10)
     }
 
-    private var actionsMenu: some View {
-        Menu {
-            Button {
-                model.morningPlanningPresented = true
-            } label: { Label("Plan Today", systemImage: "sunrise") }
-
-            if model.plannerMode == .week {
-                Button { model.planWeekPresented = true } label: {
-                    Label("Plan My Week", systemImage: "wand.and.stars")
+    /// Labeled actions instead of an ellipsis "More" menu — every planner
+    /// action is visible and named. Rarer commands stay in the ⌘K bar.
+    private var actionsRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                if model.plannerMode == .week {
+                    actionChip("Plan week", "wand.and.stars") { model.planWeekPresented = true }
+                } else {
+                    actionChip("Plan day", "wand.and.stars") { model.planDayPresented = true }
                 }
-            } else {
-                Button { model.planDayPresented = true } label: {
-                    Label("Plan My Day", systemImage: "wand.and.stars")
-                }
-            }
-
-            Button { model.reviewPresented = true } label: {
-                Label("Review Day", systemImage: "checkmark.circle")
-            }
-            Button { model.startFocus(taskID: nil, title: "Focus") } label: {
-                Label("Focus Timer", systemImage: "timer")
-            }
-            Button { model.templatesPresented = true } label: {
-                Label("Day Templates", systemImage: "square.grid.3x3")
-            }
-
-            #if os(iOS)
-            Divider()
-            Button { model.settingsPresented = true } label: {
-                Label("Settings", systemImage: "gearshape")
-            }
-            #endif
-
-            if model.plannerMode == .day {
-                Divider()
-                Button { model.backlogVisible.toggle() } label: {
-                    Label(model.backlogVisible ? "Hide Backlog" : "Show Backlog", systemImage: "sidebar.right")
-                }
-                Button { hourHeight = min(160, hourHeight + 10) } label: {
-                    Label("Zoom In", systemImage: "plus.magnifyingglass")
-                }
-                Button { hourHeight = max(40, hourHeight - 10) } label: {
-                    Label("Zoom Out", systemImage: "minus.magnifyingglass")
+                actionChip("Review", "checkmark.circle") { model.reviewPresented = true }
+                actionChip("Templates", "square.grid.3x3") { model.templatesPresented = true }
+                actionChip("Focus", "timer") { model.startFocus(taskID: nil, title: "Focus") }
+                if model.plannerMode == .day {
+                    actionChip(model.backlogVisible ? "Hide backlog" : "Backlog", "sidebar.right") {
+                        model.backlogVisible.toggle()
+                    }
+                    zoomControl
                 }
             }
-        } label: {
-            Image(systemName: "ellipsis")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Theme.textSecondary)
-                .frame(width: 28, height: 26)
-                .background(Theme.fill, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+            .padding(.horizontal, 1)
+            .padding(.vertical, 1)
         }
-        .menuIndicator(.hidden)
+    }
+
+    private func actionChip(_ title: String, _ icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 5) {
+                Image(systemName: icon).font(.system(size: 11, weight: .semibold))
+                Text(title).font(.system(size: 12, weight: .semibold))
+            }
+            .foregroundStyle(Color.accentColor)
+            .padding(.horizontal, 11).padding(.vertical, 7)
+            .background(Color.accentColor.opacity(0.12), in: Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var zoomControl: some View {
+        HStack(spacing: 2) {
+            Button { hourHeight = max(40, hourHeight - 10) } label: {
+                Image(systemName: "minus.magnifyingglass").font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.horizontal, 8).padding(.vertical, 7)
+            }
+            .buttonStyle(.plain)
+            Button { hourHeight = min(160, hourHeight + 10) } label: {
+                Image(systemName: "plus.magnifyingglass").font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.horizontal, 8).padding(.vertical, 7)
+            }
+            .buttonStyle(.plain)
+        }
+        .background(Color.accentColor.opacity(0.12), in: Capsule())
     }
 
     // MARK: Title text

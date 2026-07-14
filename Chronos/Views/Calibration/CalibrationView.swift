@@ -289,6 +289,46 @@ struct CalibrationView: View {
                 .font(.system(size: 12.5))
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(3)
+
+            whereThingsLive
+        }
+    }
+
+    /// A quick map of the app so people leave calibration knowing where each
+    /// feature lives.
+    private var whereThingsLive: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("WHERE EVERYTHING LIVES")
+                .font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                .foregroundStyle(Theme.textTertiary)
+            mapRow("sun.max.fill", "Today", "Now, next & what's left — plus a Plan/Reflow/Review/Focus/Coach action row")
+            mapRow("calendar", "Calendar", "Day, Week, Month & Agenda timelines")
+            mapRow("checklist", "Tasks", "Reminders with the Eisenhower matrix")
+            mapRow("leaf.fill", "Grow", "Habits, goals, journal & rituals")
+            mapRow("chart.bar.fill", "Insights", "Momentum, stats, time report, trends, Year in Review & the leaderboard")
+            mapRow("command", "⌘K & Settings", "The command bar reaches anything; the gear holds Settings, Chronos+ & your school")
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    private func mapRow(_ icon: String, _ title: String, _ subtitle: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 12.5, weight: .semibold))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 20)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text(subtitle)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
         }
     }
 

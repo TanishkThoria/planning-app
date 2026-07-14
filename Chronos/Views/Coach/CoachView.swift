@@ -23,6 +23,8 @@ struct CoachChatView: View {
     @EnvironmentObject private var profileStore: ProfileStore
     @EnvironmentObject private var focusLog: FocusLog
     @EnvironmentObject private var life: LifeStore
+    @Environment(\.isPresented) private var isPresented
+    @Environment(\.dismiss) private var dismiss
 
     @AppStorage(Prefs.workStartMinutes) private var workStartMinutes = 9 * 60
     @AppStorage(Prefs.workEndMinutes) private var workEndMinutes = 18 * 60
@@ -61,6 +63,10 @@ struct CoachChatView: View {
                 seedIfEmpty()
             }
         }
+        .onDisappear {
+            // When Coach is a sheet (iPhone), archive on dismiss too.
+            if isPresented { store.archiveIfLeaving() }
+        }
         #if os(iOS)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
@@ -93,8 +99,10 @@ struct CoachChatView: View {
                 }
             }
             Spacer()
-            HeaderIconButton(icon: "chart.bar.xaxis") { model.statsPresented = true }
             HeaderIconButton(icon: "square.and.pencil") { newConversation() }
+            if isPresented {
+                HeaderIconButton(icon: "xmark") { dismiss() }
+            }
         }
     }
 

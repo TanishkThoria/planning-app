@@ -254,16 +254,16 @@ struct SettingsView: View {
                         }
                     }
 
-                    settingsSection("AI Coach") {
+                    settingsSection("Coach") {
                         VStack(alignment: .leading, spacing: 8) {
-                            FieldRow(label: "Show Coach tab") {
+                            FieldRow(label: "Enable Coach") {
                                 Toggle("", isOn: $coachEnabled)
                                     .labelsHidden()
                                     .toggleStyle(.switch)
                             }
                             Text(coachEnabled
-                                 ? "The Coach is a conversational planner. When your device supports Apple Intelligence it runs a private, on-device model; otherwise it uses fast built-in guidance."
-                                 : "The Coach tab is hidden. Turn it back on anytime to chat with your planning companion.")
+                                 ? "Open the Coach from Today's action row or the ⌘K command bar. When your device supports Apple Intelligence it runs a private, on-device model; otherwise it gives fast built-in guidance."
+                                 : "The Coach is off. Turn it back on to chat with your planning companion from Today or the command bar.")
                                 .font(.system(size: 11))
                                 .foregroundStyle(Theme.textTertiary)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -329,34 +329,7 @@ struct SettingsView: View {
                         .buttonStyle(.plain)
                     }
 
-                    settingsSection("Account") {
-                        Button {
-                            model.statsPresented = true
-                        } label: {
-                            HStack(spacing: 10) {
-                                Image(systemName: "chart.bar.xaxis")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(Color.accentColor)
-                                    .frame(width: 20)
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text("Statistics")
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundStyle(Theme.textPrimary)
-                                    Text("Completion, focus, budgets, achievements")
-                                        .font(.system(size: 11))
-                                        .foregroundStyle(Theme.textTertiary)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(Theme.textTertiary)
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 11)
-                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-                        }
-                        .buttonStyle(.plain)
-
+                    settingsSection("School") {
                         Button {
                             if LMSStore.shared.isConfigured {
                                 model.lmsManagePresented = true
@@ -388,7 +361,9 @@ struct SettingsView: View {
                             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                         }
                         .buttonStyle(.plain)
+                    }
 
+                    settingsSection("Help") {
                         Button {
                             model.settingsPresented = false
                             TourController.shared.start()

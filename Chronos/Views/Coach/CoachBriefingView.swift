@@ -5,6 +5,8 @@ import SwiftUI
 /// planning shortcuts, week glance) — grounded in live data, not a chatbot.
 struct CoachBriefingView: View {
     @EnvironmentObject private var model: AppModel
+    @Environment(\.isPresented) private var isPresented
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(spacing: 0) {
@@ -40,8 +42,10 @@ struct CoachBriefingView: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
-            HeaderIconButton(icon: "chart.bar.xaxis") { model.statsPresented = true }
             HeaderIconButton(icon: "slider.horizontal.3") { model.calibrationPresented = true }
+            if isPresented {
+                HeaderIconButton(icon: "xmark") { dismiss() }
+            }
         }
     }
 }

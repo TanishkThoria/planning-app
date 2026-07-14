@@ -58,7 +58,7 @@ struct TourStep: Identifiable {
             screen: .today,
             icon: "sun.max.fill",
             title: "Today, at a glance",
-            message: "Your home base. See what's happening now, what's next, and jump straight into your day.",
+            message: "Your home base — what's now, what's next, and what's left. The labeled row up top runs your day: Plan, Reflow, Review, Focus, Now, and Coach.",
             demoLabel: "Quick-add anything",
             demo: .quickAdd
         ),
@@ -66,7 +66,7 @@ struct TourStep: Identifiable {
             screen: .calendar, mode: .day,
             icon: "calendar.day.timeline.left",
             title: "The day timeline",
-            message: "Every block is a real Apple Calendar event. Double-tap an empty slot to create one; drag to move or resize.",
+            message: "Every block is a real Apple Calendar event. Double-tap an empty slot to create one; drag to move or resize. The action row under the tabs plans, reviews, and applies templates.",
             demoLabel: "Plan my day for me",
             demo: .planDay
         ),
@@ -103,12 +103,20 @@ struct TourStep: Identifiable {
             demo: .morningRitual
         ),
         TourStep(
-            screen: .coach,
+            screen: .insights,
+            icon: "chart.bar.fill",
+            title: "Insights — your progress",
+            message: "Everything you build shows up here: momentum, this week at a glance, full statistics, where your time went, long-term trends, your Year in Review, and the friends leaderboard.",
+            demoLabel: "Open Statistics",
+            demo: .stats
+        ),
+        TourStep(
+            screen: .today,
             icon: "sparkles",
             title: "Meet your Coach",
-            message: "Ask anything about your day. It answers from your real schedule and tasks — and plans any of it with a tap.",
-            demoLabel: nil,
-            demo: nil
+            message: "Your planning companion is a tap away — from Today's action row or the ⌘K command bar. Ask anything about your day; it answers from your real schedule and plans it with a tap.",
+            demoLabel: "Open the Coach",
+            demo: .coach
         ),
         TourStep(
             screen: .today,
@@ -119,16 +127,16 @@ struct TourStep: Identifiable {
             demo: .focusTimer
         ),
         TourStep(
-            screen: .coach,
-            icon: "chart.bar.xaxis",
-            title: "See your progress",
-            message: "Your stats — focus, completion, streaks, budgets, and achievements — live one tap away. That's the whole tour!",
-            demoLabel: "Open Statistics",
-            demo: .stats
+            screen: .today,
+            icon: "command",
+            title: "Anything, one keystroke away",
+            message: "Press ⌘K (or tap the ⌘ button) to jump to any screen or run any action — including Chronos+ for iCloud sync, leaderboards, and friends. That's the whole tour!",
+            demoLabel: "Open the command bar",
+            demo: .commandBar
         )
     ]
 }
 
 enum TourDemo {
-    case quickAdd, planDay, focusTimer, morningRitual, search, stats
+    case quickAdd, planDay, focusTimer, morningRitual, search, stats, coach, commandBar
 }
