@@ -24,6 +24,13 @@ struct TimeBlockCard: View {
 
     @State private var dragOffset: CGFloat?
     @State private var resizeOffset: CGFloat?
+    /// Where the card settled after a drag, held until EventKit's refresh
+    /// moves the real block — otherwise the card snaps back to its old slot
+    /// for a beat and the whole move feels broken.
+    @State private var settleDragOffset: CGFloat?
+    @State private var settleResizeOffset: CGFloat?
+    /// Last snapped minute-of-day announced with a haptic tick.
+    @State private var lastTickMinutes: Int?
 
     private var block: TimeBlock { placed.block }
 
@@ -51,11 +58,17 @@ struct TimeBlockCard: View {
     }
 
     private var displayHeight: CGFloat {
-        max(baseHeight + (resizeOffset ?? 0), 18)
+        max(baseHeight + (resizeOffset ?? settleResizeOffset ?? 0), 18)
     }
 
     private var isInteracting: Bool {
         dragOffset != nil || resizeOffset != nil
+    }
+
+    /// Snap a raw finger offset to the grid, in points.
+    private func snapY(_ raw: CGFloat) -> CGFloat {
+        let snapPts = CGFloat(snapMinutes) / 60 * hourHeight
+        return (raw / snapPts).rounded() * snapPts
     }
 
     // MARK: Proposed times while dragging
@@ -79,16 +92,21 @@ struct TimeBlockCard: View {
     var body: some View {
         content
             .frame(width: laneWidth - 2, height: displayHeight, alignment: .topLeading)
-            .offset(x: xOffset, y: baseY + (dragOffset.map { snapY($0) } ?? 0))
+            .scaleEffect(dragOffset != nil ? 1.02 : 1, anchor: .center)
+            .shadow(color: .black.opacity(isInteracting ? 0.35 : 0), radius: 10, y: 5)
+            // While dragging the card follows the finger 1:1 (no quantized
+            // jumps — that's what made moves feel jittery); the time label
+            // shows the snapped target and it glides onto the grid on release.
+            .offset(x: xOffset, y: baseY + (dragOffset ?? settleDragOffset ?? 0))
             .opacity(dimPast && block.isPast && !isInteracting ? 0.45 : 1)
-            .zIndex(isInteracting ? 10 : (block.isNow ? 2 : 1))
+            .zIndex(isInteracting || settleDragOffset != nil ? 10 : (block.isNow ? 2 : 1))
             .animation(.snappy(duration: 0.18), value: hourHeight)
-    }
-
-    /// Visually snap the drag offset so the card lands where it will save.
-    private func snapY(_ raw: CGFloat) -> CGFloat {
-        let snapPts = CGFloat(snapMinutes) / 60 * hourHeight
-        return (raw / snapPts).rounded() * snapPts
+            // When the store reflects the move, hand positioning back to it.
+            .onChange(of: block.start) { _, _ in
+                settleDragOffset = nil
+                settleResizeOffset = nil
+            }
+            .onChange(of: block.end) { _, _ in settleResizeOffset = nil }
     }
 
     private var content: some View {
@@ -184,37 +202,66 @@ struct TimeBlockCard: View {
     // MARK: Gestures
 
     #if os(iOS)
-    /// Long-press first so vertical drags don't fight the scroll view.
+    /// Long-press first so vertical drags don't fight the scroll view. The
+    /// card then tracks the finger 1:1; a selection tick fires whenever the
+    /// snapped landing slot changes, and release glides onto the grid.
     private var moveGesture: some Gesture {
         LongPressGesture(minimumDuration: 0.25)
             .sequenced(before: DragGesture(minimumDistance: 0))
             .onChanged { value in
                 if case .second(true, let drag?) = value {
+                    if dragOffset == nil { Haptics.medium() } // pickup
                     dragOffset = drag.translation.height
+                    tickIfSlotChanged()
                 }
             }
             .onEnded { value in
                 if case .second(true, let drag?) = value, abs(drag.translation.height) > 2 {
-                    let final = proposedStartFor(offset: drag.translation.height)
-                    dragOffset = nil
-                    Haptics.light()
-                    onMove(final)
+                    endMove(offset: drag.translation.height)
                 } else {
                     dragOffset = nil
                 }
+                lastTickMinutes = nil
             }
     }
     #else
     private var moveGesture: some Gesture {
         DragGesture(minimumDistance: 5)
-            .onChanged { dragOffset = $0.translation.height }
+            .onChanged { value in
+                dragOffset = value.translation.height
+                tickIfSlotChanged()
+            }
             .onEnded { value in
-                let final = proposedStartFor(offset: value.translation.height)
-                dragOffset = nil
-                if abs(value.translation.height) > 2 { Haptics.light(); onMove(final) }
+                if abs(value.translation.height) > 2 {
+                    endMove(offset: value.translation.height)
+                } else {
+                    dragOffset = nil
+                }
+                lastTickMinutes = nil
             }
     }
     #endif
+
+    /// Glide the card onto its snapped slot immediately, then commit. The
+    /// settle offset keeps it there until EventKit's refresh catches up.
+    private func endMove(offset: CGFloat) {
+        let final = proposedStartFor(offset: offset)
+        withAnimation(.snappy(duration: 0.2)) {
+            settleDragOffset = snapY(offset)
+            dragOffset = nil
+        }
+        Haptics.light()
+        onMove(final)
+    }
+
+    /// Fire a selection tick when the drag crosses into a new snap slot.
+    private func tickIfSlotChanged() {
+        let minutes = (resizeOffset != nil ? proposedEnd : proposedStart).minutesSinceMidnight
+        if let last = lastTickMinutes, last != minutes {
+            Haptics.selection()
+        }
+        lastTickMinutes = minutes
+    }
 
     private func proposedStartFor(offset: CGFloat) -> Date {
         let rawStart = clampedInterval.start.addingTimeInterval(Double(offset / hourHeight) * 3600)
@@ -230,12 +277,19 @@ struct TimeBlockCard: View {
             .contentShape(Rectangle())
             .highPriorityGesture(
                 DragGesture(minimumDistance: 2)
-                    .onChanged { resizeOffset = $0.translation.height }
+                    .onChanged { value in
+                        resizeOffset = value.translation.height
+                        tickIfSlotChanged()
+                    }
                     .onEnded { value in
                         let rawEnd = clampedInterval.end.addingTimeInterval(Double(value.translation.height / hourHeight) * 3600)
                         let newEnd = max(rawEnd.snapped(to: snapMinutes), block.start.adding(minutes: 5))
-                        resizeOffset = nil
+                        withAnimation(.snappy(duration: 0.2)) {
+                            settleResizeOffset = CGFloat(newEnd.timeIntervalSince(clampedInterval.end) / 3600) * hourHeight
+                            resizeOffset = nil
+                        }
                         Haptics.light()
+                        lastTickMinutes = nil
                         onResize(newEnd)
                     }
             )

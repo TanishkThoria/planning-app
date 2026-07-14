@@ -297,7 +297,8 @@ struct OnboardingView: View {
     private func requestNotifications() {
         requestingNotifications = true
         Task {
-            await notifications.requestAuthorization()
+            let granted = await notifications.requestAuthorization()
+            if granted { notifications.enabled = true }
             requestingNotifications = false
         }
     }

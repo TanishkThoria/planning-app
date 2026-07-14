@@ -18,7 +18,10 @@ struct RootView: View {
     @AppStorage(Prefs.morningReminderMinutes) private var morningReminderMinutes = 8 * 60
     @AppStorage(Prefs.eveningReminderEnabled) private var eveningReminderEnabled = false
     @AppStorage(Prefs.eveningReminderMinutes) private var eveningReminderMinutes = 21 * 60
+    @AppStorage(Prefs.startAlertsEnabled) private var startAlertsEnabled = true
+    @AppStorage(Prefs.blockLiveActivities) private var blockLiveActivities = true
     @Environment(\.scenePhase) private var scenePhase
+    private let minuteTick = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     #endif
@@ -132,9 +135,16 @@ struct RootView: View {
             service.ensureWindow(around: newDate)
         }
         .onChange(of: service.blocks) { _, blocks in
-            notifications.rescheduleCheckIns(for: blocks)
+            notifications.rescheduleCheckIns(for: blocks, startAlerts: startAlertsEnabled)
             refreshWidgetSnapshot()
+            syncBlockActivity()
         }
+        .onChange(of: startAlertsEnabled) { _, on in
+            notifications.rescheduleCheckIns(for: service.blocks, startAlerts: on)
+        }
+        .onChange(of: timer.isActive) { _, _ in syncBlockActivity() }
+        .onChange(of: blockLiveActivities) { _, _ in syncBlockActivity() }
+        .onReceive(minuteTick) { _ in syncBlockActivity() }
         .onChange(of: service.tasks) { _, _ in refreshWidgetSnapshot() }
         .onChange(of: life.habits) { _, _ in
             rescheduleHabitReminders()
@@ -145,7 +155,10 @@ struct RootView: View {
             LiveActivityController.shared.accentHex = Theme.accent(named: name).hexRGB
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { refreshWidgetSnapshot() }
+            if phase == .active {
+                refreshWidgetSnapshot()
+                syncBlockActivity()
+            }
         }
         .onChange(of: notifications.enabled) { _, _ in
             rescheduleRituals()
@@ -178,7 +191,20 @@ struct RootView: View {
             model.eveningRitualPresented = true
         case .grow:
             model.screen = .grow
+        case .openToday:
+            model.screen = .today
         }
+    }
+
+    /// Keep the Lock Screen / Dynamic Island showing the block you're in.
+    /// The focus timer's Live Activity always wins over the block one.
+    private func syncBlockActivity() {
+        let now = Date()
+        let current = blockLiveActivities
+            ? service.blocks(on: now.startOfDay, hiddenCalendars: model.hiddenCalendarIDs)
+                .first { !$0.isAllDay && $0.start <= now && now < $0.end }
+            : nil
+        LiveActivityController.shared.syncBlock(current, focusActive: timer.isActive)
     }
 
     private func sheets<Content: View>(_ content: Content) -> some View {

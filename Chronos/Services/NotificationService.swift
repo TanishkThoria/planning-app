@@ -20,6 +20,7 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
         case planMorning
         case reflectEvening
         case grow
+        case openToday
     }
 
     @Published private(set) var authorization: Authorization = .notDetermined
@@ -32,12 +33,16 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
 
     private static let enabledKey = "chronos.notificationsEnabled"
     private static let checkInPrefix = "chronos.checkin."
+    private static let startPrefix = "chronos.blockstart."
     private static let ritualPrefix = "chronos.ritual."
     private static let habitPrefix = "chronos.habit."
     private let center = UNUserNotificationCenter.current()
 
     override init() {
-        enabled = UserDefaults.standard.object(forKey: Self.enabledKey) as? Bool ?? false
+        // On by default — the system permission prompt is the real gate.
+        // (This was previously opt-in AND permission-gated, which meant a
+        // fresh install never fired a single notification.)
+        enabled = UserDefaults.standard.object(forKey: Self.enabledKey) as? Bool ?? true
         super.init()
         center.delegate = self
         Task { await refreshAuthorization() }
@@ -73,6 +78,7 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
         if identifier.hasPrefix(checkInPrefix), let blockID {
             return .checkIn(blockID: blockID)
         }
+        if identifier.hasPrefix(startPrefix) { return .openToday }
         if identifier == "\(ritualPrefix)morning" { return .planMorning }
         if identifier == "\(ritualPrefix)evening" { return .reflectEvening }
         return .grow
@@ -100,27 +106,58 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
         }
     }
 
-    /// Rebuild the schedule from the given blocks. Called after every load
-    /// so edits in Chronos or the Apple apps stay reflected. Only future,
-    /// timed blocks within the next 48h get a nudge (keeps us well under the
-    /// 64 pending-notification limit).
-    func rescheduleCheckIns(for blocks: [TimeBlock], now: Date = Date()) {
+    /// Rebuild the block-driven schedule (start alerts + end-of-block
+    /// check-ins) from the given blocks. Called after every load so edits in
+    /// Chronos or the Apple apps stay reflected. Only future, timed blocks
+    /// within the next 48h are scheduled (keeps us well under the 64
+    /// pending-notification limit).
+    func rescheduleCheckIns(for blocks: [TimeBlock], startAlerts: Bool = true, now: Date = Date()) {
         guard enabled, authorization == .authorized else {
-            center.removeAllPendingNotificationRequests()
+            // Clear only our block-driven requests — rituals and habit
+            // reminders have their own switches and must survive this.
+            clear(prefix: Self.checkInPrefix)
+            clear(prefix: Self.startPrefix)
             return
         }
 
         center.getPendingNotificationRequests { [weak self] pending in
-            let ids = pending.map(\.identifier).filter { $0.hasPrefix(Self.checkInPrefix) }
-            self?.center.removePendingNotificationRequests(withIdentifiers: ids)
+            guard let self else { return }
+            let ids = pending.map(\.identifier).filter {
+                $0.hasPrefix(Self.checkInPrefix) || $0.hasPrefix(Self.startPrefix)
+            }
+            self.center.removePendingNotificationRequests(withIdentifiers: ids)
 
             let horizon = now.addingTimeInterval(48 * 3600)
-            let upcoming = blocks
-                .filter { !$0.isAllDay && $0.end > now && $0.end <= horizon && $0.linkedTaskID != nil }
-                .sorted { $0.end < $1.end }
-                .prefix(48)
+            let timed = blocks.filter { !$0.isAllDay }
 
-            for block in upcoming {
+            // "Starting in 5 minutes" heads-ups for every upcoming block.
+            if startAlerts {
+                let starting = timed
+                    .filter { $0.start > now.addingTimeInterval(120) && $0.start <= horizon }
+                    .sorted { $0.start < $1.start }
+                    .prefix(24)
+                for block in starting {
+                    let lead = min(5 * 60.0, max(60, block.start.timeIntervalSince(now) - 30))
+                    let content = UNMutableNotificationContent()
+                    content.title = block.title
+                    content.body = "Starts at \(Fmt.time.string(from: block.start))."
+                    content.sound = .default
+                    let trigger = UNTimeIntervalNotificationTrigger(
+                        timeInterval: block.start.timeIntervalSince(now) - lead, repeats: false
+                    )
+                    self.center.add(UNNotificationRequest(
+                        identifier: "\(Self.startPrefix)\(block.id)",
+                        content: content, trigger: trigger
+                    ))
+                }
+            }
+
+            // "How did it go?" check-ins when a task-linked block wraps up.
+            let ending = timed
+                .filter { $0.end > now && $0.end <= horizon && $0.linkedTaskID != nil }
+                .sorted { $0.end < $1.end }
+                .prefix(24)
+            for block in ending {
                 let content = UNMutableNotificationContent()
                 content.title = "How did it go?"
                 content.body = "\(block.title) just wrapped up. Tap to check in."
@@ -130,12 +167,10 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
                 let interval = block.end.timeIntervalSince(now)
                 guard interval > 1 else { continue }
                 let trigger = UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false)
-                let request = UNNotificationRequest(
+                self.center.add(UNNotificationRequest(
                     identifier: "\(Self.checkInPrefix)\(block.id)",
-                    content: content,
-                    trigger: trigger
-                )
-                self?.center.add(request)
+                    content: content, trigger: trigger
+                ))
             }
         }
     }

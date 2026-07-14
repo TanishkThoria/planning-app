@@ -23,6 +23,8 @@ struct SettingsView: View {
     @AppStorage(Prefs.defaultListID) private var defaultListID = ""
     @AppStorage(Prefs.dimPastBlocks) private var dimPastBlocks = true
     @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
+    @AppStorage(Prefs.startAlertsEnabled) private var startAlertsEnabled = true
+    @AppStorage(Prefs.blockLiveActivities) private var blockLiveActivities = true
 
     private var defaultCalendarBinding: Binding<String?> {
         Binding(
@@ -145,7 +147,7 @@ struct SettingsView: View {
                     }
 
                     settingsSection("Notifications") {
-                        FieldRow(label: "Block check-in nudges") {
+                        FieldRow(label: "Enable notifications") {
                             Toggle("", isOn: Binding(
                                 get: { notifications.enabled },
                                 set: { newValue in
@@ -153,7 +155,7 @@ struct SettingsView: View {
                                     if newValue {
                                         Task {
                                             await notifications.requestAuthorization()
-                                            notifications.rescheduleCheckIns(for: service.blocks)
+                                            notifications.rescheduleCheckIns(for: service.blocks, startAlerts: startAlertsEnabled)
                                         }
                                     } else {
                                         notifications.cancelAll()
@@ -164,18 +166,30 @@ struct SettingsView: View {
                             .toggleStyle(.switch)
                         }
                         if notifications.enabled && notifications.authorization == .denied {
-                            Text("Notifications are turned off in system settings. Enable them for Chronos to get check-in nudges.")
+                            Text("Notifications are turned off in system settings. Enable them for Chronos in Settings > Notifications.")
                                 .font(.system(size: 11))
                                 .foregroundStyle(Theme.warning)
                                 .padding(.horizontal, 4)
                         } else {
-                            Text("Get a nudge when a task-linked block ends. Open the app to review what got done and reschedule what slipped.")
+                            Text("Heads-up before each block starts, and a check-in when a task-linked block ends so you can reschedule what slipped.")
                                 .font(.system(size: 11))
                                 .foregroundStyle(Theme.textTertiary)
                                 .padding(.horizontal, 4)
                         }
 
                         if notifications.enabled {
+                            FieldRow(label: "Block start alerts") {
+                                Toggle("", isOn: $startAlertsEnabled)
+                                    .labelsHidden()
+                                    .toggleStyle(.switch)
+                            }
+                            #if os(iOS)
+                            FieldRow(label: "Current block on Lock Screen") {
+                                Toggle("", isOn: $blockLiveActivities)
+                                    .labelsHidden()
+                                    .toggleStyle(.switch)
+                            }
+                            #endif
                             FieldRow(label: "Morning planning reminder") {
                                 HStack(spacing: 10) {
                                     if morningReminderEnabled {

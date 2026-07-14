@@ -47,9 +47,61 @@ final class LiveActivityController: ObservableObject {
         self.activity = nil
         Task { await ending.end(nil, dismissalPolicy: .immediate) }
     }
+
+    // MARK: Current-block activity
+
+    /// A second Live Activity that mirrors whatever calendar block you're in
+    /// right now (countdown to its end). Reuses the focus attributes so the
+    /// widget extension needs no new shared files. The focus timer's activity
+    /// always takes priority.
+    private var blockActivity: Activity<FocusActivityAttributes>?
+    private var blockActivityID: String?
+
+    func syncBlock(_ block: TimeBlock?, focusActive: Bool) {
+        guard areActivitiesEnabled else { return }
+
+        // Focus session running, or no current block → tear down.
+        guard let block, !focusActive else {
+            endBlockActivity()
+            return
+        }
+
+        let state = FocusActivityAttributes.ContentState(
+            title: block.title,
+            phaseEndEpoch: block.end.timeIntervalSince1970,
+            phaseStartEpoch: block.start.timeIntervalSince1970,
+            phaseLabel: "Now",
+            isCountdown: true,
+            isPaused: false,
+            frozenSeconds: 0,
+            completedPomodoros: 0
+        )
+        let content = ActivityContent(state: state, staleDate: block.end)
+
+        if let blockActivity, blockActivityID == block.id {
+            Task { await blockActivity.update(content) }
+            return
+        }
+        endBlockActivity()
+        blockActivity = try? Activity.request(
+            attributes: FocusActivityAttributes(accentHex: accentHex),
+            content: content,
+            pushType: nil
+        )
+        blockActivityID = block.id
+    }
+
+    private func endBlockActivity() {
+        guard let blockActivity else { return }
+        let ending = blockActivity
+        self.blockActivity = nil
+        blockActivityID = nil
+        Task { await ending.end(nil, dismissalPolicy: .immediate) }
+    }
     #else
     func start(_ state: Any) {}
     func update(_ state: Any) {}
     func end() {}
+    func syncBlock(_ block: TimeBlock?, focusActive: Bool) {}
     #endif
 }

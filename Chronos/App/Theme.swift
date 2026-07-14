@@ -116,4 +116,6 @@ enum Prefs {
     static let eveningReminderEnabled = "pref.eveningReminderEnabled"
     static let eveningReminderMinutes = "pref.eveningReminderMinutes"
     static let coachEnabled = "pref.coachEnabled"                 // show the AI Coach tab
+    static let startAlertsEnabled = "pref.startAlertsEnabled"     // "starting in 5 min" nudges
+    static let blockLiveActivities = "pref.blockLiveActivities"   // current-block Live Activity
 }
