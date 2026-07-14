@@ -97,8 +97,10 @@ struct RootView: View {
         .tint(Theme.accent(named: accentName))
     }
 
+    // Staged (lifecycle → dataObservers → settingObservers) so no single
+    // modifier chain overwhelms the type-checker.
     private func lifecycle<Content: View>(_ content: Content) -> some View {
-        content
+        settingObservers(dataObservers(content))
         .onOpenURL { url in
             model.handleDeepLink(url)
         }
@@ -127,10 +129,11 @@ struct RootView: View {
                 await lms.sync(service: service)
             }
         }
-        .onChange(of: morningReminderEnabled) { _, _ in rescheduleRituals() }
-        .onChange(of: morningReminderMinutes) { _, _ in rescheduleRituals() }
-        .onChange(of: eveningReminderEnabled) { _, _ in rescheduleRituals() }
-        .onChange(of: eveningReminderMinutes) { _, _ in rescheduleRituals() }
+    }
+
+    /// Reactions to live data changing (calendar, tasks, habits, the clock).
+    private func dataObservers<Content: View>(_ content: Content) -> some View {
+        content
         .onChange(of: model.selectedDate) { _, newDate in
             service.ensureWindow(around: newDate)
         }
@@ -139,26 +142,35 @@ struct RootView: View {
             refreshWidgetSnapshot()
             syncBlockActivity()
         }
-        .onChange(of: startAlertsEnabled) { _, on in
-            notifications.rescheduleCheckIns(for: service.blocks, startAlerts: on)
-        }
-        .onChange(of: timer.isActive) { _, _ in syncBlockActivity() }
-        .onChange(of: blockLiveActivities) { _, _ in syncBlockActivity() }
-        .onReceive(minuteTick) { _ in syncBlockActivity() }
         .onChange(of: service.tasks) { _, _ in refreshWidgetSnapshot() }
         .onChange(of: life.habits) { _, _ in
             rescheduleHabitReminders()
             refreshWidgetSnapshot()
         }
         .onChange(of: life.habitCompletions) { _, _ in refreshWidgetSnapshot() }
-        .onChange(of: accentName) { _, name in
-            LiveActivityController.shared.accentHex = Theme.accent(named: name).hexRGB
-        }
+        .onChange(of: timer.isActive) { _, _ in syncBlockActivity() }
+        .onReceive(minuteTick) { _ in syncBlockActivity() }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 refreshWidgetSnapshot()
                 syncBlockActivity()
             }
+        }
+    }
+
+    /// Reactions to preferences and inbound routing (intents, notifications).
+    private func settingObservers<Content: View>(_ content: Content) -> some View {
+        content
+        .onChange(of: morningReminderEnabled) { _, _ in rescheduleRituals() }
+        .onChange(of: morningReminderMinutes) { _, _ in rescheduleRituals() }
+        .onChange(of: eveningReminderEnabled) { _, _ in rescheduleRituals() }
+        .onChange(of: eveningReminderMinutes) { _, _ in rescheduleRituals() }
+        .onChange(of: startAlertsEnabled) { _, on in
+            notifications.rescheduleCheckIns(for: service.blocks, startAlerts: on)
+        }
+        .onChange(of: blockLiveActivities) { _, _ in syncBlockActivity() }
+        .onChange(of: accentName) { _, name in
+            LiveActivityController.shared.accentHex = Theme.accent(named: name).hexRGB
         }
         .onChange(of: notifications.enabled) { _, _ in
             rescheduleRituals()

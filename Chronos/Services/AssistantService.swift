@@ -20,7 +20,7 @@ final class AssistantService {
 
     /// Persona + rules for the model. Kept tight so replies stay grounded,
     /// short, and human.
-    static let instructions = """
+    nonisolated static let instructions = """
     You are Chronos, a warm, sharp personal planning companion living inside a \
     time-blocking app. You help the user plan their day, stay focused, protect \
     their energy, and build good habits.
