@@ -145,6 +145,18 @@ final class ProfileStore: ObservableObject {
         } else {
             profile = PlannerProfile()
         }
+        NotificationCenter.default.addObserver(
+            forName: .chronosCloudDidPull, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.reloadFromDefaults() }
+        }
+    }
+
+    /// Re-read from UserDefaults after iCloud sync writes a newer copy.
+    func reloadFromDefaults() {
+        guard let data = UserDefaults.standard.data(forKey: Self.key),
+              let decoded = try? JSONDecoder().decode(PlannerProfile.self, from: data) else { return }
+        profile = decoded
     }
 
     private func save() {

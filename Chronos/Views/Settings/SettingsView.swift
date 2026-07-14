@@ -297,6 +297,38 @@ struct SettingsView: View {
                         .padding(.horizontal, 4)
                     }
 
+                    settingsSection("Chronos+") {
+                        Button {
+                            model.settingsPresented = false
+                            model.chronosPlusPresented = true
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(Color.accentColor)
+                                    .frame(width: 20)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text("iCloud sync, leaderboards & friends")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundStyle(Theme.textPrimary)
+                                    Text(PaidFeatures.shared.anyCapabilityEntitled
+                                         ? "Manage your Chronos+ features"
+                                         : "Built in — see how to turn it on")
+                                        .font(.system(size: 11))
+                                        .foregroundStyle(Theme.textTertiary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(Theme.textTertiary)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 11)
+                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                    }
+
                     settingsSection("Account") {
                         Button {
                             model.statsPresented = true

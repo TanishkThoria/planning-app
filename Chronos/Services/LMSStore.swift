@@ -22,7 +22,14 @@ final class LMSStore: ObservableObject {
     private static let key = "chronos.lms.v2"
     private static let legacyKey = "chronos.lms.v1"
 
-    private init() { load() }
+    private init() {
+        load()
+        NotificationCenter.default.addObserver(
+            forName: .chronosCloudDidPull, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.load() }
+        }
+    }
 
     var isConfigured: Bool { !sources.isEmpty }
 

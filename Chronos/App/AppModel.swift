@@ -150,6 +150,8 @@ final class AppModel: ObservableObject {
     @Published var wrappedPresented = false
     /// Distraction-free "Now" focus mode.
     @Published var nowModePresented = false
+    /// Chronos+ hub (iCloud sync, leaderboards, friends).
+    @Published var chronosPlusPresented = false
 
     /// Show/hide the backlog rail in the day planner (wide layouts).
     @Published var backlogVisible = true

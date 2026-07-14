@@ -130,6 +130,13 @@ struct RootView: View {
             if lms.isConfigured, service.hasFullAccess {
                 await lms.autoSyncIfStale(service: service)
             }
+            // Chronos+ (paid): detect availability, then sync/connect if ready.
+            // All of this no-ops cleanly on the free account.
+            PaidFeatures.shared.refresh()
+            await CloudSyncService.shared.syncNow()
+            SocialService.shared.authenticateGameCenter()
+            syncSocialPresence()
+            submitLeaderboards()
         }
     }
 
@@ -143,6 +150,7 @@ struct RootView: View {
             notifications.rescheduleCheckIns(for: blocks, startAlerts: startAlertsEnabled)
             refreshWidgetSnapshot()
             syncBlockActivity()
+            syncSocialPresence()
             // Feed updates arrive as calendar changes — pull new assignments
             // (throttled so our own imports don't loop it).
             Task { await lms.autoSyncIfStale(service: service, minInterval: 30 * 60) }
@@ -154,16 +162,55 @@ struct RootView: View {
         }
         .onChange(of: life.habitCompletions) { _, _ in refreshWidgetSnapshot() }
         .onChange(of: timer.isActive) { _, _ in syncBlockActivity() }
-        .onReceive(minuteTick) { _ in syncBlockActivity() }
+        .onReceive(minuteTick) { _ in
+            syncBlockActivity()
+            syncSocialPresence()
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 refreshWidgetSnapshot()
                 syncBlockActivity()
+                PaidFeatures.shared.refresh()
+                Task {
+                    await CloudSyncService.shared.syncNow()
+                    await SocialService.shared.refreshFriends()
+                }
+                submitLeaderboards()
                 // Guarantees at-least-daily assignment imports for anyone who
                 // opens the app daily; 6h staleness keeps it fresher than that.
                 Task { await lms.autoSyncIfStale(service: service) }
+            } else if phase == .background {
+                Task { await CloudSyncService.shared.pushIfReady() }
             }
         }
+    }
+
+    // MARK: Chronos+ social helpers (all no-op unless the feature is ready)
+
+    /// Publishes the user's current block + busy level so friends can see it.
+    private func syncSocialPresence() {
+        let now = Date()
+        let current = service.blocks(on: now.startOfDay, hiddenCalendars: model.hiddenCalendarIDs)
+            .first { !$0.isAllDay && $0.start <= now && now < $0.end }
+        let busy: BusyLevel
+        if timer.isActive {
+            busy = .headsDown
+        } else if let current {
+            let deep = current.notes?.localizedCaseInsensitiveContains("energy:deep") ?? false
+            busy = deep ? .headsDown : .busy
+        } else {
+            busy = .free
+        }
+        SocialService.shared.publishPresence(
+            currentBlockTitle: current?.title,
+            busy: busy,
+            momentum: MomentumStore.shared.score(on: now)
+        )
+    }
+
+    private func submitLeaderboards() {
+        SocialService.shared.submitWeeklyFocus(minutes: focusLog.totalMinutes(inLast: 7))
+        SocialService.shared.submitMomentum(MomentumStore.shared.totalPoints)
     }
 
     /// Reactions to preferences and inbound routing (intents, notifications).
@@ -333,6 +380,9 @@ struct RootView: View {
         }
         .sheet(isPresented: $model.availabilityPresented) {
             AvailabilityView()
+        }
+        .sheet(isPresented: $model.chronosPlusPresented) {
+            ChronosPlusView()
         }
     }
 

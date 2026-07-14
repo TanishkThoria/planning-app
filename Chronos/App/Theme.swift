@@ -118,4 +118,22 @@ enum Prefs {
     static let coachEnabled = "pref.coachEnabled"                 // show the AI Coach tab
     static let startAlertsEnabled = "pref.startAlertsEnabled"     // "starting in 5 min" nudges
     static let blockLiveActivities = "pref.blockLiveActivities"   // current-block Live Activity
+
+    // MARK: Chronos+ (paid-account features — all default OFF, all no-op until
+    // the underlying Apple capability is present; see PaidFeatures + docs/CHRONOS_PLUS_SETUP.md)
+
+    /// Master switch. When on AND the capabilities are entitled, the paid
+    /// layer activates; otherwise everything stays dormant.
+    static let chronosPlusEnabled = "pref.chronosPlusEnabled"
+    /// Mirror Chronos-only data (Grow, momentum, profile, schools) across the
+    /// user's devices via their private iCloud (CloudKit).
+    static let cloudSyncEnabled = "pref.cloudSyncEnabled"
+    /// Game Center leaderboards + friends presence.
+    static let socialEnabled = "pref.socialEnabled"
+    /// Live Home/Lock Screen widgets (needs the App Group capability).
+    static let liveWidgetsEnabled = "pref.liveWidgetsEnabled"
+    /// A short, shareable code other Chronos users add to see your presence.
+    static let friendCode = "pref.friendCode"
+    /// Display name shown to friends and on the leaderboard.
+    static let socialDisplayName = "pref.socialDisplayName"
 }

@@ -61,7 +61,14 @@ final class MomentumStore: ObservableObject {
     @Published private(set) var history: [String: Int] = [:]
 
     private static let key = "chronos.momentum.v1"
-    private init() { load() }
+    private init() {
+        load()
+        NotificationCenter.default.addObserver(
+            forName: .chronosCloudDidPull, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.load() }
+        }
+    }
 
     private func load() {
         if let data = UserDefaults.standard.data(forKey: Self.key),

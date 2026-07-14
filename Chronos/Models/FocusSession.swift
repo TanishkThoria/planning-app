@@ -32,6 +32,18 @@ final class FocusLog: ObservableObject {
            let decoded = try? JSONDecoder().decode([FocusSession].self, from: data) {
             sessions = decoded
         }
+        NotificationCenter.default.addObserver(
+            forName: .chronosCloudDidPull, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.reloadFromDefaults() }
+        }
+    }
+
+    /// Re-read from UserDefaults after iCloud sync writes a newer copy.
+    func reloadFromDefaults() {
+        guard let data = UserDefaults.standard.data(forKey: Self.key),
+              let decoded = try? JSONDecoder().decode([FocusSession].self, from: data) else { return }
+        sessions = decoded
     }
 
     func record(_ session: FocusSession) {
