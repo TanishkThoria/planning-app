@@ -316,6 +316,27 @@ final class EventKitService: ObservableObject {
         return store.events(matching: predicate)
     }
 
+    /// Timed blocks over an arbitrary range (not limited to the loaded window)
+    /// — used by the Time Report and Year in Review. EventKit caps a single
+    /// predicate at ~4 years, so callers should keep ranges sane.
+    func blocks(from: Date, to: Date, hiddenCalendars: Set<String> = []) -> [TimeBlock] {
+        guard eventAccess == .granted else { return [] }
+        let predicate = store.predicateForEvents(withStart: from, end: to, calendars: nil)
+        return store.events(matching: predicate)
+            .compactMap { snapshot(of: $0) }
+            .filter { !$0.isAllDay && !hiddenCalendars.contains($0.calendarID) }
+    }
+
+    /// Count of reminders completed since `date` (the loader only keeps 14
+    /// days; Year in Review needs the full stretch).
+    func completedTaskCount(since date: Date) async -> Int {
+        guard reminderAccess == .granted else { return 0 }
+        let predicate = store.predicateForCompletedReminders(
+            withCompletionDateStarting: date, ending: nil, calendars: nil
+        )
+        return await fetchReminders(matching: predicate).count
+    }
+
     /// Create a reminder mirroring an assignment. Returns its identifier.
     /// Pass `commit: false` in a batch, then call `commitStore()` once.
     @discardableResult

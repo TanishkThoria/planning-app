@@ -14,6 +14,9 @@ struct StatisticsView: View {
     @EnvironmentObject private var focusLog: FocusLog
     @EnvironmentObject private var life: LifeStore
 
+    @State private var showTimeReport = false
+    @State private var showWrapped = false
+
     private var weekDays: [Date] {
         let start = model.selectedDate.startOfWeek
         return (0..<7).map { start.adding(days: $0) }
@@ -109,6 +112,8 @@ struct StatisticsView: View {
             .scrollIndicators(.hidden)
         }
         .background(Theme.bg)
+        .sheet(isPresented: $showTimeReport) { TimeReportView() }
+        .sheet(isPresented: $showWrapped) { WrappedView() }
     }
 
     private var header: some View {
@@ -124,6 +129,10 @@ struct StatisticsView: View {
                 }
             }
             Spacer()
+            HeaderIconButton(icon: "clock.arrow.circlepath") { showTimeReport = true }
+                .help("Time Report — where your hours went")
+            HeaderIconButton(icon: "sparkles") { showWrapped = true }
+                .help("Year in Review")
             DateNavigator()
             if let onClose {
                 Button(action: onClose) {

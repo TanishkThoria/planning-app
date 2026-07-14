@@ -144,6 +144,12 @@ final class AppModel: ObservableObject {
     @Published var availabilityPresented = false
     /// Long-horizon growth trends (mood, habits, goals, reflections).
     @Published var trendsPresented = false
+    /// Where-did-my-time-go report.
+    @Published var timeReportPresented = false
+    /// Year in Review / Wrapped.
+    @Published var wrappedPresented = false
+    /// Distraction-free "Now" focus mode.
+    @Published var nowModePresented = false
 
     /// Show/hide the backlog rail in the day planner (wide layouts).
     @Published var backlogVisible = true

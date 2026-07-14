@@ -218,6 +218,7 @@ struct CommandBarView: View {
         add("sweep", "Sweep Overdue", "Schedule overdue into open time", "tray.and.arrow.down", "Plan", "overdue backlog", { model.overdueSweepPresented = true })
 
         // Focus
+        add("now", "Now Mode", "Distraction-free: just this moment", "circle.circle", "Focus", "focus distraction adhd now current", { model.nowModePresented = true })
         add("focus", "Start Focus Timer", "Pomodoro or stopwatch", "timer", "Focus", "pomodoro deep work session", { model.startFocus(taskID: nil, title: "Focus") })
         add("frog", "Eat the Frog", "5 minutes on today's hardest task", "bolt.fill", "Focus", "procrastination hardest avoid", {
             model.screen = .today
@@ -239,6 +240,8 @@ struct CommandBarView: View {
 
         // Insights & tools
         add("stats", "Statistics", "Your productivity numbers", "chart.bar.xaxis", "Tools", "insights stats analytics", { model.statsPresented = true })
+        add("time-report", "Time Report", "Where your hours actually went", "clock.arrow.circlepath", "Tools", "time report allocation where", { model.timeReportPresented = true })
+        add("wrapped", "Year in Review", "Your year in time", "sparkles", "Tools", "wrapped year review recap", { model.wrappedPresented = true })
         add("availability", "Share Availability", "Copy your free slots as text", "square.and.arrow.up", "Tools", "free slots share schedule", { model.availabilityPresented = true })
         add("search", "Search", "Find any block or task", "magnifyingglass", "Tools", "find search", { model.searchPresented = true })
         add("filters", "Calendar Filters", "Show/hide calendars & lists", "line.3.horizontal.decrease.circle", "Tools", "hide show calendars lists", { model.calendarFilterPresented = true })

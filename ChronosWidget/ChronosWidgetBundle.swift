@@ -13,6 +13,8 @@ struct ChronosWidgetBundle: WidgetBundle {
         ChronosTodayWidget()
         ChronosUpNextWidget()
         ChronosHabitsWidget()
+        ChronosMomentumWidget()
+        ChronosNextInlineWidget()
         if #available(iOS 16.1, *) {
             ChronosFocusLiveActivity()
         }

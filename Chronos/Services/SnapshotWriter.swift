@@ -14,7 +14,7 @@ import WidgetKit
 enum SnapshotWriter {
 
     @MainActor
-    static func refresh(service: EventKitService, life: LifeStore, accentName: String) {
+    static func refresh(service: EventKitService, life: LifeStore, focusLog: FocusLog? = nil, accentName: String) {
         let now = Date()
         let today = now.startOfDay
 
@@ -47,6 +47,17 @@ enum SnapshotWriter {
             $0.isCompleted && ($0.completionDate?.isToday ?? false)
         }.count
 
+        let momentum = MomentumEngine.score(.init(
+            plannedBlocks: dayBlocks.count,
+            didMorningPlan: life.entry(for: today)?.hasMorning ?? false,
+            tasksCompletedToday: doneToday,
+            focusMinutesToday: focusLog?.sessions(on: today).reduce(0) { $0 + $1.actualMinutes } ?? 0,
+            habitsDue: habits.count,
+            habitsDone: habits.filter(\.done).count,
+            journaledEvening: life.entry(for: today)?.hasEvening ?? false,
+            frogEaten: false
+        ))
+
         let snapshot = TodaySnapshot(
             generatedEpoch: now.timeIntervalSince1970,
             current: current.map(snapshotBlock),
@@ -56,7 +67,8 @@ enum SnapshotWriter {
             elapsedPlannedMinutes: min(elapsedPlanned, plannedMinutes),
             habits: habits,
             tasksDueToday: dueToday,
-            tasksDoneToday: doneToday
+            tasksDoneToday: doneToday,
+            momentum: momentum
         )
 
         SnapshotStore.write(snapshot)

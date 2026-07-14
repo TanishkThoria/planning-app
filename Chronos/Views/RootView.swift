@@ -72,11 +72,13 @@ struct RootView: View {
             OnboardingView(onFinish: finishOnboarding)
                 .interactiveDismissDisabled()
         }
+        .fullScreenCover(isPresented: $model.nowModePresented) { NowView() }
         #else
         .sheet(isPresented: onboardingBinding) {
             OnboardingView(onFinish: finishOnboarding)
                 .interactiveDismissDisabled()
         }
+        .sheet(isPresented: $model.nowModePresented) { NowView() }
         #endif
     }
 
@@ -320,6 +322,12 @@ struct RootView: View {
         .sheet(isPresented: $model.trendsPresented) {
             TrendsView()
         }
+        .sheet(isPresented: $model.timeReportPresented) {
+            TimeReportView()
+        }
+        .sheet(isPresented: $model.wrappedPresented) {
+            WrappedView()
+        }
         .sheet(isPresented: $model.deadlinePlanPresented) {
             DeadlinePlanView()
         }
@@ -426,7 +434,7 @@ struct RootView: View {
     }
 
     private func refreshWidgetSnapshot() {
-        SnapshotWriter.refresh(service: service, life: life, accentName: accentName)
+        SnapshotWriter.refresh(service: service, life: life, focusLog: focusLog, accentName: accentName)
     }
 
     /// Runs the command bar's chosen action after its sheet has dismissed, so

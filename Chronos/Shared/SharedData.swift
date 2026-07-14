@@ -40,6 +40,9 @@ struct TodaySnapshot: Codable {
     var habits: [SnapshotHabit]
     var tasksDueToday: Int
     var tasksDoneToday: Int
+    /// Today's momentum score (0–100), for the Lock Screen ring. Optional so
+    /// snapshots written before this field decode cleanly.
+    var momentum: Int? = nil
 
     var habitsDone: Int { habits.filter(\.done).count }
 
@@ -62,7 +65,8 @@ struct TodaySnapshot: Codable {
                 SnapshotHabit(name: "Meditate", colorHex: 0xA3E06B, done: true),
             ],
             tasksDueToday: 6,
-            tasksDoneToday: 2
+            tasksDoneToday: 2,
+            momentum: 72
         )
     }
 }

@@ -357,6 +357,10 @@ struct TodayView: View {
                     .foregroundStyle(remainingCount == 0 ? Theme.success : Theme.textSecondary)
             }
             Spacer()
+            HeaderIconButton(icon: "circle.circle") {
+                model.nowModePresented = true
+            }
+            .help("Now — distraction-free focus")
             HeaderIconButton(icon: "command") {
                 model.commandBarPresented = true
             }
