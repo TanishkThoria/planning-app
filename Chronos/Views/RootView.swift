@@ -308,6 +308,9 @@ struct RootView: View {
             StatisticsView(onClose: { model.statsPresented = false })
                 .preferredColorScheme(.dark)
         }
+        .sheet(isPresented: $model.commandBarPresented, onDismiss: runPendingCommand) {
+            CommandBarView()
+        }
         .sheet(isPresented: $model.lmsSetupPresented) {
             LMSSetupView()
         }
@@ -424,6 +427,14 @@ struct RootView: View {
 
     private func refreshWidgetSnapshot() {
         SnapshotWriter.refresh(service: service, life: life, accentName: accentName)
+    }
+
+    /// Runs the command bar's chosen action after its sheet has dismissed, so
+    /// it can safely open another sheet.
+    private func runPendingCommand() {
+        let action = model.pendingCommandBarAction
+        model.pendingCommandBarAction = nil
+        action?()
     }
 
     private func rescheduleHabitReminders() {

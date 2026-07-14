@@ -183,6 +183,11 @@ final class EventKitService: ObservableObject {
 
         let overrideColor = BlockMetadata.colorHex(from: event.notes)
 
+        // Only treat the event's own URL as a meeting link (not a Chronos
+        // task deep-link).
+        let eventURLString = (event.url?.scheme == "chronos") ? nil : event.url?.absoluteString
+        let meeting = MeetingLink.detect(in: [eventURLString, event.notes, event.location])
+
         return TimeBlock(
             id: occurrenceID,
             eventID: eventID,
@@ -197,7 +202,9 @@ final class EventKitService: ObservableObject {
             location: event.location,
             linkedTaskID: linkedTaskID,
             hasRecurrence: event.hasRecurrenceRules,
-            isEditable: calendar.allowsContentModifications
+            isEditable: calendar.allowsContentModifications,
+            meetingURL: meeting?.url,
+            meetingPlatform: meeting?.platform
         )
     }
 
@@ -338,6 +345,37 @@ final class EventKitService: ObservableObject {
 
     func reminderExists(_ id: String) -> Bool {
         (store.calendarItem(withIdentifier: id) as? EKReminder) != nil
+    }
+
+    /// Sunsama/Motion-style carry-over: move every overdue task's due date to
+    /// today (keeping its time-of-day), bumping each one's punt counter.
+    /// Returns how many moved.
+    @discardableResult
+    func rollOverdueToToday() -> Int {
+        let cal = Calendar.current
+        var moved = 0
+        for task in tasks where task.isOverdue {
+            guard let reminder = liveReminder(withID: task.id) else { continue }
+            var comps = cal.dateComponents([.year, .month, .day], from: Date())
+            if task.dueHasTime, let due = task.dueDate {
+                let t = cal.dateComponents([.hour, .minute], from: due)
+                comps.hour = t.hour
+                comps.minute = t.minute
+            }
+            reminder.dueDateComponents = comps
+            reminder.notes = TaskMetadata.encode(
+                notes: TaskMetadata.strippingTokens(reminder.notes) ?? "",
+                estimateMinutes: TaskMetadata.estimate(from: reminder.notes),
+                sessionMinutes: TaskMetadata.session(from: reminder.notes),
+                energy: TaskMetadata.energy(from: reminder.notes),
+                parentID: TaskMetadata.parentID(from: reminder.notes),
+                puntCount: TaskMetadata.puntCount(from: reminder.notes) + 1
+            )
+            try? store.save(reminder, commit: false)
+            moved += 1
+        }
+        if moved > 0 { commitStore() }
+        return moved
     }
 
     /// Record that a task was punted to a later day — bumps the `[punt:N]`

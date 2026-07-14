@@ -61,13 +61,15 @@ struct ChronosCommands: Commands {
 
     var body: some Commands {
         CommandGroup(after: .textEditing) {
+            Button("Command Bar…") { model.commandBarPresented = true }
+                .keyboardShortcut("k", modifiers: .command)
             Button("Search…") { model.searchPresented = true }
                 .keyboardShortcut("f", modifiers: .command)
         }
 
         CommandGroup(replacing: .newItem) {
             Button("Quick Add…") { model.quickAddPresented = true }
-                .keyboardShortcut("k", modifiers: .command)
+                .keyboardShortcut("k", modifiers: [.command, .shift])
             Button("New Time Block") { model.newBlock() }
                 .keyboardShortcut("n", modifiers: .command)
             Button("New Task") { model.newTask() }

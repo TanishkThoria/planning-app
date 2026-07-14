@@ -136,6 +136,11 @@ struct TimeBlockCard: View {
                             .strikethrough(linkedTask?.isCompleted == true, color: Theme.textSecondary)
                             .lineLimit(compact ? 2 : 3)
                         Spacer(minLength: 0)
+                        if block.hasMeeting && displayHeight >= 26 {
+                            Image(systemName: "video.fill")
+                                .font(.system(size: 8))
+                                .foregroundStyle(Color.accentColor)
+                        }
                         if block.hasRecurrence && !compact && displayHeight >= 30 {
                             Image(systemName: "repeat")
                                 .font(.system(size: 8))
@@ -183,6 +188,11 @@ struct TimeBlockCard: View {
 
     @ViewBuilder
     private var contextMenuItems: some View {
+        if let url = block.meetingURL {
+            Link(destination: url) {
+                Label("Join \(block.meetingPlatform ?? "Meeting")", systemImage: "video")
+            }
+        }
         Button { onTap() } label: { Label("Edit", systemImage: "pencil") }
         Button { onFocus() } label: { Label("Focus on This", systemImage: "timer") }
         if block.isEditable {

@@ -49,6 +49,49 @@ struct TodayView: View {
         life.activeHabits.filter { $0.isDue(on: today) }
     }
 
+    // MARK: Carry-over
+
+    private var carryOverBanner: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "arrow.turn.down.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Theme.warning)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(overdue.count) unfinished from before")
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                Text("Bring them to today, or schedule them into open time.")
+                    .font(.system(size: 10.5))
+                    .foregroundStyle(Theme.textTertiary)
+                    .lineLimit(1).minimumScaleFactor(0.85)
+            }
+            Spacer(minLength: 6)
+            Button {
+                Haptics.success()
+                withAnimation(.snappy) { _ = service.rollOverdueToToday() }
+            } label: {
+                Text("Roll over")
+                    .font(.system(size: 11.5, weight: .semibold))
+                    .foregroundStyle(Theme.bg)
+                    .padding(.horizontal, 11).padding(.vertical, 6)
+                    .background(Theme.warning, in: Capsule())
+            }
+            .buttonStyle(.plain)
+            Button {
+                model.overdueSweepPresented = true
+            } label: {
+                Image(systemName: "calendar.badge.clock")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.warning)
+            }
+            .buttonStyle(.plain)
+            .help("Schedule overdue into open time")
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .background(Theme.warning.opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.warning.opacity(0.22), lineWidth: 1))
+    }
+
     // MARK: Eat the frog
 
     /// Candidates for the frog: what's overdue or due today, hardest-first.
@@ -267,6 +310,7 @@ struct TodayView: View {
                     }
 
                     if !overdue.isEmpty {
+                        carryOverBanner
                         sectionLabel("Overdue", color: Theme.danger, count: overdue.count)
                         ForEach(overdue) { TodayTaskRow(task: $0) }
                     }
@@ -313,6 +357,10 @@ struct TodayView: View {
                     .foregroundStyle(remainingCount == 0 ? Theme.success : Theme.textSecondary)
             }
             Spacer()
+            HeaderIconButton(icon: "command") {
+                model.commandBarPresented = true
+            }
+            .help("Command bar")
             #if os(iOS)
             HeaderIconButton(icon: "gearshape") {
                 model.settingsPresented = true
@@ -380,6 +428,18 @@ struct TodayView: View {
                     .lineLimit(1)
 
                 Spacer(minLength: 4)
+
+                if let url = block.meetingURL, block.end > now {
+                    Link(destination: url) {
+                        Label("Join", systemImage: "video.fill")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(block.isNow ? Theme.bg : Color.accentColor)
+                            .padding(.horizontal, 9).padding(.vertical, 5)
+                            .background(block.isNow ? AnyShapeStyle(Color.accentColor)
+                                        : AnyShapeStyle(Color.accentColor.opacity(0.14)), in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
 
                 Button {
                     let taskID = block.linkedTaskID

@@ -90,10 +90,10 @@ struct QuickAddView: View {
                     .font(.system(size: 9.5, weight: .semibold))
                     .tracking(1.2)
                     .foregroundStyle(Theme.textTertiary)
-                Text("Times: 9-11am, 3pm, 14:30 · Days: today, tmr, fri, next mon · Length: 45m, 1.5h")
+                Text("Times 9-11am, 3pm · Days today, fri, in 3 days, jan 5 · Length 45m, 1.5h")
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textTertiary)
-                Text("Tasks: start with \u{201C}todo\u{201D} or \u{201C}t\u{201D} · Priority: ! !! !!! · Estimate: ~30m")
+                Text("todo/t · ! !! !!! · ~30m · every week · #List · at Blue Bottle")
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -109,7 +109,13 @@ struct QuickAddView: View {
         .presentationDetents([.height(360)])
         .presentationDragIndicator(.visible)
         #endif
-        .onAppear { focused = true }
+        .onAppear {
+            if let prefill = model.quickAddPrefill {
+                text = prefill
+                model.quickAddPrefill = nil
+            }
+            focused = true
+        }
     }
 
     private var previewCard: some View {
@@ -143,12 +149,17 @@ struct QuickAddView: View {
             }
             if parsed.priority != .none { parts.append("\(parsed.priority.label.lowercased()) priority") }
             if let est = parsed.estimateMinutes { parts.append("~\(Fmt.duration(minutes: est))") }
+            if parsed.recurrence != .none { parts.append(parsed.recurrence.rawValue.lowercased()) }
+            if let list = parsed.listName { parts.append("#\(list)") }
             return parts.joined(separator: " · ")
         } else {
             let start = blockStart
             let minutes = parsed.durationMinutes ?? defaultBlockMinutes
             let suffix = parsed.hasExplicitTime ? "" : " (next free slot)"
-            return "\(Fmt.relativeDay(start)) \(Fmt.timeRange(start, start.adding(minutes: minutes)))\(suffix)"
+            var detail = "\(Fmt.relativeDay(start)) \(Fmt.timeRange(start, start.adding(minutes: minutes)))\(suffix)"
+            if parsed.recurrence != .none { detail += " · \(parsed.recurrence.rawValue.lowercased())" }
+            if let place = parsed.location { detail += " · \(place)" }
+            return detail
         }
     }
 
@@ -169,15 +180,32 @@ struct QuickAddView: View {
         )
     }
 
+    /// A "#tag" matched against the user's actual Reminders lists.
+    private var resolvedListID: String? {
+        guard let name = parsed.listName else { return nil }
+        return service.taskLists.first {
+            $0.isEditable && $0.title.localizedCaseInsensitiveContains(name)
+        }?.id
+    }
+
+    /// A "#tag" matched against the user's actual event calendars.
+    private var resolvedCalendarID: String? {
+        guard let name = parsed.listName else { return nil }
+        return service.calendars.first {
+            $0.isEditable && $0.title.localizedCaseInsensitiveContains(name)
+        }?.id
+    }
+
     private func submit() {
         guard parsed.isValid else { return }
 
         if parsed.kind == .task {
             var draft = TaskDraft()
             draft.title = parsed.title
-            draft.listID = defaultListID.isEmpty ? nil : defaultListID
+            draft.listID = resolvedListID ?? (defaultListID.isEmpty ? nil : defaultListID)
             draft.priority = parsed.priority
             draft.estimateMinutes = parsed.estimateMinutes
+            draft.recurrence = parsed.recurrence
             if let date = parsed.date {
                 draft.hasDue = true
                 draft.due = date
@@ -187,9 +215,11 @@ struct QuickAddView: View {
         } else {
             var draft = BlockDraft()
             draft.title = parsed.title
-            draft.calendarID = defaultCalendarID.isEmpty ? nil : defaultCalendarID
+            draft.calendarID = resolvedCalendarID ?? (defaultCalendarID.isEmpty ? nil : defaultCalendarID)
             draft.start = blockStart
             draft.end = draft.start.adding(minutes: parsed.durationMinutes ?? defaultBlockMinutes)
+            draft.location = parsed.location ?? ""
+            draft.recurrence = parsed.recurrence
             service.createBlock(draft)
         }
         dismiss()

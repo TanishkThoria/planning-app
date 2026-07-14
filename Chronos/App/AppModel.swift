@@ -127,6 +127,13 @@ final class AppModel: ObservableObject {
     @Published var overdueSweepPresented = false
     /// Detailed account statistics (relocated out of the primary tabs).
     @Published var statsPresented = false
+    /// Universal command bar (⌘K).
+    @Published var commandBarPresented = false
+    /// Action deferred until the command bar sheet finishes dismissing, so we
+    /// never try to present two sheets at once.
+    var pendingCommandBarAction: (() -> Void)?
+    /// Prefill text handed to Quick Add (e.g. from the command bar).
+    var quickAddPrefill: String?
     /// School LMS (Canvas/Schoology) connect flow.
     @Published var lmsSetupPresented = false
     /// LMS management (connected schools, sync, unlink).

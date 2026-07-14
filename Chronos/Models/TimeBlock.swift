@@ -20,6 +20,12 @@ struct TimeBlock: Identifiable, Hashable {
     var linkedTaskID: String?
     var hasRecurrence: Bool
     var isEditable: Bool
+    /// A detected video-conferencing link (Zoom/Meet/Teams/…) if the event
+    /// carries one — powers the "Join" button.
+    var meetingURL: URL? = nil
+    var meetingPlatform: String? = nil
+
+    var hasMeeting: Bool { meetingURL != nil }
 
     var duration: TimeInterval { end.timeIntervalSince(start) }
     var durationMinutes: Int { max(0, Int(duration / 60)) }
