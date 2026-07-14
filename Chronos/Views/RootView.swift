@@ -384,6 +384,16 @@ struct RootView: View {
         .sheet(isPresented: $model.chronosPlusPresented) {
             ChronosPlusView()
         }
+        .sheet(isPresented: $model.leaderboardPresented) {
+            LeaderboardView()
+        }
+        .sheet(isPresented: $model.friendsPresented) {
+            FriendsView()
+        }
+        .sheet(isPresented: $model.coachPresented) {
+            CoachView()
+                .preferredColorScheme(.dark)
+        }
     }
 
     private func errorAlert<Content: View>(_ content: Content) -> some View {
@@ -469,6 +479,7 @@ struct RootView: View {
         case .calendar: PlannerScreen()
         case .tasks: TasksView()
         case .grow: GrowView()
+        case .insights: InsightsView()
         case .coach: CoachView()
         case .settings: SettingsView()
         }

@@ -13,6 +13,7 @@ final class AppModel: ObservableObject {
         case calendar
         case tasks
         case grow
+        case insights
         case coach
         case settings
 
@@ -24,6 +25,7 @@ final class AppModel: ObservableObject {
             case .calendar: return "Calendar"
             case .tasks: return "Tasks"
             case .grow: return "Grow"
+            case .insights: return "Insights"
             case .coach: return "Coach"
             case .settings: return "Settings"
             }
@@ -35,6 +37,7 @@ final class AppModel: ObservableObject {
             case .calendar: return "calendar"
             case .tasks: return "checklist"
             case .grow: return "leaf"
+            case .insights: return "chart.bar"
             case .coach: return "lightbulb"
             case .settings: return "gearshape"
             }
@@ -47,6 +50,7 @@ final class AppModel: ObservableObject {
             case .calendar: return "calendar"
             case .tasks: return "checklist.checked"
             case .grow: return "leaf.fill"
+            case .insights: return "chart.bar.fill"
             case .coach: return "lightbulb.fill"
             case .settings: return "gearshape.fill"
             }
@@ -58,17 +62,21 @@ final class AppModel: ObservableObject {
             case .calendar: return "2"
             case .tasks: return "3"
             case .grow: return "4"
-            case .coach: return "5"
+            case .insights: return "5"
+            case .coach: return "6"
             case .settings: return nil
             }
         }
 
-        /// Screens listed in the macOS/iPad sidebar.
-        static let sidebarCases: [Screen] = [.today, .calendar, .tasks, .grow, .coach, .settings]
-        /// The five primary iPhone tabs — Settings is reached from a toolbar
-        /// gear, so nothing hides behind a "More" overflow. (Matrix lives as
-        /// a mode inside Tasks.)
-        static let compactTabs: [Screen] = [.today, .calendar, .tasks, .grow, .coach]
+        /// Screens listed in the macOS/iPad sidebar (Coach and Settings are
+        /// full rows here; on iPhone they're reached other ways).
+        static let sidebarCases: [Screen] = [.today, .calendar, .tasks, .grow, .insights, .coach, .settings]
+        /// The five primary iPhone tabs. Coach moved off the tab bar (it's
+        /// reached from Today's action row and the command bar) so Insights —
+        /// where all your progress lives — earns a permanent home. Settings is
+        /// a toolbar gear; Matrix is a mode inside Tasks. Nothing hides behind
+        /// a "More" overflow.
+        static let compactTabs: [Screen] = [.today, .calendar, .tasks, .grow, .insights]
     }
 
     /// The three ways of viewing the calendar, switched with a segmented
@@ -152,6 +160,13 @@ final class AppModel: ObservableObject {
     @Published var nowModePresented = false
     /// Chronos+ hub (iCloud sync, leaderboards, friends).
     @Published var chronosPlusPresented = false
+    /// Game Center leaderboard (Chronos+).
+    @Published var leaderboardPresented = false
+    /// Friends presence (Chronos+).
+    @Published var friendsPresented = false
+    /// The Coach, presented as a sheet on iPhone (it's a sidebar screen on
+    /// iPad/Mac). Reached from Today's action row and the command bar.
+    @Published var coachPresented = false
 
     /// Show/hide the backlog rail in the day planner (wide layouts).
     @Published var backlogVisible = true
@@ -275,7 +290,9 @@ final class AppModel: ObservableObject {
             screen = .calendar
         case "grow":
             screen = .grow
-        case "insights", "coach":
+        case "insights":
+            screen = .insights
+        case "coach":
             screen = .coach
         case "add":
             quickAddPresented = true

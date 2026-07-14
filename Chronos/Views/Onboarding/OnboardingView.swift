@@ -350,12 +350,12 @@ struct OnboardingPage {
         ),
         OnboardingPage(
             icon: "sparkles",
-            title: "Your Coach & focus tools",
-            subtitle: "An on-device planning companion that adapts to how you actually work.",
+            title: "Coach, focus & insights",
+            subtitle: "An on-device planning companion, plus the tools and numbers that keep you moving.",
             bullets: [
-                .init(icon: "bubble.left.and.text.bubble.right", text: "Ask what to focus on, or if you're overloaded"),
+                .init(icon: "bubble.left.and.text.bubble.right", text: "Ask your Coach what to focus on — from Today or ⌘K"),
                 .init(icon: "timer", text: "Pomodoro & focus timer with a Live Activity"),
-                .init(icon: "square.text.square", text: "Home-screen widgets for today at a glance")
+                .init(icon: "chart.bar.fill", text: "An Insights tab: momentum, trends & your Year in Review")
             ]
         )
     ]
