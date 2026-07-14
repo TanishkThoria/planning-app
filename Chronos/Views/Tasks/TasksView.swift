@@ -232,11 +232,11 @@ struct TasksView: View {
                     }
                 }
                 Button { model.deadlinePlanPresented = true } label: {
-                    Label("Plan Deadlines — study before due dates", systemImage: "calendar.badge.clock")
+                    Label("Plan Deadlines", systemImage: "calendar.badge.clock")
                 }
                 if visibleTasks.contains(where: { $0.isOverdue }) {
                     Button { model.overdueSweepPresented = true } label: {
-                        Label("Sweep Overdue into open time", systemImage: "calendar.badge.exclamationmark")
+                        Label("Sweep Overdue", systemImage: "calendar.badge.exclamationmark")
                     }
                 }
             }

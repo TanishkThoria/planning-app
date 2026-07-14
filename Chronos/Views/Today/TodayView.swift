@@ -288,12 +288,15 @@ struct TodayView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-                .padding(.horizontal, 18)
-                .padding(.top, 14)
-                .padding(.bottom, 12)
-
-            Rectangle().fill(Theme.hairline).frame(height: 1)
+            ScreenHeader(
+                title: "Today",
+                subtitle: remainingCount == 0
+                    ? "All tasks handled · \(Fmt.monthDay.string(from: today))"
+                    : "\(remainingCount) to finish · \(Fmt.monthDay.string(from: today))",
+                subtitleColor: remainingCount == 0 ? Theme.success : Theme.textSecondary
+            ) {
+                headerControls
+            }
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
@@ -344,19 +347,8 @@ struct TodayView: View {
         .onReceive(clock) { now = $0 }
     }
 
-    private var header: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Today")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.textPrimary)
-                Text(remainingCount == 0
-                     ? "All tasks handled · \(Fmt.monthDay.string(from: today))"
-                     : "\(remainingCount) to finish · \(Fmt.monthDay.string(from: today))")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(remainingCount == 0 ? Theme.success : Theme.textSecondary)
-            }
-            Spacer()
+    private var headerControls: some View {
+        HStack(spacing: 8) {
             OverflowMenu {
                 Button { model.morningPlanningPresented = true } label: {
                     Label("Plan Today", systemImage: "sunrise")
@@ -368,14 +360,14 @@ struct TodayView: View {
                     Label("Review Day", systemImage: "checkmark.circle")
                 }
                 Button { model.reflowPresented = true } label: {
-                    Label("Reflow — reschedule what slipped", systemImage: "arrow.triangle.2.circlepath")
+                    Label("Reflow Day", systemImage: "arrow.triangle.2.circlepath")
                 }
                 Divider()
                 Button { model.startFocus(taskID: nil, title: "Focus") } label: {
-                    Label("Start Focus Timer", systemImage: "timer")
+                    Label("Focus Timer", systemImage: "timer")
                 }
                 Button { model.nowModePresented = true } label: {
-                    Label("Now — distraction-free focus", systemImage: "circle.circle")
+                    Label("Now Mode", systemImage: "circle.circle")
                 }
             }
             HeaderIconButton(icon: "plus", prominent: true) {

@@ -17,12 +17,9 @@ struct GrowView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-                .padding(.horizontal, 18)
-                .padding(.top, 14)
-                .padding(.bottom, 12)
-
-            Rectangle().fill(Theme.hairline).frame(height: 1)
+            ScreenHeader(title: "Grow", subtitle: "Goals, habits & reflection") {
+                headerControls
+            }
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
@@ -37,17 +34,8 @@ struct GrowView: View {
         .background(Theme.bg)
     }
 
-    private var header: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Grow")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.textPrimary)
-                Text("Goals, habits & reflection")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Theme.textSecondary)
-            }
-            Spacer()
+    private var headerControls: some View {
+        HStack(spacing: 8) {
             OverflowMenu {
                 Button { model.morningRitualPresented = true } label: {
                     Label("Morning Ritual", systemImage: "sunrise.fill")
@@ -63,7 +51,7 @@ struct GrowView: View {
                     Label("Weekly Review", systemImage: "calendar.badge.checkmark")
                 }
                 Button { model.trendsPresented = true } label: {
-                    Label("Trends — mood, habits & goals over time", systemImage: "chart.line.uptrend.xyaxis")
+                    Label("Trends", systemImage: "chart.line.uptrend.xyaxis")
                 }
             }
             Menu {

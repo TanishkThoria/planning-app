@@ -85,7 +85,7 @@ struct PlannerScreen: View {
                 Label("Review Day", systemImage: "checkmark.circle")
             }
             Button { model.reflowPresented = true } label: {
-                Label("Reflow — reschedule what slipped", systemImage: "arrow.triangle.2.circlepath")
+                Label("Reflow Day", systemImage: "arrow.triangle.2.circlepath")
             }
 
             Divider()

@@ -202,6 +202,49 @@ struct HeaderIconButton: View {
     }
 }
 
+// MARK: - Screen header
+
+/// The standard hub-screen header — bold rounded title, a muted subtitle, and
+/// trailing controls, closed by a hairline. Today, Grow and Settings share it
+/// verbatim so every screen opens with identical rhythm; screens with their
+/// own chrome (Calendar's date nav, Coach's avatar, Tasks' mode switch) keep
+/// matching typography by hand.
+struct ScreenHeader<Trailing: View>: View {
+    let title: String
+    var subtitle: String?
+    var subtitleColor: Color = Theme.textSecondary
+    var showsDivider: Bool = true
+    @ViewBuilder var trailing: Trailing
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.textPrimary)
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(subtitleColor)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.85)
+                    }
+                }
+                Spacer(minLength: 8)
+                trailing
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 14)
+            .padding(.bottom, 12)
+
+            if showsDivider {
+                Rectangle().fill(Theme.hairline).frame(height: 1)
+            }
+        }
+    }
+}
+
 // MARK: - Universal overflow menu
 
 /// The app-wide tools appended to the bottom of every screen's ••• menu, so
@@ -213,7 +256,7 @@ struct AppToolsMenu: View {
 
     var body: some View {
         Button { model.commandBarPresented = true } label: {
-            Label("Command Bar — find anything", systemImage: "command")
+            Label("Command Bar", systemImage: "command")
         }
         Button { model.searchPresented = true } label: {
             Label("Search", systemImage: "magnifyingglass")
@@ -228,7 +271,7 @@ struct AppToolsMenu: View {
             Label("Settings", systemImage: "gearshape")
         }
         Button { TourController.shared.start() } label: {
-            Label("Take the tour", systemImage: "map")
+            Label("Take the Tour", systemImage: "map")
         }
     }
 }
@@ -244,13 +287,13 @@ struct InsightsMenu: View {
             Label("Statistics", systemImage: "chart.bar.xaxis")
         }
         Button { model.timeReportPresented = true } label: {
-            Label("Time Report — where your hours went", systemImage: "clock.arrow.circlepath")
+            Label("Time Report", systemImage: "clock.arrow.circlepath")
         }
         Button { model.budgetsPresented = true } label: {
             Label("Time Budgets", systemImage: "chart.pie")
         }
         Button { model.trendsPresented = true } label: {
-            Label("Trends over time", systemImage: "chart.line.uptrend.xyaxis")
+            Label("Trends", systemImage: "chart.line.uptrend.xyaxis")
         }
         Button { model.wrappedPresented = true } label: {
             Label("Year in Review", systemImage: "sparkles")
