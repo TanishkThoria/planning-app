@@ -49,6 +49,123 @@ struct TodayView: View {
         life.activeHabits.filter { $0.isDue(on: today) }
     }
 
+    // MARK: Eat the frog
+
+    /// Candidates for the frog: what's overdue or due today, hardest-first.
+    private var frogCandidates: [TaskItem] {
+        (overdue + dueToday).prefix(8).map { $0 }
+    }
+
+    @ViewBuilder
+    private var frogCard: some View {
+        if let id = model.frogTaskID, let task = service.task(withID: id) {
+            if task.isCompleted {
+                HStack(spacing: 8) {
+                    Text("🐸").font(.system(size: 14))
+                    Text("Frog eaten — the hardest thing is behind you.")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Theme.success)
+                    Spacer()
+                }
+                .padding(.horizontal, 12).padding(.vertical, 9)
+                .background(Theme.success.opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 6) {
+                        Text("🐸").font(.system(size: 13))
+                        Text("EAT THE FROG")
+                            .font(.system(size: 10, weight: .bold)).tracking(1.2)
+                            .foregroundStyle(Color.accentColor)
+                        Spacer()
+                        Menu {
+                            frogPickerItems
+                            Divider()
+                            Button(role: .destructive) { model.frogTaskID = nil } label: {
+                                Label("Clear", systemImage: "xmark")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                        .menuIndicator(.hidden)
+                        .buttonStyle(.plain)
+                    }
+                    Text(task.title)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                        .lineLimit(2)
+                    HStack(spacing: 8) {
+                        Button {
+                            timer.focusMinutes = 5
+                            timer.start(taskID: task.id, title: task.title, mode: .pomodoro)
+                            model.focusTimerPresented = true
+                            Haptics.medium()
+                        } label: {
+                            Label("Just start · 5 min", systemImage: "bolt.fill")
+                                .font(.system(size: 11.5, weight: .semibold))
+                                .foregroundStyle(Theme.bg)
+                                .padding(.horizontal, 11).padding(.vertical, 6)
+                                .background(Color.accentColor, in: Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        Button {
+                            Haptics.success()
+                            withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
+                        } label: {
+                            Label("Done", systemImage: "checkmark")
+                                .font(.system(size: 11.5, weight: .semibold))
+                                .foregroundStyle(Color.accentColor)
+                                .padding(.horizontal, 11).padding(.vertical, 6)
+                                .background(Color.accentColor.opacity(0.12), in: Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        Spacer()
+                    }
+                }
+                .padding(12)
+                .background(
+                    LinearGradient(colors: [Color.accentColor.opacity(0.14), Color.accentColor.opacity(0.04)],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                    in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+                )
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(Color.accentColor.opacity(0.25), lineWidth: 1))
+            }
+        } else if !frogCandidates.isEmpty {
+            Menu {
+                frogPickerItems
+            } label: {
+                HStack(spacing: 8) {
+                    Text("🐸").font(.system(size: 13))
+                    Text("Pick today's frog — the task you're most tempted to avoid")
+                        .font(.system(size: 11.5, weight: .medium))
+                        .foregroundStyle(Theme.textSecondary)
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                .padding(.horizontal, 12).padding(.vertical, 9)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .contentShape(Rectangle())
+            }
+            .menuIndicator(.hidden)
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var frogPickerItems: some View {
+        ForEach(frogCandidates) { candidate in
+            Button {
+                model.frogTaskID = candidate.id
+                Haptics.light()
+            } label: {
+                Label(candidate.title, systemImage: candidate.id == model.frogTaskID ? "checkmark" : "circle")
+            }
+        }
+    }
+
     // MARK: Intentions
 
     private var intentionsCard: some View {
@@ -137,6 +254,7 @@ struct TodayView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
+                    frogCard
                     intentionsCard
                     if !dueHabits.isEmpty { habitsStrip }
 

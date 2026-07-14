@@ -174,6 +174,12 @@ struct FocusTimerView: View {
             }
 
             if selectedMode == .pomodoro {
+                HStack(spacing: 8) {
+                    presetChip("Quick start", 5, 5)
+                    presetChip("Classic", 25, 5)
+                    presetChip("Deep", 50, 10)
+                    presetChip("Flow", 90, 15)
+                }
                 VStack(spacing: 8) {
                     stepperRow("Focus", value: $focusMinutes, range: 5...90, step: 5)
                     stepperRow("Break", value: $breakMinutes, range: 1...30, step: 1)
@@ -201,6 +207,34 @@ struct FocusTimerView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    /// One-tap session shapes — "Quick start" is the 5-minute
+    /// anti-procrastination special: commit to almost nothing, keep going
+    /// once you're moving.
+    private func presetChip(_ label: String, _ focus: Int, _ rest: Int) -> some View {
+        let selected = focusMinutes == focus && breakMinutes == rest
+        return Button {
+            focusMinutes = focus
+            breakMinutes = rest
+            Haptics.selection()
+        } label: {
+            VStack(spacing: 2) {
+                Text(label)
+                    .font(.system(size: 10.5, weight: .semibold))
+                    .lineLimit(1).minimumScaleFactor(0.7)
+                Text("\(focus)/\(rest)")
+                    .font(.system(size: 9.5, weight: .medium, design: .rounded))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .foregroundStyle(selected ? Color.accentColor : Theme.textSecondary)
+            .background(selected ? Color.accentColor.opacity(0.14) : Theme.surface,
+                        in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .strokeBorder(selected ? Color.accentColor.opacity(0.4) : Theme.hairline, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 
     private func stepperRow(_ label: String, value: Binding<Int>, range: ClosedRange<Int>, step: Int) -> some View {

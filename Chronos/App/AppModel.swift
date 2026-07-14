@@ -129,9 +129,24 @@ final class AppModel: ObservableObject {
     @Published var statsPresented = false
     /// School LMS (Canvas/Schoology) connect flow.
     @Published var lmsSetupPresented = false
+    /// Long-horizon growth trends (mood, habits, goals, reflections).
+    @Published var trendsPresented = false
 
     /// Show/hide the backlog rail in the day planner (wide layouts).
     @Published var backlogVisible = true
+
+    // MARK: Eat the frog (the one task you're most likely to avoid)
+
+    private static let frogIDKey = "state.frogTaskID"
+    private static let frogDayKey = "state.frogDay"
+
+    /// Today's frog — reset automatically each day.
+    @Published var frogTaskID: String? {
+        didSet {
+            UserDefaults.standard.set(frogTaskID, forKey: Self.frogIDKey)
+            UserDefaults.standard.set(Fmt.dayKey(Date()), forKey: Self.frogDayKey)
+        }
+    }
 
     // MARK: Calendar visibility (persisted manually)
 
@@ -148,6 +163,10 @@ final class AppModel: ObservableObject {
     init() {
         hiddenCalendarIDs = Set(UserDefaults.standard.stringArray(forKey: Self.hiddenCalendarsKey) ?? [])
         hiddenListIDs = Set(UserDefaults.standard.stringArray(forKey: Self.hiddenListsKey) ?? [])
+        // A frog only lives for a day.
+        if UserDefaults.standard.string(forKey: Self.frogDayKey) == Fmt.dayKey(Date()) {
+            frogTaskID = UserDefaults.standard.string(forKey: Self.frogIDKey)
+        }
     }
 
     func toggleCalendar(_ id: String) {

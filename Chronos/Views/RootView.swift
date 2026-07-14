@@ -294,6 +294,9 @@ struct RootView: View {
         .sheet(isPresented: $model.lmsSetupPresented) {
             LMSSetupView()
         }
+        .sheet(isPresented: $model.trendsPresented) {
+            TrendsView()
+        }
     }
 
     private func errorAlert<Content: View>(_ content: Content) -> some View {

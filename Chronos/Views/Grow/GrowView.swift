@@ -48,6 +48,9 @@ struct GrowView: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
+            HeaderIconButton(icon: "chart.line.uptrend.xyaxis", label: "Trends") {
+                model.trendsPresented = true
+            }
             Menu {
                 Button { model.goalEditor = GoalEditContext(goal: Goal(), isNew: true) } label: {
                     Label("New Goal", systemImage: "target")
