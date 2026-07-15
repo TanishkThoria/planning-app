@@ -122,7 +122,7 @@ final class MomentumStore: ObservableObject {
 
     func score(on day: Date) -> Int { history[Fmt.dayKey(day)] ?? 0 }
 
-    static let solidThreshold = 45
+    nonisolated static let solidThreshold = 45
 
     /// Streak-protecting "freezes" you earn as you go (one per 5 solid days),
     /// capped so they stay meaningful. A freeze bridges a single missed day so

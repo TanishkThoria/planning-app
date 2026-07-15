@@ -26,10 +26,10 @@ struct CategoryBadge: View {
 /// A menu that sets/clears the category override for an item id (event series
 /// id or reminder id). "Auto" clears the override so the keyword classifier
 /// takes over again.
-struct CategoryMenu<Label: View>: View {
+struct CategoryMenu<Trigger: View>: View {
     let id: String
     let current: ActivityCategory
-    @ViewBuilder var label: () -> Label
+    @ViewBuilder var label: () -> Trigger
     @ObservedObject private var tags = TagStore.shared
 
     var body: some View {
@@ -57,7 +57,7 @@ struct CategoryMenu<Label: View>: View {
     }
 }
 
-extension CategoryMenu where Label == CategoryBadge {
+extension CategoryMenu where Trigger == CategoryBadge {
     init(id: String, current: ActivityCategory, showsLabel: Bool = false) {
         self.id = id
         self.current = current
