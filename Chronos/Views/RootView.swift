@@ -405,6 +405,9 @@ struct RootView: View {
             CoachView()
                 .chronosAppearance()
         }
+        .sheet(isPresented: $model.momentumDetailPresented, onDismiss: runPendingCommand) {
+            MomentumDetailView()
+        }
     }
 
     private func errorAlert<Content: View>(_ content: Content) -> some View {

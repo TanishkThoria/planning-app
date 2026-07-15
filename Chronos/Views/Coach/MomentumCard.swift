@@ -59,17 +59,42 @@ struct MomentumCard: View {
                 sparkline
             }
 
-            Button { withAnimation(.snappy) { expanded.toggle() } } label: {
-                HStack(spacing: 5) {
-                    Text(expanded ? "Hide breakdown" : "How's this scored?")
-                        .font(.system(size: 11, weight: .semibold))
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 9, weight: .semibold))
-                        .rotationEffect(.degrees(expanded ? 180 : 0))
+            if let next = MomentumEngine.nextBestAction(input) {
+                Button { model.momentumDetailPresented = true } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: next.icon).font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(Color.accentColor)
+                        Text(next.tip).font(.system(size: 11.5, weight: .medium))
+                            .foregroundStyle(Theme.textPrimary).lineLimit(1)
+                        Spacer(minLength: 4)
+                        Image(systemName: "chevron.right").font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    .padding(.horizontal, 11).padding(.vertical, 8)
+                    .background(Color.accentColor.opacity(0.09), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 }
-                .foregroundStyle(Color.accentColor)
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
+
+            HStack {
+                Button { withAnimation(.snappy) { expanded.toggle() } } label: {
+                    HStack(spacing: 5) {
+                        Text(expanded ? "Hide breakdown" : "How's this scored?")
+                            .font(.system(size: 11, weight: .semibold))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 9, weight: .semibold))
+                            .rotationEffect(.degrees(expanded ? 180 : 0))
+                    }
+                    .foregroundStyle(Color.accentColor)
+                }
+                .buttonStyle(.plain)
+                Spacer()
+                Button { model.momentumDetailPresented = true } label: {
+                    Text("Streaks & tips →").font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Color.accentColor)
+                }
+                .buttonStyle(.plain)
+            }
 
             if expanded {
                 VStack(spacing: 6) {

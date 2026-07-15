@@ -136,6 +136,11 @@ enum Fmt {
         dayKeyFormatter.string(from: date.startOfDay)
     }
 
+    /// Reverse of `dayKey` — parses a "yyyy-MM-dd" key back to a day.
+    static func day(fromKey key: String) -> Date? {
+        dayKeyFormatter.date(from: key)
+    }
+
     static func timeRange(_ start: Date, _ end: Date) -> String {
         "\(time.string(from: start))–\(time.string(from: end))"
     }

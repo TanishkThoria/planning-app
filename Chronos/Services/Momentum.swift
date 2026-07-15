@@ -17,15 +17,27 @@ enum MomentumEngine {
         var frogEaten: Bool
     }
 
+    /// Which part of a good day a component rewards — lets the UI route the
+    /// "boost this" tip to the right action.
+    enum Factor: String {
+        case plan, complete, focus, habits, reflect, frog
+    }
+
     struct Breakdown: Identifiable {
         let id = UUID()
+        var factor: Factor
         var label: String
         var earned: Int
         var max: Int
         var icon: String
+        /// Concrete, actionable advice for the points not yet earned ("" if maxed).
+        var tip: String
+        var remaining: Int { max - earned }
+        var isComplete: Bool { earned >= max }
     }
 
-    /// Component scores that sum to `score`.
+    /// Component scores that sum to `score`, each with a plain-language tip for
+    /// closing the gap.
     static func breakdown(_ input: Input) -> [Breakdown] {
         let plan = (input.plannedBlocks >= 3 || input.didMorningPlan) ? 20
             : min(20, input.plannedBlocks * 6)
@@ -36,18 +48,34 @@ enum MomentumEngine {
             : (input.habitsDone > 0 ? 20 : 10)
         let reflect = input.journaledEvening ? 10 : 0
         let frog = input.frogEaten ? 5 : 0
+
+        let tasksToFull = Int(ceil(Double(20 - done) / 5.0))
+        let minsToFull = (25 - focus) * 4
+        let habitsLeft = max(0, input.habitsDue - input.habitsDone)
+
         return [
-            Breakdown(label: "Planned", earned: plan, max: 20, icon: "wand.and.stars"),
-            Breakdown(label: "Completed", earned: done, max: 20, icon: "checkmark.circle"),
-            Breakdown(label: "Focused", earned: focus, max: 25, icon: "timer"),
-            Breakdown(label: "Habits", earned: habits, max: 20, icon: "leaf"),
-            Breakdown(label: "Reflected", earned: reflect, max: 10, icon: "book.closed"),
-            Breakdown(label: "Ate the frog", earned: frog, max: 5, icon: "bolt.fill"),
+            Breakdown(factor: .plan, label: "Planned", earned: plan, max: 20, icon: "wand.and.stars",
+                      tip: plan >= 20 ? "" : "Do your morning plan or block out 3+ things (+\(20 - plan))"),
+            Breakdown(factor: .complete, label: "Completed", earned: done, max: 20, icon: "checkmark.circle",
+                      tip: done >= 20 ? "" : "Check off \(tasksToFull) more task\(tasksToFull == 1 ? "" : "s") today (+\(20 - done))"),
+            Breakdown(factor: .focus, label: "Focused", earned: focus, max: 25, icon: "timer",
+                      tip: focus >= 25 ? "" : "Run a focus session — \(minsToFull) more min for full credit (+\(25 - focus))"),
+            Breakdown(factor: .habits, label: "Habits", earned: habits, max: 20, icon: "leaf",
+                      tip: habits >= 20 ? "" : (habitsLeft > 0 ? "Finish \(habitsLeft) more due habit\(habitsLeft == 1 ? "" : "s") (+\(20 - habits))" : "Add a habit to Grow (+\(20 - habits))")),
+            Breakdown(factor: .reflect, label: "Reflected", earned: reflect, max: 10, icon: "book.closed",
+                      tip: reflect >= 10 ? "" : "Do an evening reflection (+10)"),
+            Breakdown(factor: .frog, label: "Ate the frog", earned: frog, max: 5, icon: "bolt.fill",
+                      tip: frog >= 5 ? "" : "Finish your \u{201C}frog\u{201D} — the task you're avoiding (+5)"),
         ]
     }
 
     static func score(_ input: Input) -> Int {
         min(100, breakdown(input).reduce(0) { $0 + $1.earned })
+    }
+
+    /// The single highest-value thing left to do today (biggest point gain).
+    static func nextBestAction(_ input: Input) -> Breakdown? {
+        breakdown(input).filter { !$0.isComplete }.max { $0.remaining < $1.remaining }
     }
 }
 
@@ -94,24 +122,76 @@ final class MomentumStore: ObservableObject {
 
     func score(on day: Date) -> Int { history[Fmt.dayKey(day)] ?? 0 }
 
+    static let solidThreshold = 45
+
+    /// Streak-protecting "freezes" you earn as you go (one per 5 solid days),
+    /// capped so they stay meaningful. A freeze bridges a single missed day so
+    /// one off-day doesn't wipe weeks of momentum.
+    var availableFreezes: Int {
+        let solid = history.values.filter { $0 >= 70 }.count
+        return min(2, solid / 5)
+    }
+
     /// Consecutive days (ending today) with a solid score. Today not-yet-solid
-    /// doesn't break it.
-    func streak(threshold: Int = 45, now: Date = Date()) -> Int {
+    /// doesn't break it, and up to `availableFreezes` missed days are bridged.
+    func streak(threshold: Int = solidThreshold, now: Date = Date()) -> Int {
+        var freezesLeft = availableFreezes
         var count = 0
         var cursor = now.startOfDay
         if score(on: cursor) < threshold { cursor = cursor.adding(days: -1) }
         var guardCount = 0
         while guardCount < 400 {
             guardCount += 1
-            if score(on: cursor) >= threshold { count += 1 } else { break }
+            if score(on: cursor) >= threshold {
+                count += 1
+            } else if count > 0 && freezesLeft > 0 {
+                freezesLeft -= 1   // a freeze bridges this gap; streak survives
+            } else {
+                break
+            }
             cursor = cursor.adding(days: -1)
         }
         return count
     }
 
+    /// Longest run of solid days ever (no freezes — the honest record).
+    func bestStreak(threshold: Int = solidThreshold) -> Int {
+        guard let earliest = history.keys.compactMap(Fmt.day(fromKey:)).min() else { return 0 }
+        var best = 0, run = 0
+        var cursor = earliest.startOfDay
+        let end = Date().startOfDay
+        var guardCount = 0
+        while cursor <= end && guardCount < 4000 {
+            guardCount += 1
+            if score(on: cursor) >= threshold { run += 1; best = max(best, run) } else { run = 0 }
+            cursor = cursor.adding(days: 1)
+        }
+        return best
+    }
+
+    /// Number of days ever recorded at each tier.
+    var activeDays: Int { history.values.filter { $0 > 0 }.count }
+    var solidDays: Int { history.values.filter { $0 >= 70 }.count }
+    var perfectDays: Int { history.values.filter { $0 >= 100 }.count }
+
     /// Trailing `days` scores oldest→newest for a sparkline.
     func trend(days: Int, now: Date = Date()) -> [Int] {
         (0..<days).reversed().map { score(on: now.adding(days: -$0)) }
+    }
+
+    /// A generic "consecutive days ending today where `predicate` is true"
+    /// helper, so views can show focus/planning streaks from other stores.
+    static func streak(endingToday predicate: (Date) -> Bool, now: Date = Date()) -> Int {
+        var count = 0
+        var cursor = now.startOfDay
+        if !predicate(cursor) { cursor = cursor.adding(days: -1) }   // today grace
+        var guardCount = 0
+        while guardCount < 400 {
+            guardCount += 1
+            if predicate(cursor) { count += 1 } else { break }
+            cursor = cursor.adding(days: -1)
+        }
+        return count
     }
 
     var totalPoints: Int { history.values.reduce(0, +) }
