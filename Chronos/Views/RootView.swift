@@ -408,6 +408,12 @@ struct RootView: View {
         .sheet(isPresented: $model.momentumDetailPresented, onDismiss: runPendingCommand) {
             MomentumDetailView()
         }
+        .sheet(isPresented: $model.routinesPresented) {
+            RoutinesView()
+        }
+        .sheet(item: $model.routineRunner) { routine in
+            RoutineRunnerView(routine: routine)
+        }
     }
 
     private func errorAlert<Content: View>(_ content: Content) -> some View {

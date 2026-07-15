@@ -160,6 +160,10 @@ final class AppModel: ObservableObject {
     @Published var nowModePresented = false
     /// Momentum deep-dive (streaks, freezes, tips).
     @Published var momentumDetailPresented = false
+    /// Guided routines library.
+    @Published var routinesPresented = false
+    /// The routine currently being run (guided step-by-step).
+    @Published var routineRunner: Routine?
     /// Chronos+ hub (iCloud sync, leaderboards, friends).
     @Published var chronosPlusPresented = false
     /// Game Center leaderboard (Chronos+).

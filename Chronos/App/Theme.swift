@@ -176,6 +176,7 @@ enum Prefs {
     static let coachEnabled = "pref.coachEnabled"                 // show the AI Coach tab
     static let startAlertsEnabled = "pref.startAlertsEnabled"     // "starting in 5 min" nudges
     static let blockLiveActivities = "pref.blockLiveActivities"   // current-block Live Activity
+    static let routineVoiceEnabled = "pref.routineVoiceEnabled"   // speak guided routine steps aloud
 
     // MARK: Chronos+ (paid-account features — all default OFF, all no-op until
     // the underlying Apple capability is present; see PaidFeatures + docs/CHRONOS_PLUS_SETUP.md)
