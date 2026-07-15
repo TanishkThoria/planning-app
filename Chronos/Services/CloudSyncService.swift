@@ -44,6 +44,8 @@ final class CloudSyncService: ObservableObject {
         "chronos.plannerProfile",   // calibration profile
         "chronos.lms.v2",           // connected schools
         "chronos.focusSessions",    // focus log
+        "chronos.tags.v1",          // category overrides
+        "chronos.routines.v1",      // guided routines
     ]
 
     private static let recordType = "ChronosBlob"

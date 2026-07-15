@@ -31,8 +31,10 @@ struct TimeBlockCard: View {
     @State private var settleResizeOffset: CGFloat?
     /// Last snapped minute-of-day announced with a haptic tick.
     @State private var lastTickMinutes: Int?
+    @ObservedObject private var tags = TagStore.shared
 
     private var block: TimeBlock { placed.block }
+    private var category: ActivityCategory { tags.category(for: block) }
 
     private var clampedInterval: (start: Date, end: Date) {
         block.clamped(to: day) ?? (block.start, block.end)
@@ -146,6 +148,11 @@ struct TimeBlockCard: View {
                                 .font(.system(size: 8))
                                 .foregroundStyle(Theme.textTertiary)
                         }
+                        if !compact && displayHeight >= 30 {
+                            Image(systemName: category.icon)
+                                .font(.system(size: 8, weight: .semibold))
+                                .foregroundStyle(category.color)
+                        }
                     }
                     if displayHeight >= 38 && !compact {
                         Text(isInteracting
@@ -195,6 +202,7 @@ struct TimeBlockCard: View {
         }
         Button { onTap() } label: { Label("Edit", systemImage: "pencil") }
         Button { onFocus() } label: { Label("Focus on This", systemImage: "timer") }
+        categorySubmenu
         if block.isEditable {
             Button { onDuplicate() } label: { Label("Duplicate", systemImage: "plus.square.on.square") }
             Button { onStartNow() } label: { Label("Start Now", systemImage: "play.circle") }
@@ -206,6 +214,28 @@ struct TimeBlockCard: View {
             }
             Divider()
             Button(role: .destructive) { onDelete() } label: { Label("Delete", systemImage: "trash") }
+        }
+    }
+
+    /// Tag the block's category — works for any event, including repeating and
+    /// imported Apple Calendar events (tags the whole series, no calendar edit).
+    @ViewBuilder
+    private var categorySubmenu: some View {
+        Menu {
+            ForEach(ActivityCategory.allCases) { c in
+                Button { tags.setCategory(c, forID: block.eventID); Haptics.light() } label: {
+                    Label(c.title, systemImage: c.icon)
+                    if category == c { Image(systemName: "checkmark") }
+                }
+            }
+            if tags.isExplicit(forID: block.eventID) {
+                Divider()
+                Button { tags.setCategory(nil, forID: block.eventID); Haptics.light() } label: {
+                    Label("Auto-detect", systemImage: "wand.and.stars")
+                }
+            }
+        } label: {
+            Label("Category: \(category.title)", systemImage: category.icon)
         }
     }
 

@@ -115,7 +115,10 @@ struct DayColumn: View {
         ForEach(routineWindows) { window in
             let start = max(window.start, date.startOfDay)
             let end = min(window.end, date.startOfDay.adding(days: 1))
-            if start < end {
+            // Once a real block sits in this window (e.g. Plan My Day placed
+            // the routine as an actual block), drop the ghost so their labels
+            // don't overlap.
+            if start < end, !isCoveredByBlock(from: start, to: end) {
                 let y = CGFloat(start.minutesSinceMidnight) / 60 * hourHeight
                 let height = max(CGFloat(end.timeIntervalSince(start) / 60) / 60 * hourHeight, 10)
                 ZStack(alignment: .topLeading) {
@@ -137,6 +140,12 @@ struct DayColumn: View {
             }
         }
         .allowsHitTesting(false)
+    }
+
+    /// True when a timed block overlaps the given window, so its ghost band
+    /// should be suppressed.
+    private func isCoveredByBlock(from start: Date, to end: Date) -> Bool {
+        blocks.contains { !$0.isAllDay && $0.start < end && start < $0.end }
     }
 
     private func time(atY y: CGFloat) -> Date {
