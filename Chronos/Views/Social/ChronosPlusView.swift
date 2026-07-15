@@ -45,7 +45,7 @@ struct ChronosPlusView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         .onAppear { paid.refresh() }
         .sheet(isPresented: $leaderboardPresented) { LeaderboardView() }
         .sheet(isPresented: $friendsPresented) { FriendsView() }

@@ -50,7 +50,7 @@ struct WeeklyReviewView: View {
                            startPoint: .top, endPoint: .center).ignoresSafeArea()
         )
         .background(Theme.elevated)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(width: 480, height: 640)
         #else

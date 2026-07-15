@@ -33,7 +33,7 @@ struct TrendsView: View {
             .scrollIndicators(.hidden)
         }
         .background(Theme.bg)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(minWidth: 480, minHeight: 600)
         #endif

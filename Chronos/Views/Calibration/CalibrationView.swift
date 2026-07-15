@@ -48,7 +48,7 @@ struct CalibrationView: View {
             footer
         }
         .background(Theme.elevated)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(width: 560, height: 640)
         #endif

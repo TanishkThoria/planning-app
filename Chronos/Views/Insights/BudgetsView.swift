@@ -33,7 +33,7 @@ struct BudgetsView: View {
             .scrollIndicators(.hidden)
         }
         .background(Theme.elevated)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(width: 460, height: 560)
         #else

@@ -38,7 +38,7 @@ struct NowView: View {
             }
             .padding(24)
         }
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         .tint(Theme.accent(named: accentName))
         .onReceive(tick) { now = $0 }
         #if os(macOS)

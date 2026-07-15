@@ -53,7 +53,7 @@ struct CommandBarView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Theme.elevated)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(width: 560, height: 460)
         #else

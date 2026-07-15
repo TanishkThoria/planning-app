@@ -71,7 +71,7 @@ struct OverdueSweepView: View {
             footer
         }
         .background(Theme.elevated)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(width: 480, height: 600)
         #else

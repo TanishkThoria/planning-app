@@ -94,7 +94,7 @@ struct PlanWeekView: View {
             footer
         }
         .background(Theme.elevated)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(width: 500, height: 640)
         #else

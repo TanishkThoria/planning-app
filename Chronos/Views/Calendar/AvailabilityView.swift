@@ -86,7 +86,7 @@ struct AvailabilityView: View {
             footer
         }
         .background(Theme.bg)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(minWidth: 440, minHeight: 480)
         #endif

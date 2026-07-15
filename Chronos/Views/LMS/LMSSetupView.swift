@@ -45,7 +45,7 @@ struct LMSSetupView: View {
             controls
         }
         .background(Theme.bg)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         .tint(Theme.accent(named: accentName))
         #if os(macOS)
         .frame(minWidth: 520, minHeight: 620)

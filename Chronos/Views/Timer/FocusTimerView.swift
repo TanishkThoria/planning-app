@@ -35,7 +35,7 @@ struct FocusTimerView: View {
         .padding(22)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.elevated)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(width: 420, height: 560)
         #else

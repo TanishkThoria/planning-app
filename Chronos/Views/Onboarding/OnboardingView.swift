@@ -46,7 +46,7 @@ struct OnboardingView: View {
                 controls
             }
         }
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         .tint(Theme.accent(named: accentName))
         #if os(macOS)
         .frame(minWidth: 560, minHeight: 620)

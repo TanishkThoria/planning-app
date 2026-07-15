@@ -66,7 +66,7 @@ private struct RitualScaffold<Content: View>: View {
             .ignoresSafeArea()
         )
         .background(Theme.elevated)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(width: 480, height: 660)
         #else

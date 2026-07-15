@@ -37,7 +37,7 @@ struct ChronosApp: App {
                 .environmentObject(notifications)
                 .environmentObject(life)
                 .frame(width: 480, height: 640)
-                .preferredColorScheme(.dark)
+                .chronosAppearance()
         }
         #else
         WindowGroup {

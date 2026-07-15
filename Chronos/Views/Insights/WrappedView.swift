@@ -27,7 +27,7 @@ struct WrappedView: View {
             }
         }
         .background(Theme.bg)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(minWidth: 460, minHeight: 620)
         #endif

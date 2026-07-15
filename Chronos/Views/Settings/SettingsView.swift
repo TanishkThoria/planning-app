@@ -19,6 +19,7 @@ struct SettingsView: View {
     @State private var showingCalibration = false
 
     @AppStorage(Prefs.accentName) private var accentName = "Indigo"
+    @AppStorage(Prefs.appearance) private var appearance = "system"
     @AppStorage(Prefs.workStartMinutes) private var workStartMinutes = 9 * 60
     @AppStorage(Prefs.workEndMinutes) private var workEndMinutes = 18 * 60
     @AppStorage(Prefs.snapMinutes) private var snapMinutes = 15
@@ -217,6 +218,22 @@ struct SettingsView: View {
                     }
 
                     settingsSection("Appearance") {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Theme")
+                                .font(.system(size: 12.5))
+                                .foregroundStyle(Theme.textSecondary)
+                            Picker("", selection: $appearance) {
+                                Text("System").tag("system")
+                                Text("Light").tag("light")
+                                Text("Dark").tag("dark")
+                            }
+                            .pickerStyle(.segmented)
+                            .labelsHidden()
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Accent")
                                 .font(.system(size: 12.5))

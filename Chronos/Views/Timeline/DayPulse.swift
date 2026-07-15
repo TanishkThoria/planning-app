@@ -218,7 +218,7 @@ struct DayPulseChip: View {
             }
             .padding(18)
             .background(Theme.bg)
-            .preferredColorScheme(.dark)
+            .chronosAppearance()
             #if os(iOS)
             .presentationDetents([.medium])
             #else

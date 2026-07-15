@@ -95,7 +95,7 @@ struct RootView: View {
             }
         }
         .background(Theme.bg.ignoresSafeArea())
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         .tint(Theme.accent(named: accentName))
     }
 
@@ -355,7 +355,7 @@ struct RootView: View {
         }
         .sheet(isPresented: $model.statsPresented) {
             StatisticsView(onClose: { model.statsPresented = false })
-                .preferredColorScheme(.dark)
+                .chronosAppearance()
         }
         .sheet(isPresented: $model.commandBarPresented, onDismiss: runPendingCommand) {
             CommandBarView()
@@ -392,7 +392,7 @@ struct RootView: View {
         }
         .sheet(isPresented: $model.coachPresented) {
             CoachView()
-                .preferredColorScheme(.dark)
+                .chronosAppearance()
         }
     }
 

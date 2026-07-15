@@ -46,7 +46,7 @@ struct SearchView: View {
             content
         }
         .background(Theme.elevated)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(width: 520, height: 600)
         #else

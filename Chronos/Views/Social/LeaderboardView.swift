@@ -39,7 +39,7 @@ struct LeaderboardView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         .onAppear {
             if paid.isReady(.leaderboards) { social.authenticateGameCenter() }
         }

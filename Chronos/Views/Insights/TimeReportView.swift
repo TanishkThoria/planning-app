@@ -94,7 +94,7 @@ struct TimeReportView: View {
             .scrollIndicators(.hidden)
         }
         .background(Theme.bg)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(minWidth: 460, minHeight: 560)
         #endif

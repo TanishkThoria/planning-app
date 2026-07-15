@@ -42,7 +42,7 @@ struct FriendsView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         .task {
             if paid.isReady(.friends) { await social.refreshFriends() }
         }

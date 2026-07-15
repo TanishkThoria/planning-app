@@ -48,7 +48,7 @@ struct EditorSheet<Content: View>: View {
             .scrollIndicators(.hidden)
         }
         .background(Theme.elevated)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(width: 460, height: 620)
         #endif

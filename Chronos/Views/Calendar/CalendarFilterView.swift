@@ -38,7 +38,7 @@ struct CalendarFilterView: View {
             .scrollIndicators(.hidden)
         }
         .background(Theme.elevated)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(width: 420, height: 560)
         #else

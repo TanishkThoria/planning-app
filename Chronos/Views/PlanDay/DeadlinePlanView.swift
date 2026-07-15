@@ -106,7 +106,7 @@ struct DeadlinePlanView: View {
             footer(totalMinutes: totalMinutes, sessionCount: plan.values.flatMap { $0 }.count)
         }
         .background(Theme.bg)
-        .preferredColorScheme(.dark)
+        .chronosAppearance()
         #if os(macOS)
         .frame(minWidth: 500, minHeight: 560)
         #endif

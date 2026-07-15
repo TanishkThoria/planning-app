@@ -1,40 +1,56 @@
 import SwiftUI
 
-/// The Chronos design language: a restrained, high-contrast dark palette
-/// built for long planning sessions. Every surface, hairline and text tone
-/// comes from here so the whole app reads as one system.
+/// The Chronos design language: one restrained, high-contrast palette that now
+/// adapts to light and dark automatically. Every surface, hairline and text
+/// tone comes from here so the whole app reads as one system in either mode.
 enum Theme {
+
+    /// Builds a color that resolves per appearance — the whole app becomes
+    /// light/dark aware just by driving the environment's color scheme.
+    static func dynamic(light: Color, dark: Color) -> Color {
+        #if canImport(UIKit)
+        return Color(UIColor { trait in
+            trait.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+        })
+        #elseif canImport(AppKit)
+        return Color(NSColor(name: nil) { appearance in
+            appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? NSColor(dark) : NSColor(light)
+        })
+        #else
+        return dark
+        #endif
+    }
 
     // MARK: Surfaces
 
-    /// App background — near-black with a whisper of blue so pure-black OLED
-    /// smear is avoided and hairlines stay visible.
-    static let bg = Color(hex: 0x0B0C0F)
+    /// App background — a soft off-white by day, near-black (with a whisper of
+    /// blue so OLED smear is avoided) by night.
+    static let bg = dynamic(light: Color(hex: 0xF4F5F7), dark: Color(hex: 0x0B0C0F))
     /// Cards, rails and sheets.
-    static let surface = Color(hex: 0x131519)
+    static let surface = dynamic(light: Color(hex: 0xFFFFFF), dark: Color(hex: 0x131519))
     /// Elevated surfaces: popovers, editors, hovering cards.
-    static let elevated = Color(hex: 0x1A1D22)
+    static let elevated = dynamic(light: Color(hex: 0xFFFFFF), dark: Color(hex: 0x1A1D22))
     /// Pressed / selected fills.
-    static let fill = Color.white.opacity(0.06)
+    static let fill = dynamic(light: Color.black.opacity(0.05), dark: Color.white.opacity(0.06))
 
     // MARK: Lines
 
-    static let hairline = Color.white.opacity(0.07)
-    static let hairlineStrong = Color.white.opacity(0.14)
-    static let gridLine = Color.white.opacity(0.05)
+    static let hairline = dynamic(light: Color.black.opacity(0.08), dark: Color.white.opacity(0.07))
+    static let hairlineStrong = dynamic(light: Color.black.opacity(0.16), dark: Color.white.opacity(0.14))
+    static let gridLine = dynamic(light: Color.black.opacity(0.05), dark: Color.white.opacity(0.05))
 
     // MARK: Text
 
-    static let textPrimary = Color(hex: 0xF2F3F5)
-    static let textSecondary = Color(hex: 0x9BA1AA)
-    static let textTertiary = Color(hex: 0x5E646D)
+    static let textPrimary = dynamic(light: Color(hex: 0x14161A), dark: Color(hex: 0xF2F3F5))
+    static let textSecondary = dynamic(light: Color(hex: 0x5B616B), dark: Color(hex: 0x9BA1AA))
+    static let textTertiary = dynamic(light: Color(hex: 0x9098A2), dark: Color(hex: 0x5E646D))
 
-    // MARK: Semantic
+    // MARK: Semantic (vivid on both schemes)
 
     static let nowLine = Color(hex: 0xFF5D5D)
-    static let danger = Color(hex: 0xFF6B6B)
-    static let success = Color(hex: 0x5BD899)
-    static let warning = Color(hex: 0xF2B95C)
+    static let danger = dynamic(light: Color(hex: 0xE5484D), dark: Color(hex: 0xFF6B6B))
+    static let success = dynamic(light: Color(hex: 0x30A46C), dark: Color(hex: 0x5BD899))
+    static let warning = dynamic(light: Color(hex: 0xD98A2B), dark: Color(hex: 0xF2B95C))
 
     // MARK: Accent choices (power users pick theirs in Settings)
 
@@ -62,6 +78,25 @@ enum Theme {
     static func mono(_ size: CGFloat, weight: Font.Weight = .medium) -> Font {
         .system(size: size, weight: weight, design: .rounded)
     }
+
+    // MARK: Metrics — a slightly more generous, iOS-native spacing scale
+
+    enum Metric {
+        /// Standard screen edge inset.
+        static let screen: CGFloat = 20
+        /// Gap between stacked cards.
+        static let cardGap: CGFloat = 14
+        /// Inner padding for cards / rows.
+        static let cardPadding: CGFloat = 16
+        /// The house corner radius — soft, Apple-like.
+        static let radius: CGFloat = 18
+        /// Smaller radius for chips / compact controls.
+        static let radiusSmall: CGFloat = 12
+    }
+
+    /// A soft shadow for elevated cards (light mode gets a real shadow; dark
+    /// leans on the hairline so it stays flat and clean).
+    static let cardShadow = dynamic(light: Color.black.opacity(0.06), dark: Color.clear)
 }
 
 extension Color {
@@ -79,28 +114,51 @@ extension Color {
 // MARK: - Shared component styling
 
 struct PanelModifier: ViewModifier {
-    var padding: CGFloat = 14
+    var padding: CGFloat = Theme.Metric.cardPadding
     func body(content: Content) -> some View {
         content
             .padding(padding)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous)
                     .strokeBorder(Theme.hairline, lineWidth: 1)
             )
+            .shadow(color: Theme.cardShadow, radius: 10, y: 4)
     }
 }
 
 extension View {
-    func panel(padding: CGFloat = 14) -> some View {
+    func panel(padding: CGFloat = Theme.Metric.cardPadding) -> some View {
         modifier(PanelModifier(padding: padding))
     }
+}
+
+/// Drives the whole app's light/dark appearance from a single user preference
+/// (System / Light / Dark). Applied wherever a color scheme used to be forced.
+struct ChronosAppearance: ViewModifier {
+    @AppStorage(Prefs.appearance) private var appearance = "system"
+    func body(content: Content) -> some View {
+        content.preferredColorScheme(scheme)
+    }
+    private var scheme: ColorScheme? {
+        switch appearance {
+        case "light": return .light
+        case "dark": return .dark
+        default: return nil          // follow the system
+        }
+    }
+}
+
+extension View {
+    /// Follow the user's chosen appearance (System / Light / Dark).
+    func chronosAppearance() -> some View { modifier(ChronosAppearance()) }
 }
 
 /// Centralised user preference keys + defaults so every view binds to the
 /// same storage.
 enum Prefs {
     static let accentName = "pref.accentName"
+    static let appearance = "pref.appearance"                   // system | light | dark
     static let workStartMinutes = "pref.workStartMinutes"       // default 9:00
     static let workEndMinutes = "pref.workEndMinutes"           // default 18:00
     static let snapMinutes = "pref.snapMinutes"                 // default 15
