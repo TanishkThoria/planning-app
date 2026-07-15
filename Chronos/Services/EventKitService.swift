@@ -203,6 +203,7 @@ final class EventKitService: ObservableObject {
             linkedTaskID: linkedTaskID,
             hasRecurrence: event.hasRecurrenceRules,
             isEditable: calendar.allowsContentModifications,
+            hasColorOverride: overrideColor != nil,
             meetingURL: meeting?.url,
             meetingPlatform: meeting?.platform
         )
@@ -462,6 +463,9 @@ final class EventKitService: ObservableObject {
         apply(draft, to: event, isNew: true)
         do {
             try store.save(event, span: .thisEvent, commit: true)
+            if let seriesID = event.eventIdentifier, draft.categoryOverride != nil {
+                TagStore.shared.setCategory(draft.categoryOverride, forID: seriesID)
+            }
             addTravelBufferIfNeeded(draft, calendar: calendar)
             refresh()
         } catch {
@@ -496,6 +500,9 @@ final class EventKitService: ObservableObject {
         apply(draft, to: event, isNew: false)
         do {
             try store.save(event, span: span, commit: true)
+            if let seriesID = event.eventIdentifier {
+                TagStore.shared.setCategory(draft.categoryOverride, forID: seriesID)
+            }
             if let calendar = event.calendar { addTravelBufferIfNeeded(draft, calendar: calendar) }
             refresh()
         } catch {
@@ -632,6 +639,7 @@ final class EventKitService: ObservableObject {
         draft.originalRecurrence = recurrence
         draft.originalAlarm = alarm
         draft.originalSecondAlarm = secondAlarm
+        draft.categoryOverride = TagStore.shared.override(forID: block.eventID)
 
         let attendees = (event?.attendees ?? []).compactMap { $0.name }
 
@@ -650,6 +658,9 @@ final class EventKitService: ObservableObject {
         apply(draft, to: reminder)
         do {
             try store.save(reminder, commit: true)
+            if draft.categoryOverride != nil {
+                TagStore.shared.setCategory(draft.categoryOverride, forID: reminder.calendarItemIdentifier)
+            }
             refresh()
         } catch {
             fail("Couldn't create the task", error)
@@ -669,6 +680,7 @@ final class EventKitService: ObservableObject {
         apply(draft, to: reminder)
         do {
             try store.save(reminder, commit: true)
+            TagStore.shared.setCategory(draft.categoryOverride, forID: id)
             refresh()
         } catch {
             fail("Couldn't save the task", error)
@@ -759,6 +771,7 @@ final class EventKitService: ObservableObject {
         let recurrence = RecurrenceOption.from(rules: liveReminder(withID: task.id)?.recurrenceRules)
         draft.recurrence = recurrence
         draft.originalRecurrence = recurrence
+        draft.categoryOverride = TagStore.shared.override(forID: task.id)
         return TaskEditorContext(draft: draft, existingID: task.id)
     }
 

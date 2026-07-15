@@ -37,6 +37,8 @@ struct TaskEditorView: View {
             VStack(spacing: 6) {
                 CalendarPickerRow(label: "List", options: service.taskLists, selection: $draft.listID)
 
+                CategoryField(title: draft.title, override: $draft.categoryOverride)
+
                 if !isNew {
                     FieldRow(label: "Completed") {
                         Toggle("", isOn: $draft.isCompleted)

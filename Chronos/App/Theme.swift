@@ -172,6 +172,7 @@ enum Prefs {
     static let defaultCalendarID = "pref.defaultCalendarID"
     static let defaultListID = "pref.defaultListID"
     static let dimPastBlocks = "pref.dimPastBlocks"
+    static let colorByCategory = "pref.colorByCategory"          // tint timeline blocks by their category
     static let showCompletedInToday = "pref.showCompletedInToday"
     static let hourHeight = "pref.hourHeight"
     static let planDayGapMinutes = "pref.planDayGapMinutes"     // breathing room between auto-scheduled blocks

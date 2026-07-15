@@ -39,6 +39,8 @@ struct BlockEditorView: View {
             VStack(spacing: 6) {
                 CalendarPickerRow(label: "Calendar", options: service.calendars, selection: $draft.calendarID)
 
+                CategoryField(title: draft.title, override: $draft.categoryOverride)
+
                 colorRow
 
                 FieldRow(label: "All-day") {

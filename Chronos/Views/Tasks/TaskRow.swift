@@ -11,6 +11,9 @@ struct TaskRow: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var profileStore: ProfileStore
+    @ObservedObject private var tags = TagStore.shared
+
+    private var category: ActivityCategory { tags.category(for: task) }
 
     @AppStorage(Prefs.snapMinutes) private var snapMinutes = 15
     @AppStorage(Prefs.defaultBlockMinutes) private var defaultBlockMinutes = 30
@@ -118,6 +121,7 @@ struct TaskRow: View {
                         .font(.system(size: 10.5))
                         .foregroundStyle(Theme.textTertiary)
                     }
+                    CategoryBadge(category: category, showsLabel: true, size: 8)
                     HStack(spacing: 4) {
                         Circle().fill(task.color).frame(width: 5, height: 5)
                         Text(task.listName)
@@ -193,11 +197,34 @@ struct TaskRow: View {
                 }
             }
 
+            categorySubmenu
+
             Divider()
 
             Button(role: .destructive) {
                 service.deleteTask(id: task.id)
             } label: { Label("Delete", systemImage: "trash") }
+        }
+    }
+
+    /// Tag the task's category (or return it to auto-detect).
+    @ViewBuilder
+    private var categorySubmenu: some View {
+        Menu {
+            ForEach(ActivityCategory.allCases) { c in
+                Button { tags.setCategory(c, forID: task.id); Haptics.light() } label: {
+                    Label(c.title, systemImage: c.icon)
+                    if category == c { Image(systemName: "checkmark") }
+                }
+            }
+            if tags.isExplicit(forID: task.id) {
+                Divider()
+                Button { tags.setCategory(nil, forID: task.id); Haptics.light() } label: {
+                    Label("Auto-detect", systemImage: "wand.and.stars")
+                }
+            }
+        } label: {
+            Label("Category: \(category.title)", systemImage: category.icon)
         }
     }
 

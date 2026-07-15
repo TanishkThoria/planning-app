@@ -174,6 +174,9 @@ struct TaskDraft {
     var puntCount: Int = 0
     var recurrence: RecurrenceOption = .none
     var originalRecurrence: RecurrenceOption = .none
+    /// Explicit category tag (nil = auto-detect from the title). Applied to
+    /// TagStore on save, keyed by the reminder id.
+    var categoryOverride: ActivityCategory?
 }
 
 struct TaskEditorContext: Identifiable {

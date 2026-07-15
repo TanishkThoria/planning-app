@@ -20,6 +20,9 @@ struct TimeBlock: Identifiable, Hashable {
     var linkedTaskID: String?
     var hasRecurrence: Bool
     var isEditable: Bool
+    /// True when the event carries an explicit per-block color (a Chronos
+    /// `[color:…]` override) — so category color-coding leaves it alone.
+    var hasColorOverride: Bool = false
     /// A detected video-conferencing link (Zoom/Meet/Teams/…) if the event
     /// carries one — powers the "Join" button.
     var meetingURL: URL? = nil
@@ -72,6 +75,9 @@ struct BlockDraft {
     /// Minutes of travel buffer to add as a preceding block (0 = none).
     var travelMinutes: Int = 0
     var linkedTaskID: String?
+    /// Explicit category tag for this event's series (nil = auto-detect from
+    /// the title). Applied to TagStore on save, keyed by the event series id.
+    var categoryOverride: ActivityCategory?
 
     /// Snapshot of the recurrence/alarm the event had when editing began;
     /// rules are only rewritten when the user actually changes the picker,

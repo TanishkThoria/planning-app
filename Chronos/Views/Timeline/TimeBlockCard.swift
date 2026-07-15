@@ -32,9 +32,17 @@ struct TimeBlockCard: View {
     /// Last snapped minute-of-day announced with a haptic tick.
     @State private var lastTickMinutes: Int?
     @ObservedObject private var tags = TagStore.shared
+    @AppStorage(Prefs.colorByCategory) private var colorByCategory = true
 
     private var block: TimeBlock { placed.block }
     private var category: ActivityCategory { tags.category(for: block) }
+
+    /// The block's display color: its category color when category coloring is
+    /// on (unless the user set an explicit per-block color), otherwise the
+    /// calendar/override color.
+    private var tint: Color {
+        (colorByCategory && !block.hasColorOverride) ? category.color : block.color
+    }
 
     private var clampedInterval: (start: Date, end: Date) {
         block.clamped(to: day) ?? (block.start, block.end)
@@ -114,9 +122,9 @@ struct TimeBlockCard: View {
     private var content: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 7, style: .continuous)
-                .fill(block.color.opacity(isInteracting ? 0.32 : 0.17))
+                .fill(tint.opacity(isInteracting ? 0.32 : 0.17))
             RoundedRectangle(cornerRadius: 7, style: .continuous)
-                .strokeBorder(block.color.opacity(isInteracting ? 0.8 : 0.35), lineWidth: 1)
+                .strokeBorder(tint.opacity(isInteracting ? 0.8 : 0.35), lineWidth: 1)
 
             HStack(alignment: .top, spacing: 0) {
                 UnevenRoundedRectangle(
@@ -124,7 +132,7 @@ struct TimeBlockCard: View {
                     bottomTrailingRadius: 0, topTrailingRadius: 0,
                     style: .continuous
                 )
-                .fill(block.color)
+                .fill(tint)
                 .frame(width: 3)
 
                 VStack(alignment: .leading, spacing: 1) {

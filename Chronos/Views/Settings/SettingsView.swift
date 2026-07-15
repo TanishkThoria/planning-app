@@ -28,6 +28,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.defaultCalendarID) private var defaultCalendarID = ""
     @AppStorage(Prefs.defaultListID) private var defaultListID = ""
     @AppStorage(Prefs.dimPastBlocks) private var dimPastBlocks = true
+    @AppStorage(Prefs.colorByCategory) private var colorByCategory = true
     @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
     @AppStorage(Prefs.startAlertsEnabled) private var startAlertsEnabled = true
     @AppStorage(Prefs.blockLiveActivities) private var blockLiveActivities = true
@@ -268,6 +269,24 @@ struct SettingsView: View {
                             Toggle("", isOn: $dimPastBlocks)
                                 .labelsHidden()
                                 .toggleStyle(.switch)
+                        }
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            FieldRow(label: "Color by category") {
+                                Toggle("", isOn: $colorByCategory)
+                                    .labelsHidden()
+                                    .toggleStyle(.switch)
+                            }
+                            Text(colorByCategory
+                                 ? "Blocks are tinted by what they are — gym, class, work, and so on. Tag anything from its editor or by long-pressing it; events with a color you set by hand keep it."
+                                 : "Blocks use their calendar color. Turn this on to color-code the timeline by category instead.")
+                                .font(.system(size: 11))
+                                .foregroundStyle(Theme.textTertiary)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.horizontal, 2)
+                            CategoryLegend()
+                                .padding(.top, 2)
+                                .opacity(colorByCategory ? 1 : 0.5)
                         }
                     }
 
