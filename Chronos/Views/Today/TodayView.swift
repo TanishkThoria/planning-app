@@ -290,14 +290,14 @@ struct TodayView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-                .padding(.horizontal, 18)
-                .padding(.top, 14)
-                .padding(.bottom, 12)
+                .padding(.horizontal, Theme.Metric.screen)
+                .padding(.top, 16)
+                .padding(.bottom, 14)
 
             Rectangle().fill(Theme.hairline).frame(height: 1)
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 12) {
                     dayActionsRow
                     frogCard
                     intentionsCard
@@ -337,8 +337,9 @@ struct TodayView: View {
                         ForEach(doneToday) { TodayTaskRow(task: $0) }
                     }
                 }
-                .padding(.horizontal, 18)
-                .padding(.bottom, 24)
+                .padding(.horizontal, Theme.Metric.screen)
+                .padding(.top, 4)
+                .padding(.bottom, 28)
             }
             .scrollIndicators(.hidden)
         }
@@ -350,7 +351,7 @@ struct TodayView: View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Today")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .font(.system(size: 25, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.textPrimary)
                 Text(remainingCount == 0
                      ? "All tasks handled · \(Fmt.monthDay.string(from: today))"

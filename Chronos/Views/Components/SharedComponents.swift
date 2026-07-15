@@ -100,9 +100,9 @@ struct SectionHeader: View {
     var body: some View {
         HStack {
             Text(title.uppercased())
-                .font(.system(size: 10.5, weight: .semibold))
-                .tracking(1.2)
-                .foregroundStyle(Theme.textTertiary)
+                .font(.system(size: 11.5, weight: .semibold))
+                .tracking(1.3)
+                .foregroundStyle(Theme.textSecondary)
             Spacer()
             if let trailing {
                 Text(trailing)

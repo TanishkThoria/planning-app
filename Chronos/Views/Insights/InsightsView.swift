@@ -14,19 +14,19 @@ struct InsightsView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-                .padding(.horizontal, 18)
-                .padding(.top, 14)
-                .padding(.bottom, 12)
+                .padding(.horizontal, Theme.Metric.screen)
+                .padding(.top, 16)
+                .padding(.bottom, 14)
             Rectangle().fill(Theme.hairline).frame(height: 1)
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 20) {
                     MomentumCard()
                     weekStrip
                     reportsSection
                     socialSection
                 }
-                .padding(18)
+                .padding(Theme.Metric.screen)
                 .frame(maxWidth: 620, alignment: .leading)
                 .frame(maxWidth: .infinity)
             }
@@ -41,7 +41,7 @@ struct InsightsView: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Insights")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .font(.system(size: 25, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Your momentum & progress")
                     .font(.system(size: 12, weight: .medium))
