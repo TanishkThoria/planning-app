@@ -266,8 +266,8 @@ struct CommandBarView: View {
         add("go-tasks", "Go to Tasks", "", "checklist", "Go to", "tasks reminders", { model.screen = .tasks })
         add("go-grow", "Go to Grow", "", "leaf", "Go to", "grow habits goals", { model.screen = .grow })
         add("go-insights", "Go to Insights", "", "chart.bar", "Go to", "insights stats progress momentum", { model.screen = .insights })
-        if coachEnabled {
-            add("go-coach", "Open Coach", "", "lightbulb", "Go to", "coach assistant ai chat", { openCoach() })
+        if coachEnabled, AssistantService.shared.isReady {
+            add("go-coach", "Open Coach", "On-device AI planner", "sparkles", "Go to", "coach assistant ai chat", { openCoach() })
         }
         add("go-settings", "Settings", "", "gearshape", "Go to", "settings preferences", { openSettings() })
         add("view-day", "Day View", "", "calendar.day.timeline.left", "Go to", "day", { model.screen = .calendar; model.plannerMode = .day })

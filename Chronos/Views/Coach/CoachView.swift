@@ -10,8 +10,53 @@ struct CoachView: View {
         if assistant.isReady {
             CoachChatView()
         } else {
-            CoachBriefingView()
+            CoachUnavailableView()
         }
+    }
+}
+
+/// Shown only if the Coach is somehow opened on a device without on-device AI
+/// (its entry points are hidden there). Honest, not a dead chatbox.
+struct CoachUnavailableView: View {
+    @Environment(\.isPresented) private var isPresented
+    @Environment(\.dismiss) private var dismiss
+    private let assistant = AssistantService.shared
+
+    var body: some View {
+        VStack(spacing: 14) {
+            if isPresented {
+                HStack {
+                    Spacer()
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark").font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding([.top, .horizontal], 16)
+            }
+            Spacer()
+            Image(systemName: "sparkles").font(.system(size: 34)).foregroundStyle(Color.accentColor)
+            Text("Coach needs Apple Intelligence")
+                .font(.system(size: 18, weight: .bold, design: .rounded)).foregroundStyle(Theme.textPrimary)
+            Text(unavailableReason)
+                .font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+                .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: 320)
+            Text("Everything the Coach would do — planning, focus, momentum, insights — is already one tap away across the app.")
+                .font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
+                .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: 320)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.bg)
+        .chronosAppearance()
+    }
+
+    private var unavailableReason: String {
+        if case .unavailable(let msg) = assistant.status { return msg }
+        return "On-device AI isn't available on this device."
     }
 }
 
@@ -56,6 +101,7 @@ struct CoachChatView: View {
         .background(Theme.bg)
         .onReceive(clock) { now = $0 }
         .onAppear { seedIfEmpty() }
+        .task { if PaidFeatures.shared.isReady(.friends) { await SocialService.shared.refreshFriends() } }
         .onChange(of: model.screen) { oldScreen, newScreen in
             if oldScreen == .coach, newScreen != .coach {
                 store.archiveIfLeaving()
@@ -144,13 +190,7 @@ struct CoachChatView: View {
                     }
                     .padding(18)
                 } else {
-                    // Resting state: the same warm briefing as non-AI devices,
-                    // with example prompts so the chat is discoverable.
-                    VStack(alignment: .leading, spacing: 16) {
-                        BriefingContent()
-                        starterChips
-                    }
-                    .padding(18)
+                    restingState.padding(18)
                 }
             }
             .scrollIndicators(.hidden)
@@ -168,6 +208,70 @@ struct CoachChatView: View {
                 proxy.scrollTo(last.id, anchor: .bottom)
             }
         }
+    }
+
+    // MARK: Personalized resting state (LLM devices only)
+
+    private var restingState: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(personalGreeting)
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundStyle(Theme.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("I can see your schedule, momentum, focus, and what your friends are up to. Ask me anything, or start here.")
+                    .font(.system(size: 12.5))
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            let insights = coachInsights
+            if !insights.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("FOR YOU RIGHT NOW")
+                        .font(.system(size: 10.5, weight: .semibold)).tracking(1.2)
+                        .foregroundStyle(Theme.textTertiary)
+                    ForEach(insights) { insight in
+                        insightCard(insight)
+                    }
+                }
+            }
+
+            starterChips
+        }
+    }
+
+    private func insightCard(_ insight: CoachInsight) -> some View {
+        Button { insight.run() } label: {
+            HStack(spacing: 12) {
+                Image(systemName: insight.icon)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Color(hex: insight.tint))
+                    .frame(width: 30, height: 30)
+                    .background(Color(hex: insight.tint).opacity(0.14), in: Circle())
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(insight.title).font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                    Text(insight.detail).font(.system(size: 11.5)).foregroundStyle(Theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true).multilineTextAlignment(.leading)
+                }
+                Spacer(minLength: 4)
+                Text(insight.actionLabel)
+                    .font(.system(size: 11.5, weight: .semibold)).foregroundStyle(Color.accentColor)
+            }
+            .padding(13)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 13, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var personalGreeting: String {
+        let name = SocialService.shared.myDisplayName
+        let first = name == "Me" ? "" : ", \(name.split(separator: " ").first.map(String.init) ?? name)"
+        let h = Calendar.current.component(.hour, from: now)
+        let base = h < 5 ? "Still up" : h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"
+        return "\(base)\(first)."
     }
 
     private var starterChips: some View {
@@ -210,33 +314,9 @@ struct CoachChatView: View {
     private var composer: some View {
         VStack(spacing: 0) {
             Rectangle().fill(Theme.hairline).frame(height: 1)
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    quickChip("Plan day", "wand.and.stars", .planDay)
-                    quickChip("Plan week", "calendar.badge.clock", .planWeek)
-                    quickChip("Reflow", "arrow.triangle.2.circlepath", .reflow)
-                    quickChip("Focus", "timer", .focus)
-                    quickChip("Review", "checkmark.circle", .review)
-                    quickChip("Sweep overdue", "tray.and.arrow.down", .overdueSweep)
-                }
-                .padding(.horizontal, 16).padding(.vertical, 10)
-            }
             inputBar
         }
         .background(Theme.bg)
-    }
-
-    private func quickChip(_ title: String, _ icon: String, _ action: QuickAction) -> some View {
-        Button { perform(action) } label: {
-            HStack(spacing: 5) {
-                Image(systemName: icon).font(.system(size: 11, weight: .semibold))
-                Text(title).font(.system(size: 12, weight: .semibold))
-            }
-            .foregroundStyle(Color.accentColor)
-            .padding(.horizontal, 11).padding(.vertical, 7)
-            .background(Color.accentColor.opacity(0.12), in: Capsule())
-        }
-        .buttonStyle(.plain)
     }
 
     private var inputBar: some View {
@@ -338,10 +418,71 @@ struct CoachChatView: View {
             lines.append("Habits today: \(done)/\(habitsDue.count) done — \(habitsDue.map(\.title).joined(separator: ", ")).")
         }
         lines.append("This week: \(Fmt.duration(minutes: stats.focusMinutes)) focused, \(stats.tasksCompleted) tasks done, \(stats.streakDays)-day streak, \(Int((stats.completionRate * 100).rounded()))% of due tasks complete.")
+
+        // Momentum + streaks
+        let mStore = MomentumStore.shared
+        let mScore = MomentumEngine.score(momentumInput)
+        lines.append("Momentum today: \(mScore)/100 (level \(mStore.level), \(mStore.levelTitle)). Streak \(mStore.streak()) days, best ever \(mStore.bestStreak()), \(mStore.availableFreezes) freezes banked.")
+        if let boost = MomentumEngine.nextBestAction(momentumInput) {
+            lines.append("Biggest momentum boost left today: \(boost.tip)")
+        }
+
+        // Realistic workload
+        let load = DayLoad.compute(tasks: service.tasks, events: todayBlocks, workStart: workStartMinutes, workEnd: workEndMinutes, now: now)
+        if load.taskCount > 0 {
+            lines.append(load.overcommitted
+                ? "Overcommitted: \(load.taskCount) due tasks need ~\(Fmt.duration(minutes: load.committedMinutes)) but only \(Fmt.duration(minutes: load.freeMinutes)) is free — about \(Fmt.duration(minutes: load.overBy)) over."
+                : "Workload realistic: \(Fmt.duration(minutes: load.committedMinutes)) of due tasks fits the \(Fmt.duration(minutes: load.freeMinutes)) free.")
+        }
+
+        // Focus integrity (soft, on-device — no Screen Time needed)
+        let weekSessions = focusLog.sessions(inLast: 7)
+        if !weekSessions.isEmpty {
+            let finished = weekSessions.filter(\.completedFullDuration).count
+            lines.append("Focus sessions this week: \(weekSessions.count), \(finished) finished without leaving.")
+        }
+
+        // Friends (only what they've shared)
+        let friends = SocialService.shared.friends
+        if !friends.isEmpty {
+            let focusing = friends.filter { $0.isLive && $0.presence.busy == .headsDown }
+            if !focusing.isEmpty {
+                lines.append("Friends focusing right now: \(focusing.map { $0.presence.displayName }.joined(separator: ", ")). Suggest joining them if the user wants accountability.")
+            }
+            let summary = friends.prefix(4).map { "\($0.presence.displayName) (\($0.presence.streakDays)d streak, \(Fmt.duration(minutes: $0.presence.weeklyFocus)) this week)" }
+            lines.append("Friends: \(summary.joined(separator: "; ")).")
+        }
+
+        // Routines available
+        let routines = RoutineStore.shared.routines
+        if !routines.isEmpty {
+            lines.append("Saved routines they can run: \(routines.map(\.name).joined(separator: ", ")).")
+        }
+
         if profileStore.profile.isCalibrated {
-            lines.append("Their routine and focus window are calibrated — respect their energy patterns and meal times.")
+            let p = profileStore.profile
+            lines.append("Calibrated: best focus in the \(p.focus.rawValue.lowercased()), \(p.flexibility.rawValue.lowercased()) schedule — respect their energy patterns and meal times.")
         }
         return lines.joined(separator: "\n")
+    }
+
+    /// The momentum inputs, computed the same way the Momentum card does.
+    private var momentumInput: MomentumEngine.Input {
+        let today = Date().startOfDay
+        let blocks = service.blocks(on: today, hiddenCalendars: model.hiddenCalendarIDs).filter { !$0.isAllDay }
+        let entry = life.entry(for: today)
+        let habitsDue = life.activeHabits.filter { $0.isDue(on: today) }
+        let frog = model.frogTaskID.flatMap { service.task(withID: $0) }
+        return MomentumEngine.Input(
+            plannedBlocks: blocks.count,
+            didMorningPlan: entry?.hasMorning ?? false,
+            tasksCompletedToday: service.tasks.filter { $0.isCompleted && ($0.completionDate?.isToday ?? false) }.count,
+            focusMinutesToday: focusLog.sessions(on: today).reduce(0) { $0 + $1.actualMinutes },
+            habitsDue: habitsDue.count,
+            habitsDone: habitsDue.filter { life.isDone($0, on: today) }.count,
+            journaledEvening: entry?.hasEvening ?? false,
+            frogEaten: frog?.isCompleted ?? false
+        )
     }
 
     private func heuristicReply(for text: String) -> ChatMessage {
@@ -407,29 +548,87 @@ struct CoachChatView: View {
     private func perform(_ action: QuickAction) {
         performCoachAction(action, on: model)
     }
+
+    /// Proactive, tap-to-act cards built live from the user's real situation —
+    /// the "superpower" feel. Top few by priority.
+    private var coachInsights: [CoachInsight] {
+        var out: [CoachInsight] = []
+
+        let focusing = SocialService.shared.friends.filter { $0.isLive && $0.presence.busy == .headsDown }
+        if let f = focusing.first {
+            out.append(CoachInsight(icon: "person.2.fill", tint: 0x7C8CF8,
+                title: "\(f.presence.displayName) is focusing now",
+                detail: focusing.count > 1 ? "\(focusing.count) friends are heads-down — join them." : "Study alongside them for accountability.",
+                actionLabel: "Join") { model.startFocus(taskID: nil, title: "Focus") })
+        }
+
+        let load = DayLoad.compute(tasks: service.tasks, events: todayBlocks, workStart: workStartMinutes, workEnd: workEndMinutes, now: now)
+        if load.overcommitted {
+            out.append(CoachInsight(icon: "exclamationmark.triangle.fill", tint: 0xF2B95C,
+                title: "Today's a stretch",
+                detail: "Your due tasks need ~\(Fmt.duration(minutes: load.overBy)) more than the free time you have.",
+                actionLabel: "Auto-fit") { performCoachAction(.planDay, on: model) })
+        } else if todayBlocks.isEmpty, service.tasks.contains(where: { $0.isDueToday && !$0.isCompleted }) {
+            out.append(CoachInsight(icon: "wand.and.stars", tint: 0x7C8CF8,
+                title: "Nothing scheduled yet",
+                detail: "Want me to lay your day out around what's due?",
+                actionLabel: "Plan") { performCoachAction(.planDay, on: model) })
+        }
+
+        if MomentumEngine.score(momentumInput) < 100, let boost = MomentumEngine.nextBestAction(momentumInput) {
+            out.append(CoachInsight(icon: boost.icon, tint: 0x5BD899,
+                title: "Boost your momentum",
+                detail: boost.tip,
+                actionLabel: "Details") { model.momentumDetailPresented = true })
+        }
+
+        if let loose = PlannerBrief.looseEnds(context) {
+            out.append(CoachInsight(icon: "tray.and.arrow.down", tint: 0xFF6B6B,
+                title: "Loose ends to tie up",
+                detail: loose.message,
+                actionLabel: loose.actionLabel ?? "Fix") {
+                    if let a = loose.action { performCoachAction(a, on: model) }
+                })
+        }
+
+        return Array(out.prefix(3))
+    }
+}
+
+/// A proactive Coach suggestion card.
+private struct CoachInsight: Identifiable {
+    let id = UUID()
+    let icon: String
+    let tint: UInt32
+    let title: String
+    let detail: String
+    let actionLabel: String
+    let run: () -> Void
 }
 
 // MARK: - Supporting views
 
 private enum Starter: CaseIterable, Identifiable {
-    case focus, overloaded, slipped, week, plan
+    case focus, plan, overloaded, momentum, friends, week
     var id: Self { self }
     var text: String {
         switch self {
-        case .focus: return "What should I focus on now?"
-        case .overloaded: return "Am I overloaded today?"
-        case .slipped: return "What's slipped?"
-        case .week: return "How's my week going?"
+        case .focus: return "What should I focus on right now?"
         case .plan: return "Help me plan my day"
+        case .overloaded: return "Am I overloaded today?"
+        case .momentum: return "How do I boost my momentum?"
+        case .friends: return "What are my friends up to?"
+        case .week: return "How's my week going?"
         }
     }
     var icon: String {
         switch self {
         case .focus: return "scope"
-        case .overloaded: return "gauge.with.dots.needle.67percent"
-        case .slipped: return "exclamationmark.arrow.circlepath"
-        case .week: return "chart.line.uptrend.xyaxis"
         case .plan: return "wand.and.stars"
+        case .overloaded: return "gauge.with.dots.needle.67percent"
+        case .momentum: return "bolt.fill"
+        case .friends: return "person.2.fill"
+        case .week: return "chart.line.uptrend.xyaxis"
         }
     }
 }

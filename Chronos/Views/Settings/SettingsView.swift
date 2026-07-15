@@ -279,8 +279,8 @@ struct SettingsView: View {
                                     .toggleStyle(.switch)
                             }
                             Text(coachEnabled
-                                 ? "Open the Coach from Today's action row or the ⌘K command bar. When your device supports Apple Intelligence it runs a private, on-device model; otherwise it gives fast built-in guidance."
-                                 : "The Coach is off. Turn it back on to chat with your planning companion from Today or the command bar.")
+                                 ? "A private, on-device AI planner that knows your schedule, momentum, focus, and friends — open it from Today's action row or the ⌘K command bar. Requires Apple Intelligence (iOS 26 on a supported device); it stays hidden otherwise."
+                                 : "The Coach is off. Turn it back on to chat with your on-device planning companion from Today or the command bar.")
                                 .font(.system(size: 11))
                                 .foregroundStyle(Theme.textTertiary)
                                 .fixedSize(horizontal: false, vertical: true)

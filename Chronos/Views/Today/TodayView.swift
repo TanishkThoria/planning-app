@@ -391,7 +391,7 @@ struct TodayView: View {
                 actionChip("Review", "checkmark.circle") { model.reviewPresented = true }
                 actionChip("Focus", "timer") { model.startFocus(taskID: nil, title: "Focus") }
                 actionChip("Now", "circle.circle") { model.nowModePresented = true }
-                if coachEnabled {
+                if coachEnabled, AssistantService.shared.isReady {
                     actionChip("Coach", "sparkles") { model.coachPresented = true }
                 }
             }

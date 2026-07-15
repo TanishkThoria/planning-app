@@ -8,7 +8,9 @@ struct SidebarView: View {
     @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
 
     private var sidebarScreens: [AppModel.Screen] {
-        AppModel.Screen.sidebarCases.filter { coachEnabled || $0 != .coach }
+        AppModel.Screen.sidebarCases.filter {
+            $0 != .coach || (coachEnabled && AssistantService.shared.isReady)
+        }
     }
 
     var body: some View {
