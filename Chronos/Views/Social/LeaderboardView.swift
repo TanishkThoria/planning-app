@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Weekly focus + all-time momentum leaderboards, backed by Game Center. When
-/// the capability isn't available it shows your local standing and how to
-/// unlock ranking with friends — never a dead end.
+/// A friends leaderboard computed live from everyone's shared presence — no
+/// Game Center required, and you're always on it. Switch between Focus,
+/// Momentum, and Streak boards; a podium crowns the top three. Game Center is
+/// offered as an optional extra when Chronos+ is on.
 struct LeaderboardView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var focusLog: FocusLog
@@ -10,22 +11,26 @@ struct LeaderboardView: View {
     @ObservedObject private var paid = PaidFeatures.shared
     @ObservedObject private var momentum = MomentumStore.shared
 
-    private var weeklyFocusMinutes: Int { focusLog.totalMinutes(inLast: 7) }
+    @State private var board: LeaderboardBoard = .focusWeek
+
+    private var rows: [LeaderboardRow] { social.leaderboard(board) }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    yourStanding
-                    if paid.isEntitled(.leaderboards) {
-                        gameCenterCard
+                VStack(alignment: .leading, spacing: 20) {
+                    boardPicker
+                    if rows.count <= 1 {
+                        soloState
                     } else {
-                        lockedCard
+                        podium
+                        standings
                     }
-                    howItWorks
+                    if paid.isEntitled(.leaderboards) { gameCenterCard }
                 }
-                .padding(18)
-                .frame(maxWidth: 520, alignment: .leading)
+                .padding(20)
+                .frame(maxWidth: 560, alignment: .leading)
+                .frame(maxWidth: .infinity)
             }
             .scrollIndicators(.hidden)
             .background(Theme.bg)
@@ -34,123 +39,198 @@ struct LeaderboardView: View {
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
         }
         .chronosAppearance()
-        .onAppear {
+        .task {
+            await social.refreshFriends()
             if paid.isReady(.leaderboards) { social.authenticateGameCenter() }
         }
     }
 
-    private var yourStanding: some View {
-        HStack(spacing: 12) {
-            statTile(
-                icon: "timer", label: "This week",
-                value: Fmt.duration(minutes: weeklyFocusMinutes), tint: Theme.success
-            )
-            statTile(
-                icon: "bolt.fill", label: "Momentum",
-                value: "\(momentum.totalPoints)", tint: Color.accentColor
-            )
+    // MARK: Board switcher
+
+    private var boardPicker: some View {
+        Picker("", selection: $board) {
+            ForEach(LeaderboardBoard.allCases) { b in
+                Text(b.title).tag(b)
+            }
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+    }
+
+    // MARK: Podium
+
+    private var podium: some View {
+        let top = Array(rows.prefix(3))
+        return HStack(alignment: .bottom, spacing: 12) {
+            if top.count > 1 { podiumColumn(top[1], height: 96, medal: "2") }
+            if let first = top.first { podiumColumn(first, height: 124, medal: "1") }
+            if top.count > 2 { podiumColumn(top[2], height: 78, medal: "3") }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+    }
+
+    private func podiumColumn(_ row: LeaderboardRow, height: CGFloat, medal: String) -> some View {
+        VStack(spacing: 8) {
+            Avatar(name: row.presence.displayName, emoji: row.presence.statusEmoji,
+                   size: medal == "1" ? 56 : 46, ring: row.isYou)
+            Text(row.isYou ? "You" : row.presence.displayName)
+                .font(.system(size: 12.5, weight: .semibold))
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(1)
+            Text(board.display(row.value))
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(Theme.textSecondary)
+            ZStack(alignment: .top) {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(medalColor(medal).opacity(0.18))
+                    .frame(height: height)
+                Text(medal)
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundStyle(medalColor(medal))
+                    .padding(.top, 10)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func medalColor(_ medal: String) -> Color {
+        switch medal {
+        case "1": return Color(hex: 0xF2C14E)
+        case "2": return Color(hex: 0xB9C2CF)
+        default: return Color(hex: 0xCD8B5A)
         }
     }
 
-    private func statTile(icon: String, label: String, value: String, tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(tint)
-            Text(value)
-                .font(.system(size: 20, weight: .bold, design: .rounded))
-                .foregroundStyle(Theme.textPrimary)
-            Text(label)
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textSecondary)
+    // MARK: Full standings
+
+    private var standings: some View {
+        VStack(spacing: 8) {
+            ForEach(rows) { row in
+                HStack(spacing: 12) {
+                    Text("\(row.rank)")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.textTertiary)
+                        .frame(width: 22)
+                    Avatar(name: row.presence.displayName, emoji: row.presence.statusEmoji, size: 34, ring: row.isYou)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(row.isYou ? "You" : row.presence.displayName)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text(row.presence.levelTitle)
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    Spacer()
+                    Text(board.display(row.value))
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(row.isYou ? Color.accentColor : Theme.textPrimary)
+                }
+                .padding(.horizontal, 14).padding(.vertical, 11)
+                .background(row.isYou ? Color.accentColor.opacity(0.08) : Theme.surface,
+                            in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous)
+                    .strokeBorder(row.isYou ? Color.accentColor.opacity(0.35) : Theme.hairline, lineWidth: 1))
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Theme.hairline, lineWidth: 1)
-        )
     }
+
+    private var soloState: some View {
+        VStack(spacing: 10) {
+            Image(systemName: board.icon)
+                .font(.system(size: 30))
+                .foregroundStyle(Color.accentColor)
+            Text(board.display(board.value(social.myPresence)))
+                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .foregroundStyle(Theme.textPrimary)
+            Text("Add friends to see how you stack up. Your \(board.title.lowercased()) is ready to race.")
+                .font(.system(size: 12.5))
+                .foregroundStyle(Theme.textSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 30)
+    }
+
+    // MARK: Game Center (extra)
 
     private var gameCenterCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Image(systemName: social.gameCenterAuthenticated ? "checkmark.seal.fill" : "person.crop.circle.badge.questionmark")
-                    .foregroundStyle(social.gameCenterAuthenticated ? Theme.success : Theme.warning)
-                Text(social.gameCenterAuthenticated ? "Game Center connected" : "Connect Game Center")
-                    .font(.system(size: 14, weight: .semibold))
+                Image(systemName: social.gameCenterAuthenticated ? "checkmark.seal.fill" : "gamecontroller")
+                    .foregroundStyle(social.gameCenterAuthenticated ? Theme.success : Color.accentColor)
+                Text(social.gameCenterAuthenticated ? "Also ranking on Game Center" : "Add Game Center ranking")
+                    .font(.system(size: 13.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
+                Spacer()
             }
             Text(social.gameCenterAuthenticated
-                 ? "Your weekly focus and momentum are submitted automatically. Rankings appear in Game Center."
-                 : "Sign in to Game Center to rank your focus and momentum against friends.")
-                .font(.system(size: 12))
+                 ? "Your focus and momentum are submitted to Apple's global leaderboards too."
+                 : "Sign in to also rank on Apple's Game Center leaderboards.")
+                .font(.system(size: 11.5))
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
-
             if !social.gameCenterAuthenticated {
-                Button {
-                    social.authenticateGameCenter()
-                } label: {
-                    Label("Sign in to Game Center", systemImage: "gamecontroller")
-                        .font(.system(size: 12.5, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                }
-                .buttonStyle(.plain)
-            } else {
-                Button {
-                    social.submitWeeklyFocus(minutes: weeklyFocusMinutes)
-                    social.submitMomentum(momentum.totalPoints)
-                    Haptics.success()
-                } label: {
-                    Label("Submit my scores now", systemImage: "arrow.up.circle")
+                Button { social.authenticateGameCenter() } label: {
+                    Text("Sign in to Game Center")
                         .font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(14)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Theme.hairline, lineWidth: 1)
-        )
+        .padding(16)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous)
+            .strokeBorder(Theme.hairline, lineWidth: 1))
+    }
+}
+
+/// A round avatar: a colored monogram, an optional status emoji badge, and an
+/// optional accent ring for "you".
+struct Avatar: View {
+    let name: String
+    var emoji: String = ""
+    var size: CGFloat = 40
+    var ring: Bool = false
+
+    private var initials: String {
+        let parts = name.split(separator: " ")
+        let first = parts.first?.first.map(String.init) ?? "?"
+        let second = parts.dropFirst().first?.first.map(String.init) ?? ""
+        return (first + second).uppercased()
     }
 
-    private var lockedCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("Ranking is a Chronos+ feature", systemImage: "lock.fill")
-                .font(.system(size: 13.5, weight: .semibold))
-                .foregroundStyle(Color.accentColor)
-            Text("Your weekly focus and momentum are already tracked above. Rank them against friends by turning on Chronos+ — it uses Apple's Game Center, no account needed beyond your Apple ID.")
-                .font(.system(size: 12))
-                .foregroundStyle(Theme.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+    private var tint: Color {
+        let palette: [UInt32] = [0x7C8CF8, 0x4FD1C5, 0xF2B95C, 0xF0719B, 0xA3E06B, 0x9B8CFF]
+        let idx = abs(name.hashValue) % palette.count
+        return Color(hex: palette[idx])
+    }
+
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            Circle()
+                .fill(tint.opacity(0.22))
+                .frame(width: size, height: size)
+                .overlay(
+                    Text(initials)
+                        .font(.system(size: size * 0.38, weight: .bold, design: .rounded))
+                        .foregroundStyle(tint)
+                )
+                .overlay(
+                    Circle().strokeBorder(ring ? Color.accentColor : Color.clear, lineWidth: 2)
+                        .padding(-3)
+                )
+            if !emoji.isEmpty {
+                Text(emoji)
+                    .font(.system(size: size * 0.34))
+                    .padding(2)
+                    .background(Theme.surface, in: Circle())
+            }
         }
-        .padding(14)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Theme.hairline, lineWidth: 1)
-        )
-    }
-
-    private var howItWorks: some View {
-        Text("Focus minutes come from your focus sessions; momentum is your all-time points. Both update automatically as you plan and work.")
-            .font(.system(size: 11))
-            .foregroundStyle(Theme.textTertiary)
-            .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, 4)
     }
 }

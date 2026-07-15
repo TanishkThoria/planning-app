@@ -5,8 +5,8 @@ import UIKit
 import AppKit
 #endif
 
-/// Friends presence: share a short code, add the people you plan with, and see
-/// what everyone's focusing on right now. Backed by your own iCloud (public
+/// The social hub: your live status, the friends you plan with, an activity
+/// feed, and the cheers they send you. Backed by your own iCloud (public
 /// CloudKit), so it stays server-free. Locked, but never a dead end, on the
 /// free account.
 struct FriendsView: View {
@@ -15,20 +15,28 @@ struct FriendsView: View {
     @ObservedObject private var paid = PaidFeatures.shared
 
     @AppStorage(Prefs.socialDisplayName) private var displayName = "Me"
+    @AppStorage(Prefs.socialStatusEmoji) private var statusEmoji = ""
+    @AppStorage(Prefs.socialStatusText) private var statusText = ""
+
+    enum Tab: String, CaseIterable, Identifiable { case friends, activity; var id: String { rawValue } }
+    @State private var tab: Tab = .friends
     @State private var newCode = ""
     @State private var copied = false
+    @State private var profile: FriendStatus?
+    @State private var editingStatus = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    identityCard
-                    addFriendCard
-                    friendsList
+                    youCard
+                    tabPicker
+                    if tab == .friends { friendsTab } else { activityTab }
                     if !paid.isEntitled(.friends) { lockedNote }
                 }
                 .padding(18)
-                .frame(maxWidth: 520, alignment: .leading)
+                .frame(maxWidth: 560, alignment: .leading)
+                .frame(maxWidth: .infinity)
             }
             .scrollIndicators(.hidden)
             .background(Theme.bg)
@@ -37,69 +45,108 @@ struct FriendsView: View {
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
         }
         .chronosAppearance()
-        .task {
-            if paid.isReady(.friends) { await social.refreshFriends() }
-        }
+        .task { if paid.isReady(.friends) { await social.refreshFriends() } }
+        .sheet(item: $profile) { FriendProfileSheet(status: $0) }
+        .sheet(isPresented: $editingStatus) { StatusEditor() }
     }
 
-    // MARK: Your identity + code
+    // MARK: You
 
-    private var identityCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Your code")
-                .font(.system(size: 11, weight: .semibold))
-                .tracking(1.0)
-                .foregroundStyle(Theme.textTertiary)
-            HStack {
-                Text(social.myFriendCode)
-                    .font(.system(size: 26, weight: .bold, design: .monospaced))
-                    .foregroundStyle(Theme.textPrimary)
+    private var youCard: some View {
+        VStack(spacing: 14) {
+            HStack(spacing: 14) {
+                Avatar(name: displayName, emoji: statusEmoji, size: 56, ring: true)
+                VStack(alignment: .leading, spacing: 3) {
+                    TextField("Your name", text: $displayName)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.textPrimary)
+                    Button { editingStatus = true } label: {
+                        HStack(spacing: 5) {
+                            Text(statusLine)
+                                .font(.system(size: 12.5))
+                                .foregroundStyle(statusText.isEmpty ? Theme.textTertiary : Theme.textSecondary)
+                                .lineLimit(1)
+                            Image(systemName: "pencil").font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
                 Spacer()
-                Button {
-                    copyCode()
-                } label: {
-                    Label(copied ? "Copied" : "Copy", systemImage: copied ? "checkmark" : "doc.on.doc")
+            }
+
+            Divider().overlay(Theme.hairline)
+
+            HStack(spacing: 10) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("YOUR CODE")
+                        .font(.system(size: 9.5, weight: .semibold)).tracking(1.2)
+                        .foregroundStyle(Theme.textTertiary)
+                    Text(social.myFriendCode)
+                        .font(.system(size: 20, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Theme.textPrimary)
+                }
+                Spacer()
+                Button { copyCode() } label: {
+                    Label(copied ? "Copied" : "Share", systemImage: copied ? "checkmark" : "square.and.arrow.up")
                         .font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
+                        .padding(.horizontal, 12).padding(.vertical, 8)
+                        .background(Color.accentColor.opacity(0.12), in: Capsule())
                 }
                 .buttonStyle(.plain)
             }
-            Divider().overlay(Theme.hairline)
-            HStack {
-                Text("Display name")
-                    .font(.system(size: 12.5))
-                    .foregroundStyle(Theme.textSecondary)
-                Spacer()
-                TextField("Name", text: $displayName)
-                    .textFieldStyle(.plain)
-                    .multilineTextAlignment(.trailing)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                    .frame(maxWidth: 180)
-            }
-            Text("Share your code with friends so they can follow your focus. They add it below; you add theirs.")
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textTertiary)
-                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(14)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Theme.hairline, lineWidth: 1)
-        )
+        .padding(16)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous)
+            .strokeBorder(Theme.hairline, lineWidth: 1))
+        .shadow(color: Theme.cardShadow, radius: 10, y: 4)
     }
 
-    // MARK: Add a friend
+    private var statusLine: String {
+        if statusText.isEmpty && statusEmoji.isEmpty { return "Set a status" }
+        return "\(statusEmoji) \(statusText)".trimmingCharacters(in: .whitespaces)
+    }
 
-    private var addFriendCard: some View {
+    private var tabPicker: some View {
+        Picker("", selection: $tab) {
+            Text("Friends").tag(Tab.friends)
+            Text("Activity").tag(Tab.activity)
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+    }
+
+    // MARK: Friends tab
+
+    @ViewBuilder
+    private var friendsTab: some View {
+        addFriendField
+        if social.friendCodes.isEmpty {
+            EmptyStateView(
+                icon: "person.2",
+                title: "No friends yet",
+                message: "Share your code, then add a friend's to see what they're focusing on and race the leaderboard."
+            )
+            .frame(maxWidth: .infinity)
+        } else {
+            VStack(spacing: 10) {
+                ForEach(social.friendCodes, id: \.self) { code in
+                    friendCard(code: code)
+                }
+            }
+        }
+    }
+
+    private var addFriendField: some View {
         HStack(spacing: 10) {
+            Image(systemName: "person.badge.plus").font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
             TextField("Add a friend's code", text: $newCode)
                 .textFieldStyle(.plain)
                 .font(.system(size: 14, weight: .medium, design: .monospaced))
@@ -109,97 +156,124 @@ struct FriendsView: View {
                 .autocorrectionDisabled()
                 #endif
             Button {
-                social.addFriend(code: newCode)
-                newCode = ""
+                social.addFriend(code: newCode); newCode = ""
             } label: {
-                Text("Add")
-                    .font(.system(size: 12.5, weight: .semibold))
+                Text("Add").font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(newCode.isEmpty ? Theme.textTertiary : Color.accentColor)
             }
-            .buttonStyle(.plain)
-            .disabled(newCode.isEmpty)
+            .buttonStyle(.plain).disabled(newCode.isEmpty)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Theme.hairline, lineWidth: 1)
-        )
+        .padding(.horizontal, 14).padding(.vertical, 12)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous)
+            .strokeBorder(Theme.hairline, lineWidth: 1))
     }
 
-    // MARK: The list
+    private func friendCard(code: String) -> some View {
+        let status = social.friends.first { $0.presence.code == code }
+        return Button { if let status { profile = status } } label: {
+            HStack(spacing: 12) {
+                ZStack(alignment: .bottomTrailing) {
+                    Avatar(name: status?.presence.displayName ?? code, emoji: status?.presence.statusEmoji ?? "", size: 44)
+                    if status?.isLive == true {
+                        Circle().fill(Theme.success).frame(width: 12, height: 12)
+                            .overlay(Circle().strokeBorder(Theme.surface, lineWidth: 2))
+                    }
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(status?.presence.displayName ?? code)
+                        .font(.system(size: 14.5, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(subtitle(for: status))
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(Theme.textSecondary)
+                        .lineLimit(1)
+                }
+                Spacer()
+                if let status {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Label("\(status.presence.streakDays)", systemImage: "flame.fill")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(Theme.warning)
+                        Text(Fmt.duration(minutes: status.presence.weeklyFocus))
+                            .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                }
+                Image(systemName: "chevron.right").font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .padding(.horizontal, 14).padding(.vertical, 12)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous)
+                .strokeBorder(Theme.hairline, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: Activity tab
 
     @ViewBuilder
-    private var friendsList: some View {
-        if social.friendCodes.isEmpty {
-            EmptyStateView(
-                icon: "person.2",
-                title: "No friends yet",
-                message: "Add a code above to start seeing what your friends are focusing on."
-            )
-            .frame(maxWidth: .infinity)
-        } else {
-            VStack(spacing: 10) {
-                ForEach(social.friendCodes, id: \.self) { code in
-                    friendRow(code: code)
+    private var activityTab: some View {
+        if !social.receivedCheers.isEmpty {
+            SectionHeader(title: "Cheers for you").padding(.horizontal, 2)
+            VStack(spacing: 8) {
+                ForEach(social.receivedCheers.prefix(8)) { cheer in
+                    HStack(spacing: 12) {
+                        Text(cheer.emoji).font(.system(size: 22))
+                        Text("\(cheer.fromName) cheered you on")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Theme.textPrimary)
+                        Spacer()
+                        Text(Fmt.relativeShort(cheer.date))
+                            .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                    }
+                    .padding(.horizontal, 14).padding(.vertical, 11)
+                    .background(Color.accentColor.opacity(0.07), in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
                 }
             }
         }
-    }
-
-    @ViewBuilder
-    private func friendRow(code: String) -> some View {
-        let status = social.friends.first { $0.presence.code == code }
-        HStack(spacing: 12) {
-            Circle()
-                .fill(Color(hex: status.map { $0.presence.busy.colorHex } ?? 0x5E646D))
-                .frame(width: 10, height: 10)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(status?.presence.displayName ?? code)
-                    .font(.system(size: 13.5, weight: .semibold))
-                    .foregroundStyle(Theme.textPrimary)
-                Text(subtitle(for: status))
-                    .font(.system(size: 11.5))
-                    .foregroundStyle(Theme.textSecondary)
+        let moments = social.activityMoments()
+        SectionHeader(title: "Activity").padding(.horizontal, 2).padding(.top, social.receivedCheers.isEmpty ? 0 : 6)
+        if moments.isEmpty {
+            EmptyStateView(icon: "waveform.path.ecg", title: "Quiet for now",
+                           message: "When your friends plan, focus, or hit a streak, it shows up here.")
+                .frame(maxWidth: .infinity)
+        } else {
+            VStack(spacing: 8) {
+                ForEach(moments) { moment in
+                    HStack(spacing: 12) {
+                        Image(systemName: moment.icon)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Color(hex: moment.tint))
+                            .frame(width: 26, height: 26)
+                            .background(Color(hex: moment.tint).opacity(0.15), in: Circle())
+                        (Text(moment.name).font(.system(size: 13, weight: .semibold)) + Text(" \(moment.text)").font(.system(size: 13)))
+                            .foregroundStyle(Theme.textPrimary)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 14).padding(.vertical, 11)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous)
+                        .strokeBorder(Theme.hairline, lineWidth: 1))
+                }
             }
-            Spacer()
-            if let status {
-                Text("\(status.presence.momentum)")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.accentColor)
-            }
-            Button {
-                social.removeFriend(code: code)
-            } label: {
-                Image(systemName: "minus.circle")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Theme.textTertiary)
-            }
-            .buttonStyle(.plain)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Theme.hairline, lineWidth: 1)
-        )
     }
 
     private func subtitle(for status: FriendStatus?) -> String {
         guard let status else {
             return paid.isReady(.friends) ? "Waiting for their next update…" : "Turn on Chronos+ to see status"
         }
-        if status.isStale { return "\(status.presence.busy.label) · last seen a while ago" }
-        if let block = status.presence.currentBlockTitle, !block.isEmpty {
-            return "\(status.presence.busy.label) · \(block)"
-        }
-        return status.presence.busy.label
+        let p = status.presence
+        if !p.statusText.isEmpty { return "\(p.statusEmoji) \(p.statusText)".trimmingCharacters(in: .whitespaces) }
+        if status.isStale { return "\(p.busy.label) · last seen a while ago" }
+        if let block = p.currentBlockTitle, !block.isEmpty { return "\(p.busy.label) · \(block)" }
+        return p.busy.label
     }
 
     private var lockedNote: some View {
-        Text("Friends presence turns on with Chronos+ (uses your iCloud). Your code and friends list are saved and ready now.")
+        Text("Friends presence turns on with Chronos+ (uses your iCloud). Your code, name, status, and friends list are saved and ready now.")
             .font(.system(size: 11))
             .foregroundStyle(Theme.textTertiary)
             .fixedSize(horizontal: false, vertical: true)
@@ -219,5 +293,178 @@ struct FriendsView: View {
             try? await Task.sleep(nanoseconds: 1_500_000_000)
             withAnimation(.snappy) { copied = false }
         }
+    }
+}
+
+// MARK: - Status editor
+
+private struct StatusEditor: View {
+    @Environment(\.dismiss) private var dismiss
+    @AppStorage(Prefs.socialStatusEmoji) private var emoji = ""
+    @AppStorage(Prefs.socialStatusText) private var text = ""
+    @AppStorage(Prefs.sharePresence) private var sharePresence = true
+
+    private let presets = ["🎯", "🔥", "📚", "💻", "☕️", "🧠", "😴", "🏃", "🎧", "✅"]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("EMOJI").font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                            .foregroundStyle(Theme.textTertiary)
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 10) {
+                            ForEach(presets, id: \.self) { e in
+                                Button { emoji = (emoji == e ? "" : e); Haptics.light() } label: {
+                                    Text(e).font(.system(size: 26))
+                                        .frame(width: 48, height: 48)
+                                        .background(emoji == e ? Color.accentColor.opacity(0.18) : Theme.surface,
+                                                    in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .strokeBorder(emoji == e ? Color.accentColor : Theme.hairline, lineWidth: 1))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("STATUS").font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                            .foregroundStyle(Theme.textTertiary)
+                        TextField("Deep work till 5…", text: $text)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 15))
+                            .foregroundStyle(Theme.textPrimary)
+                            .padding(14)
+                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .strokeBorder(Theme.hairline, lineWidth: 1))
+                    }
+                    Toggle(isOn: $sharePresence) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Share my live status").font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(Theme.textPrimary)
+                            Text("Let friends see what you're focusing on and your streak.")
+                                .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                        }
+                    }
+                    .toggleStyle(.switch)
+                    .padding(14)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(Theme.hairline, lineWidth: 1))
+                }
+                .padding(20)
+                .frame(maxWidth: 480)
+            }
+            .background(Theme.bg)
+            .navigationTitle("Your status")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+        .chronosAppearance()
+    }
+}
+
+// MARK: - Friend profile
+
+private struct FriendProfileSheet: View {
+    let status: FriendStatus
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var social = SocialService.shared
+    @State private var cheered = false
+
+    private let cheerEmojis = ["👏", "🔥", "💪", "🎯", "🙌"]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 18) {
+                    VStack(spacing: 10) {
+                        Avatar(name: status.presence.displayName, emoji: status.presence.statusEmoji, size: 72)
+                        Text(status.presence.displayName)
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text(headline)
+                            .font(.system(size: 12.5))
+                            .foregroundStyle(Theme.textSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.top, 6)
+
+                    HStack(spacing: 10) {
+                        stat("flame.fill", "\(status.presence.streakDays)d", "Streak", Theme.warning)
+                        stat("timer", Fmt.duration(minutes: status.presence.weeklyFocus), "This week", Theme.success)
+                        stat("bolt.fill", "\(status.presence.momentum)", "Momentum", Color.accentColor)
+                    }
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("SEND A CHEER").font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                            .foregroundStyle(Theme.textTertiary)
+                        HStack(spacing: 10) {
+                            ForEach(cheerEmojis, id: \.self) { e in
+                                Button {
+                                    social.sendCheer(to: status.presence.code, emoji: e)
+                                    Haptics.success()
+                                    withAnimation(.snappy) { cheered = true }
+                                } label: {
+                                    Text(e).font(.system(size: 26))
+                                        .frame(width: 46, height: 46)
+                                        .background(Theme.surface, in: Circle())
+                                        .overlay(Circle().strokeBorder(Theme.hairline, lineWidth: 1))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        if cheered {
+                            Text("Cheer sent! 🎉").font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(Theme.success)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous)
+                        .strokeBorder(Theme.hairline, lineWidth: 1))
+
+                    Button(role: .destructive) {
+                        social.removeFriend(code: status.presence.code); dismiss()
+                    } label: {
+                        Text("Remove friend").font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Theme.danger)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(20)
+                .frame(maxWidth: 440)
+            }
+            .background(Theme.bg)
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+        .chronosAppearance()
+    }
+
+    private var headline: String {
+        let p = status.presence
+        if !p.statusText.isEmpty { return "\(p.statusEmoji) \(p.statusText)".trimmingCharacters(in: .whitespaces) }
+        if let block = p.currentBlockTitle, !block.isEmpty { return "\(p.busy.label) · \(block)" }
+        return "\(p.levelTitle) · \(p.busy.label)"
+    }
+
+    private func stat(_ icon: String, _ value: String, _ label: String, _ tint: Color) -> some View {
+        VStack(spacing: 5) {
+            Image(systemName: icon).font(.system(size: 15, weight: .semibold)).foregroundStyle(tint)
+            Text(value).font(.system(size: 17, weight: .bold, design: .rounded)).foregroundStyle(Theme.textPrimary)
+            Text(label).font(.system(size: 10.5)).foregroundStyle(Theme.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous)
+            .strokeBorder(Theme.hairline, lineWidth: 1))
     }
 }

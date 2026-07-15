@@ -160,4 +160,13 @@ enum Fmt {
         f.setLocalizedDateFormatFromTemplate("EEEMMMd")
         return f.string(from: date)
     }
+
+    /// Compact relative time like "2h" / "now", for feeds.
+    static func relativeShort(_ date: Date, now: Date = Date()) -> String {
+        let s = Int(max(0, now.timeIntervalSince(date)))
+        if s < 60 { return "now" }
+        if s < 3600 { return "\(s / 60)m" }
+        if s < 86400 { return "\(s / 3600)h" }
+        return "\(s / 86400)d"
+    }
 }

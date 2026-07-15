@@ -33,20 +33,48 @@ enum BusyLevel: String, Codable, CaseIterable {
         case .headsDown: return 0xFF6B6B
         }
     }
+
+    var icon: String {
+        switch self {
+        case .free: return "circle"
+        case .light: return "circle.lefthalf.filled"
+        case .busy: return "circle.fill"
+        case .headsDown: return "moon.fill"
+        }
+    }
+}
+
+/// The stats bundled into a presence update (computed by the app each tick).
+struct SocialStats: Hashable {
+    var momentumToday: Int = 0
+    var streakDays: Int = 0
+    var level: Int = 1
+    var focusToday: Int = 0
+    var tasksToday: Int = 0
+    var weeklyFocus: Int = 0
 }
 
 /// A snapshot a user publishes about themselves for friends to see. Only ever
 /// shared when the user opts into Friends; carries no calendar detail beyond
-/// the current block's title (which the user can keep vague).
+/// the current block's title (which the user can keep vague) and an optional
+/// custom status.
 struct FriendPresence: Codable, Hashable {
     var code: String
     var displayName: String
+    var statusEmoji: String = ""
+    var statusText: String = ""
     var currentBlockTitle: String?
-    var busy: BusyLevel
-    var momentum: Int
-    var updatedEpoch: TimeInterval
+    var busy: BusyLevel = .free
+    var momentum: Int = 0
+    var streakDays: Int = 0
+    var level: Int = 1
+    var focusToday: Int = 0
+    var tasksToday: Int = 0
+    var weeklyFocus: Int = 0
+    var updatedEpoch: TimeInterval = 0
 
     var updated: Date { Date(timeIntervalSince1970: updatedEpoch) }
+    var levelTitle: String { MomentumStore.levelTitle(for: level) }
 }
 
 /// What we render for each friend.
@@ -54,54 +82,117 @@ struct FriendStatus: Identifiable, Hashable {
     var id: String { presence.code }
     var presence: FriendPresence
     var isStale: Bool { Date().timeIntervalSince1970 - presence.updatedEpoch > 60 * 60 }
+    /// "Active now" if updated in the last few minutes.
+    var isLive: Bool { Date().timeIntervalSince1970 - presence.updatedEpoch < 8 * 60 }
 }
 
-struct LeaderboardEntry: Identifiable, Hashable {
-    var id: String { code }
-    var code: String
-    var displayName: String
-    var value: Int
+/// A little congratulations a friend sends you (👏🔥💪🎯).
+struct Cheer: Codable, Hashable, Identifiable {
+    var fromCode: String
+    var fromName: String
+    var emoji: String
+    var epoch: TimeInterval
+    var id: String { "\(fromCode)-\(epoch)" }
+    var date: Date { Date(timeIntervalSince1970: epoch) }
+}
+
+// MARK: - Leaderboard
+
+/// The friend-leaderboard boards (computed locally from presence — always
+/// works, no Game Center required).
+enum LeaderboardBoard: String, CaseIterable, Identifiable {
+    case focusWeek, momentum, streak
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .focusWeek: return "Focus"
+        case .momentum: return "Momentum"
+        case .streak: return "Streak"
+        }
+    }
+    var icon: String {
+        switch self {
+        case .focusWeek: return "timer"
+        case .momentum: return "bolt.fill"
+        case .streak: return "flame.fill"
+        }
+    }
+    func value(_ p: FriendPresence) -> Int {
+        switch self {
+        case .focusWeek: return p.weeklyFocus
+        case .momentum: return p.momentum
+        case .streak: return p.streakDays
+        }
+    }
+    func display(_ v: Int) -> String {
+        switch self {
+        case .focusWeek: return Fmt.duration(minutes: v)
+        case .momentum: return "\(v)"
+        case .streak: return "\(v)d"
+        }
+    }
+}
+
+struct LeaderboardRow: Identifiable, Hashable {
     var rank: Int
+    var presence: FriendPresence
+    var value: Int
+    var isYou: Bool
+    var id: String { presence.code }
+}
+
+/// A derived "moment" for the activity feed (synthesised from presence — no
+/// server-side event log needed).
+struct ActivityMoment: Identifiable, Hashable {
+    var id: String
+    var icon: String
+    var tint: UInt32
+    var name: String
+    var text: String
+    var code: String
     var isYou: Bool
 }
 
 // MARK: - Friends backend abstraction
 
-/// A pluggable source of friend presence. The live backend is CloudKit's public
-/// database; the default is a no-op so the free account (and any build without
-/// the iCloud entitlement) behaves cleanly.
+/// A pluggable source of friend presence + cheers. The live backend is
+/// CloudKit's public database; the default is a no-op so the free account (and
+/// any build without the iCloud entitlement) behaves cleanly.
 protocol FriendsBackend {
     func publish(_ presence: FriendPresence) async throws
     func fetch(codes: [String]) async throws -> [FriendPresence]
+    func sendCheer(_ cheer: Cheer, to code: String) async throws
+    func fetchCheers(for code: String) async throws -> [Cheer]
 }
 
 struct DisabledFriendsBackend: FriendsBackend {
     func publish(_ presence: FriendPresence) async throws {}
     func fetch(codes: [String]) async throws -> [FriendPresence] { [] }
+    func sendCheer(_ cheer: Cheer, to code: String) async throws {}
+    func fetchCheers(for code: String) async throws -> [Cheer] { [] }
 }
 
 #if canImport(CloudKit)
-/// Presence exchanged through the app's *public* CloudKit database, keyed by a
-/// short friend code. Server-free: everyone reads/writes their own record and
-/// looks up friends by code. Requires the iCloud entitlement (paid account).
+/// Presence + cheers exchanged through the app's *public* CloudKit database,
+/// keyed by a short friend code. Server-free: everyone reads/writes their own
+/// record and looks up friends by code. Requires the iCloud entitlement.
 struct CloudKitFriendsBackend: FriendsBackend {
-    static let recordType = "FriendPresence"
+    static let presenceType = "FriendPresence"
+    static let inboxType = "CheerInbox"
     private var database: CKDatabase { CKContainer.default().publicCloudDatabase }
 
-    func publish(_ presence: FriendPresence) async throws {
-        let id = CKRecord.ID(recordName: "friend-\(presence.code)")
+    func publish(_ p: FriendPresence) async throws {
+        let id = CKRecord.ID(recordName: "friend-\(p.code)")
         let record: CKRecord
         do {
             record = try await database.record(for: id)
         } catch let error as CKError where error.code == .unknownItem {
-            record = CKRecord(recordType: Self.recordType, recordID: id)
+            record = CKRecord(recordType: Self.presenceType, recordID: id)
         }
-        record["code"] = presence.code as CKRecordValue
-        record["displayName"] = presence.displayName as CKRecordValue
-        record["currentBlockTitle"] = (presence.currentBlockTitle ?? "") as CKRecordValue
-        record["busy"] = presence.busy.rawValue as CKRecordValue
-        record["momentum"] = presence.momentum as CKRecordValue
-        record["updatedEpoch"] = presence.updatedEpoch as CKRecordValue
+        if let data = try? JSONEncoder().encode(p) {
+            record["payload"] = data as CKRecordValue
+        }
+        record["updatedEpoch"] = p.updatedEpoch as CKRecordValue
         _ = try await database.save(record)
     }
 
@@ -111,48 +202,85 @@ struct CloudKitFriendsBackend: FriendsBackend {
             let id = CKRecord.ID(recordName: "friend-\(code)")
             do {
                 let record = try await database.record(for: id)
-                let title = record["currentBlockTitle"] as? String
-                out.append(FriendPresence(
-                    code: record["code"] as? String ?? code,
-                    displayName: record["displayName"] as? String ?? "Friend",
-                    currentBlockTitle: (title?.isEmpty ?? true) ? nil : title,
-                    busy: BusyLevel(rawValue: record["busy"] as? String ?? "") ?? .free,
-                    momentum: record["momentum"] as? Int ?? 0,
-                    updatedEpoch: record["updatedEpoch"] as? TimeInterval ?? 0
-                ))
+                if let data = record["payload"] as? Data,
+                   let p = try? JSONDecoder().decode(FriendPresence.self, from: data) {
+                    out.append(p)
+                }
             } catch let error as CKError where error.code == .unknownItem {
-                continue   // code not found — silently skip
+                continue
             }
         }
         return out
+    }
+
+    /// Cheers land in the recipient's inbox record as an appended JSON list, so
+    /// no queryable index is required.
+    func sendCheer(_ cheer: Cheer, to code: String) async throws {
+        let id = CKRecord.ID(recordName: "cheers-\(code)")
+        let record: CKRecord
+        var existing: [Cheer] = []
+        do {
+            record = try await database.record(for: id)
+            if let data = record["payload"] as? Data,
+               let list = try? JSONDecoder().decode([Cheer].self, from: data) {
+                existing = list
+            }
+        } catch let error as CKError where error.code == .unknownItem {
+            record = CKRecord(recordType: Self.inboxType, recordID: id)
+        }
+        existing.append(cheer)
+        existing = Array(existing.suffix(50))
+        if let data = try? JSONEncoder().encode(existing) {
+            record["payload"] = data as CKRecordValue
+        }
+        _ = try await database.save(record)
+    }
+
+    func fetchCheers(for code: String) async throws -> [Cheer] {
+        let id = CKRecord.ID(recordName: "cheers-\(code)")
+        do {
+            let record = try await database.record(for: id)
+            if let data = record["payload"] as? Data,
+               let list = try? JSONDecoder().decode([Cheer].self, from: data) {
+                return list
+            }
+        } catch let error as CKError where error.code == .unknownItem {
+            return []
+        }
+        return []
     }
 }
 #endif
 
 // MARK: - SocialService
 
-/// Owns Game Center leaderboards and the Friends presence feature. Every method
-/// is gated on `PaidFeatures.isReady(...)`, so on the free account it holds
-/// empty state and does nothing.
+/// Owns Game Center leaderboards and the full Friends layer — presence, a
+/// computed friends leaderboard, an activity feed, and cheers. Every network
+/// path is gated on `PaidFeatures.isReady(...)`, so on the free account it
+/// holds empty state and does nothing.
 @MainActor
 final class SocialService: ObservableObject {
     static let shared = SocialService()
 
-    /// Leaderboard IDs to create in App Store Connect (documented in the setup
-    /// guide). Submitting to an unconfigured ID simply fails silently.
-    enum Leaderboard {
+    enum GameCenterLeaderboard {
         static let weeklyFocus = "chronos.focus.weekly"
         static let momentumAllTime = "chronos.momentum.alltime"
     }
 
     @Published private(set) var gameCenterAuthenticated = false
     @Published private(set) var friends: [FriendStatus] = []
+    @Published private(set) var receivedCheers: [Cheer] = []
     @Published private(set) var lastError: String?
+    @Published private(set) var lastRefreshed: Date?
 
     /// Codes of friends the user has added (persisted).
     @Published var friendCodes: [String] {
         didSet { UserDefaults.standard.set(friendCodes, forKey: "chronos.friendCodes") }
     }
+
+    /// The latest stats the app handed us, so presence publishes stay rich even
+    /// when only the block changes.
+    private var latestStats = SocialStats()
 
     private var backend: FriendsBackend {
         #if canImport(CloudKit)
@@ -165,9 +293,8 @@ final class SocialService: ObservableObject {
         friendCodes = UserDefaults.standard.stringArray(forKey: "chronos.friendCodes") ?? []
     }
 
-    // MARK: Your identity
+    // MARK: Your identity + status
 
-    /// A stable, shareable code. Generated once and kept in preferences.
     var myFriendCode: String {
         if let existing = UserDefaults.standard.string(forKey: Prefs.friendCode), !existing.isEmpty {
             return existing
@@ -182,8 +309,32 @@ final class SocialService: ObservableObject {
         set { UserDefaults.standard.set(newValue, forKey: Prefs.socialDisplayName) }
     }
 
+    var sharesPresence: Bool {
+        UserDefaults.standard.object(forKey: Prefs.sharePresence) == nil
+            ? true : UserDefaults.standard.bool(forKey: Prefs.sharePresence)
+    }
+
+    /// A presence snapshot for the local user, used to seed leaderboards + feed
+    /// even before the first network round-trip.
+    var myPresence: FriendPresence {
+        FriendPresence(
+            code: myFriendCode,
+            displayName: myDisplayName,
+            statusEmoji: UserDefaults.standard.string(forKey: Prefs.socialStatusEmoji) ?? "",
+            statusText: UserDefaults.standard.string(forKey: Prefs.socialStatusText) ?? "",
+            currentBlockTitle: nil,
+            busy: .free,
+            momentum: latestStats.momentumToday,
+            streakDays: latestStats.streakDays,
+            level: latestStats.level,
+            focusToday: latestStats.focusToday,
+            tasksToday: latestStats.tasksToday,
+            weeklyFocus: latestStats.weeklyFocus,
+            updatedEpoch: Date().timeIntervalSince1970
+        )
+    }
+
     private static func generateCode() -> String {
-        // Ambiguous characters removed; grouped for readability (e.g. K7P-3QW).
         let alphabet = Array("ABCDEFGHJKLMNPQRSTUVWXYZ23456789")
         func chunk() -> String { String((0..<3).map { _ in alphabet[Int.random(in: 0..<alphabet.count)] }) }
         return "\(chunk())-\(chunk())"
@@ -201,7 +352,117 @@ final class SocialService: ObservableObject {
         friends.removeAll { $0.presence.code == code }
     }
 
-    // MARK: Game Center
+    // MARK: Leaderboard (computed from presence — always available)
+
+    func leaderboard(_ board: LeaderboardBoard) -> [LeaderboardRow] {
+        var people = friends.map(\.presence)
+        people.append(myPresence)
+        let sorted = people.sorted { board.value($0) > board.value($1) }
+        return sorted.enumerated().map { idx, p in
+            LeaderboardRow(rank: idx + 1, presence: p, value: board.value(p), isYou: p.code == myFriendCode)
+        }
+    }
+
+    var myRank: Int? {
+        leaderboard(.focusWeek).first { $0.isYou }?.rank
+    }
+
+    // MARK: Activity feed (derived moments)
+
+    func activityMoments() -> [ActivityMoment] {
+        var out: [ActivityMoment] = []
+        for status in friends.sorted(by: { $0.presence.updatedEpoch > $1.presence.updatedEpoch }) {
+            let p = status.presence
+            if !status.isStale, p.busy == .headsDown, let block = p.currentBlockTitle, !block.isEmpty {
+                out.append(.init(id: "\(p.code)-focus", icon: "moon.fill", tint: 0xFF6B6B,
+                                 name: p.displayName, text: "is heads-down on \(block)", code: p.code, isYou: false))
+            } else if !status.isStale, let block = p.currentBlockTitle, !block.isEmpty {
+                out.append(.init(id: "\(p.code)-now", icon: "circle.fill", tint: p.busy.colorHex,
+                                 name: p.displayName, text: "is on \(block)", code: p.code, isYou: false))
+            }
+            if p.streakDays >= 3 {
+                out.append(.init(id: "\(p.code)-streak", icon: "flame.fill", tint: 0xF2B95C,
+                                 name: p.displayName, text: "is on a \(p.streakDays)-day streak", code: p.code, isYou: false))
+            }
+            if p.tasksToday >= 3 {
+                out.append(.init(id: "\(p.code)-tasks", icon: "checkmark.circle.fill", tint: 0x5BD899,
+                                 name: p.displayName, text: "finished \(p.tasksToday) tasks today", code: p.code, isYou: false))
+            }
+        }
+        return out
+    }
+
+    // MARK: Cheers
+
+    func sendCheer(to code: String, emoji: String) {
+        guard PaidFeatures.shared.isReady(.friends) else { return }
+        let cheer = Cheer(fromCode: myFriendCode, fromName: myDisplayName, emoji: emoji,
+                          epoch: Date().timeIntervalSince1970)
+        let backend = backend
+        Task {
+            do { try await backend.sendCheer(cheer, to: code) }
+            catch { await MainActor.run { self.lastError = error.localizedDescription } }
+        }
+    }
+
+    func refreshCheers() async {
+        guard PaidFeatures.shared.isReady(.friends) else { receivedCheers = []; return }
+        do {
+            let cheers = try await backend.fetchCheers(for: myFriendCode)
+            receivedCheers = cheers.sorted { $0.epoch > $1.epoch }
+        } catch {
+            lastError = error.localizedDescription
+        }
+    }
+
+    // MARK: Presence
+
+    /// Store the latest computed stats so every presence publish is rich.
+    func updateStats(_ stats: SocialStats) { latestStats = stats }
+
+    func publishPresence(blockTitle: String?, busy: BusyLevel, stats: SocialStats) {
+        latestStats = stats
+        guard PaidFeatures.shared.isReady(.friends), sharesPresence else { return }
+        let presence = FriendPresence(
+            code: myFriendCode,
+            displayName: myDisplayName,
+            statusEmoji: UserDefaults.standard.string(forKey: Prefs.socialStatusEmoji) ?? "",
+            statusText: UserDefaults.standard.string(forKey: Prefs.socialStatusText) ?? "",
+            currentBlockTitle: blockTitle,
+            busy: busy,
+            momentum: stats.momentumToday,
+            streakDays: stats.streakDays,
+            level: stats.level,
+            focusToday: stats.focusToday,
+            tasksToday: stats.tasksToday,
+            weeklyFocus: stats.weeklyFocus,
+            updatedEpoch: Date().timeIntervalSince1970
+        )
+        let backend = backend
+        Task {
+            do { try await backend.publish(presence) }
+            catch { await MainActor.run { self.lastError = error.localizedDescription } }
+        }
+    }
+
+    func refreshFriends() async {
+        guard PaidFeatures.shared.isReady(.friends), !friendCodes.isEmpty else {
+            friends = []
+            return
+        }
+        do {
+            let presences = try await backend.fetch(codes: friendCodes)
+            friends = presences
+                .map(FriendStatus.init)
+                .sorted { $0.presence.updatedEpoch > $1.presence.updatedEpoch }
+            lastRefreshed = Date()
+            await refreshCheers()
+        } catch {
+            lastError = error.localizedDescription
+        }
+    }
+
+    // MARK: Game Center (optional extra)
 
     func authenticateGameCenter() {
         guard PaidFeatures.shared.isEntitled(.leaderboards) else { return }
@@ -219,13 +480,8 @@ final class SocialService: ObservableObject {
         #endif
     }
 
-    func submitWeeklyFocus(minutes: Int) {
-        submit(minutes, to: Leaderboard.weeklyFocus)
-    }
-
-    func submitMomentum(_ points: Int) {
-        submit(points, to: Leaderboard.momentumAllTime)
-    }
+    func submitWeeklyFocus(minutes: Int) { submit(minutes, to: GameCenterLeaderboard.weeklyFocus) }
+    func submitMomentum(_ points: Int) { submit(points, to: GameCenterLeaderboard.momentumAllTime) }
 
     private func submit(_ value: Int, to leaderboardID: String) {
         guard PaidFeatures.shared.isReady(.leaderboards), gameCenterAuthenticated else { return }
@@ -249,40 +505,4 @@ final class SocialService: ObservableObject {
         top.present(viewController, animated: true)
     }
     #endif
-
-    // MARK: Friends presence
-
-    /// Share the user's current status with their friends. Called from the app
-    /// whenever the current block or momentum changes.
-    func publishPresence(currentBlockTitle: String?, busy: BusyLevel, momentum: Int) {
-        guard PaidFeatures.shared.isReady(.friends) else { return }
-        let presence = FriendPresence(
-            code: myFriendCode,
-            displayName: myDisplayName,
-            currentBlockTitle: currentBlockTitle,
-            busy: busy,
-            momentum: momentum,
-            updatedEpoch: Date().timeIntervalSince1970
-        )
-        let backend = backend
-        Task {
-            do { try await backend.publish(presence) }
-            catch { await MainActor.run { self.lastError = error.localizedDescription } }
-        }
-    }
-
-    func refreshFriends() async {
-        guard PaidFeatures.shared.isReady(.friends), !friendCodes.isEmpty else {
-            friends = []
-            return
-        }
-        do {
-            let presences = try await backend.fetch(codes: friendCodes)
-            friends = presences
-                .map(FriendStatus.init)
-                .sorted { $0.presence.momentum > $1.presence.momentum }
-        } catch {
-            lastError = error.localizedDescription
-        }
-    }
 }

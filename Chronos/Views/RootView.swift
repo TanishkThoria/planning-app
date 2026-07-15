@@ -201,10 +201,21 @@ struct RootView: View {
         } else {
             busy = .free
         }
+        let doneToday = service.tasks.filter {
+            $0.isCompleted && ($0.completionDate?.isToday ?? false)
+        }.count
+        let stats = SocialStats(
+            momentumToday: MomentumStore.shared.score(on: now),
+            streakDays: MomentumStore.shared.streak(),
+            level: MomentumStore.shared.level,
+            focusToday: focusLog.totalMinutes(inLast: 1),
+            tasksToday: doneToday,
+            weeklyFocus: focusLog.totalMinutes(inLast: 7)
+        )
         SocialService.shared.publishPresence(
-            currentBlockTitle: current?.title,
+            blockTitle: current?.title,
             busy: busy,
-            momentum: MomentumStore.shared.score(on: now)
+            stats: stats
         )
     }
 

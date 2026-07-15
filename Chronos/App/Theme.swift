@@ -194,4 +194,9 @@ enum Prefs {
     static let friendCode = "pref.friendCode"
     /// Display name shown to friends and on the leaderboard.
     static let socialDisplayName = "pref.socialDisplayName"
+    /// A custom status emoji + line friends see (e.g. "🎯" · "Deep work till 5").
+    static let socialStatusEmoji = "pref.socialStatusEmoji"
+    static let socialStatusText = "pref.socialStatusText"
+    /// Whether to share live presence with friends at all (privacy switch).
+    static let sharePresence = "pref.sharePresence"
 }

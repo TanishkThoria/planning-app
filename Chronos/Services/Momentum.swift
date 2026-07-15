@@ -119,9 +119,11 @@ final class MomentumStore: ObservableObject {
     var pointsIntoLevel: Int { totalPoints % 500 }
     var progressToNextLevel: Double { Double(pointsIntoLevel) / 500 }
 
-    var levelTitle: String {
+    var levelTitle: String { Self.levelTitle(for: level) }
+
+    static func levelTitle(for level: Int) -> String {
         switch level {
-        case 1: return "Getting Started"
+        case ...1: return "Getting Started"
         case 2: return "Finding Rhythm"
         case 3...4: return "In the Groove"
         case 5...7: return "Dialed In"
