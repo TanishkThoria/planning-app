@@ -10,7 +10,7 @@ struct NowView: View {
     @EnvironmentObject private var timer: FocusTimerController
     @Environment(\.dismiss) private var dismiss
     @AppStorage(Prefs.defaultListID) private var defaultListID = ""
-    @AppStorage(Prefs.accentName) private var accentName = "Indigo"
+    @AppStorage(Prefs.accentName) private var accentName = "Blue"
 
     @State private var now = Date()
     @State private var parked = ""

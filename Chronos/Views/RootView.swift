@@ -11,7 +11,7 @@ struct RootView: View {
     @ObservedObject private var intentLauncher = IntentLauncher.shared
     @ObservedObject private var tour = TourController.shared
     @ObservedObject private var lms = LMSStore.shared
-    @AppStorage(Prefs.accentName) private var accentName = "Indigo"
+    @AppStorage(Prefs.accentName) private var accentName = "Blue"
     @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
     @AppStorage("chronos.onboardingComplete") private var onboardingComplete = false
     @AppStorage(Prefs.morningReminderEnabled) private var morningReminderEnabled = false

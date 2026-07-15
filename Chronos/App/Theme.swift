@@ -23,27 +23,27 @@ enum Theme {
 
     // MARK: Surfaces
 
-    /// App background — a soft off-white by day, near-black (with a whisper of
-    /// blue so OLED smear is avoided) by night.
-    static let bg = dynamic(light: Color(hex: 0xF4F5F7), dark: Color(hex: 0x0B0C0F))
-    /// Cards, rails and sheets.
-    static let surface = dynamic(light: Color(hex: 0xFFFFFF), dark: Color(hex: 0x131519))
-    /// Elevated surfaces: popovers, editors, hovering cards.
-    static let elevated = dynamic(light: Color(hex: 0xFFFFFF), dark: Color(hex: 0x1A1D22))
+    /// App background — Apple's grouped background: a soft system gray by day,
+    /// true black by night (cards float above it, exactly like Settings).
+    static let bg = dynamic(light: Color(hex: 0xF2F2F7), dark: Color(hex: 0x000000))
+    /// Cards, rails and sheets (secondary grouped background).
+    static let surface = dynamic(light: Color(hex: 0xFFFFFF), dark: Color(hex: 0x1C1C1E))
+    /// Elevated surfaces: popovers, editors, hovering cards (tertiary).
+    static let elevated = dynamic(light: Color(hex: 0xFFFFFF), dark: Color(hex: 0x2C2C2E))
     /// Pressed / selected fills.
-    static let fill = dynamic(light: Color.black.opacity(0.05), dark: Color.white.opacity(0.06))
+    static let fill = dynamic(light: Color.black.opacity(0.05), dark: Color.white.opacity(0.09))
 
     // MARK: Lines
 
-    static let hairline = dynamic(light: Color.black.opacity(0.08), dark: Color.white.opacity(0.07))
-    static let hairlineStrong = dynamic(light: Color.black.opacity(0.16), dark: Color.white.opacity(0.14))
-    static let gridLine = dynamic(light: Color.black.opacity(0.05), dark: Color.white.opacity(0.05))
+    static let hairline = dynamic(light: Color.black.opacity(0.09), dark: Color.white.opacity(0.11))
+    static let hairlineStrong = dynamic(light: Color.black.opacity(0.18), dark: Color.white.opacity(0.20))
+    static let gridLine = dynamic(light: Color.black.opacity(0.06), dark: Color.white.opacity(0.07))
 
-    // MARK: Text
+    // MARK: Text (Apple label colors)
 
-    static let textPrimary = dynamic(light: Color(hex: 0x14161A), dark: Color(hex: 0xF2F3F5))
-    static let textSecondary = dynamic(light: Color(hex: 0x5B616B), dark: Color(hex: 0x9BA1AA))
-    static let textTertiary = dynamic(light: Color(hex: 0x9098A2), dark: Color(hex: 0x5E646D))
+    static let textPrimary = dynamic(light: Color(hex: 0x1C1C1E), dark: Color(hex: 0xF5F5F7))
+    static let textSecondary = dynamic(light: Color(hex: 0x6C6C70), dark: Color(hex: 0xA0A0A8))
+    static let textTertiary = dynamic(light: Color(hex: 0xA0A0A6), dark: Color(hex: 0x67676C))
 
     // MARK: Semantic (vivid on both schemes)
 
@@ -61,12 +61,13 @@ enum Theme {
     }
 
     static let accentChoices: [AccentChoice] = [
-        .init(name: "Indigo", color: Color(hex: 0x7C8CF8)),
-        .init(name: "Teal", color: Color(hex: 0x4FD1C5)),
-        .init(name: "Amber", color: Color(hex: 0xF2B95C)),
-        .init(name: "Rose", color: Color(hex: 0xF0719B)),
-        .init(name: "Lime", color: Color(hex: 0xA3E06B)),
-        .init(name: "Graphite", color: Color(hex: 0xAEB6C2)),
+        .init(name: "Blue", color: dynamic(light: Color(hex: 0x007AFF), dark: Color(hex: 0x0A84FF))),
+        .init(name: "Indigo", color: dynamic(light: Color(hex: 0x5856D6), dark: Color(hex: 0x7C8CF8))),
+        .init(name: "Teal", color: dynamic(light: Color(hex: 0x0FB5AE), dark: Color(hex: 0x4FD1C5))),
+        .init(name: "Amber", color: dynamic(light: Color(hex: 0xE08600), dark: Color(hex: 0xF2B95C))),
+        .init(name: "Rose", color: dynamic(light: Color(hex: 0xE0568B), dark: Color(hex: 0xF0719B))),
+        .init(name: "Green", color: dynamic(light: Color(hex: 0x1FA855), dark: Color(hex: 0x5BD899))),
+        .init(name: "Graphite", color: dynamic(light: Color(hex: 0x8A8A8E), dark: Color(hex: 0xAEB6C2))),
     ]
 
     static func accent(named name: String) -> Color {

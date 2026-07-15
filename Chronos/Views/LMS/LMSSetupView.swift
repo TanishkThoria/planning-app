@@ -12,7 +12,7 @@ struct LMSSetupView: View {
     @EnvironmentObject private var service: EventKitService
     @ObservedObject private var lms = LMSStore.shared
     @Environment(\.dismiss) private var dismiss
-    @AppStorage(Prefs.accentName) private var accentName = "Indigo"
+    @AppStorage(Prefs.accentName) private var accentName = "Blue"
 
     enum Step { case intro, connect, map, done }
     @State private var step: Step = .intro

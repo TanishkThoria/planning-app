@@ -18,7 +18,7 @@ struct SettingsView: View {
 
     @State private var showingCalibration = false
 
-    @AppStorage(Prefs.accentName) private var accentName = "Indigo"
+    @AppStorage(Prefs.accentName) private var accentName = "Blue"
     @AppStorage(Prefs.appearance) private var appearance = "system"
     @AppStorage(Prefs.workStartMinutes) private var workStartMinutes = 9 * 60
     @AppStorage(Prefs.workEndMinutes) private var workEndMinutes = 18 * 60

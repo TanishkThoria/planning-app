@@ -10,7 +10,7 @@ struct OnboardingView: View {
 
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var notifications: NotificationService
-    @AppStorage(Prefs.accentName) private var accentName = "Indigo"
+    @AppStorage(Prefs.accentName) private var accentName = "Blue"
 
     @State private var step = 0
     @State private var requestingAccess = false
