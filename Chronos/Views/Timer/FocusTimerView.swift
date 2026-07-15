@@ -20,6 +20,10 @@ struct FocusTimerView: View {
     @State private var selectedMode: FocusTimerController.Mode = .pomodoro
     @State private var focusMinutes = 25
     @State private var breakMinutes = 5
+    /// Forest-style soft stakes: a sprout that grows as you focus and wilts if
+    /// you leave the app mid-session. Non-punitive — revive it and keep going.
+    @State private var wilted = false
+    @Environment(\.scenePhase) private var scenePhase
     private let tick = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -49,6 +53,32 @@ struct FocusTimerView: View {
             focusMinutes = timer.focusMinutes
             breakMinutes = timer.breakMinutes
             selectedMode = timer.mode
+        }
+        .onChange(of: scenePhase) { _, phase in
+            // Leaving the app mid-focus wilts the sprout (soft stakes).
+            if phase == .background, timer.isActive, timer.isRunning, timer.phase == .focus {
+                wilted = true
+            }
+        }
+        .onChange(of: timer.isActive) { _, active in
+            if !active { wilted = false }
+        }
+    }
+
+    /// The sprout's stage — grows with focus progress, wilts if you left.
+    private var growthEmoji: String {
+        if wilted { return "🥀" }
+        let p: Double
+        if timer.mode == .pomodoro {
+            p = timer.progress
+        } else {
+            p = min(1, timer.elapsed(at: now) / (25 * 60))   // 25 min ⇒ full grown
+        }
+        switch p {
+        case ..<0.12: return "🌱"
+        case ..<0.45: return "🌿"
+        case ..<0.8: return "🪴"
+        default: return "🌳"
         }
     }
 
@@ -99,7 +129,14 @@ struct FocusTimerView: View {
                     )
                     .rotationEffect(.degrees(-90))
                     .animation(.linear(duration: 0.3), value: ringFraction)
-                VStack(spacing: 4) {
+                VStack(spacing: 2) {
+                    if timer.phase == .focus {
+                        Text(growthEmoji)
+                            .font(.system(size: 30))
+                            .scaleEffect(wilted ? 0.9 : 1)
+                            .animation(.snappy, value: growthEmoji)
+                            .animation(.snappy, value: wilted)
+                    }
                     Text(timeText)
                         .font(.system(size: 40, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.textPrimary)
@@ -112,6 +149,25 @@ struct FocusTimerView: View {
                 }
             }
             .frame(width: 220, height: 220)
+
+            if wilted {
+                Button {
+                    withAnimation(.snappy) { wilted = false }
+                    if !timer.isRunning { timer.resume() }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.clockwise")
+                        Text("You stepped away — tap to replant & keep going")
+                            .fixedSize(horizontal: false, vertical: true)
+                            .multilineTextAlignment(.center)
+                    }
+                    .font(.system(size: 11.5, weight: .semibold))
+                    .foregroundStyle(Theme.warning)
+                    .padding(.horizontal, 12).padding(.vertical, 8)
+                    .background(Theme.warning.opacity(0.12), in: Capsule())
+                }
+                .buttonStyle(.plain)
+            }
 
             Spacer()
 

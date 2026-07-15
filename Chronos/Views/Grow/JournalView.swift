@@ -20,6 +20,7 @@ struct JournalView: View {
                     intentionsSection
                     checkInSection
                     reflectionSection
+                    if Calendar.current.isDateInToday(day) { onThisDaySection }
                 }
                 .padding(18)
             }
@@ -38,6 +39,83 @@ struct JournalView: View {
 
     private func load() { entry = life.entryOrNew(for: day) }
     private func persist() { life.upsert(entry) }
+
+    // MARK: On This Day — resurface past reflections (Day One's beloved feature)
+
+    @ViewBuilder
+    private var onThisDaySection: some View {
+        let memories = memories
+        if !memories.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                SectionHeader(title: "On this day")
+                ForEach(memories, id: \.entry.id) { memory in
+                    Button { persist(); day = Fmt.day(fromKey: memory.entry.dayKey) ?? day } label: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text(memory.label)
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(Color.accentColor)
+                                Spacer()
+                                Image(systemName: "chevron.right").font(.system(size: 9, weight: .bold))
+                                    .foregroundStyle(Theme.textTertiary)
+                            }
+                            Text(snippet(memory.entry))
+                                .font(.system(size: 12.5))
+                                .foregroundStyle(Theme.textSecondary)
+                                .lineLimit(3)
+                                .multilineTextAlignment(.leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(Theme.hairline, lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private var memories: [(label: String, entry: JournalEntry)] {
+        let cal = Calendar.current
+        var dates: [Date] = [7, 30, 90, 180, 365].map { day.adding(days: -$0) }
+        for y in 1...3 {
+            if let past = cal.date(byAdding: .year, value: -y, to: day) { dates.append(past.startOfDay) }
+        }
+        var seen = Set<String>([Fmt.dayKey(day)])
+        var out: [(String, JournalEntry)] = []
+        for date in dates.sorted(by: >) {
+            let key = Fmt.dayKey(date)
+            if seen.contains(key) { continue }
+            seen.insert(key)
+            if let e = life.entry(for: date), e.hasEvening || e.hasMorning {
+                out.append((memoryLabel(from: date), e))
+            }
+        }
+        return out
+    }
+
+    private func memoryLabel(from date: Date) -> String {
+        let days = Calendar.current.dateComponents([.day], from: date.startOfDay, to: day).day ?? 0
+        switch days {
+        case 7: return "1 week ago"
+        case 30: return "1 month ago"
+        case 90: return "3 months ago"
+        case 180: return "6 months ago"
+        case 365...370: return "1 year ago"
+        case 730...740: return "2 years ago"
+        default:
+            if days >= 365 { return "\(days / 365) years ago" }
+            return "\(days) days ago"
+        }
+    }
+
+    private func snippet(_ entry: JournalEntry) -> String {
+        let candidates = [entry.wins, entry.gratitude, entry.intentions.first { !$0.trimmingCharacters(in: .whitespaces).isEmpty } ?? "", entry.notes, entry.improve]
+        return candidates.first { !$0.trimmingCharacters(in: .whitespaces).isEmpty } ?? "You reflected on this day."
+    }
 
     private var headerBar: some View {
         HStack {
