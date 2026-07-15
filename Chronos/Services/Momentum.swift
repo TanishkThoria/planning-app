@@ -121,7 +121,7 @@ final class MomentumStore: ObservableObject {
 
     var levelTitle: String { Self.levelTitle(for: level) }
 
-    static func levelTitle(for level: Int) -> String {
+    nonisolated static func levelTitle(for level: Int) -> String {
         switch level {
         case ...1: return "Getting Started"
         case 2: return "Finding Rhythm"
