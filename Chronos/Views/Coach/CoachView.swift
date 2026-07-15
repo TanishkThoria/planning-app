@@ -442,6 +442,19 @@ struct CoachChatView: View {
             lines.append("Focus sessions this week: \(weekSessions.count), \(finished) finished without leaving.")
         }
 
+        // Category mix this week — what kinds of things they spend time on.
+        let weekStart = Date().startOfWeek
+        var catTotals: [ActivityCategory: Int] = [:]
+        for day in (0..<7).map({ weekStart.adding(days: $0) }) {
+            for b in service.blocks(on: day, hiddenCalendars: model.hiddenCalendarIDs) where !b.isAllDay {
+                catTotals[TagStore.shared.category(for: b), default: 0] += b.durationMinutes
+            }
+        }
+        let topCats = catTotals.sorted { $0.value > $1.value }.prefix(4)
+        if !topCats.isEmpty {
+            lines.append("Time by category this week: " + topCats.map { "\($0.key.title) \(Fmt.duration(minutes: $0.value))" }.joined(separator: ", ") + ". Use this to notice imbalance (e.g. lots of work, no rest or fitness) and tailor suggestions.")
+        }
+
         // Friends (only what they've shared)
         let friends = SocialService.shared.friends
         if !friends.isEmpty {

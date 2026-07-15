@@ -86,6 +86,7 @@ struct TimeReportView: View {
                     .pickerStyle(.segmented).labelsHidden()
 
                     headlineCard
+                    categoryCard
                     calendarCard
                     energyCard
                 }
@@ -152,6 +153,53 @@ struct TimeReportView: View {
             }
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private var byCategory: [(category: ActivityCategory, minutes: Int)] {
+        var totals: [ActivityCategory: Int] = [:]
+        for block in service.blocks(from: range.start, to: range.end, hiddenCalendars: model.hiddenCalendarIDs) where !block.isAllDay {
+            let m = clampMinutes(block, to: range)
+            guard m > 0 else { continue }
+            totals[TagStore.shared.category(for: block), default: 0] += m
+        }
+        return totals.sorted { $0.value > $1.value }.map { ($0.key, $0.value) }
+    }
+
+    private var categoryCard: some View {
+        let data = byCategory
+        let peak = max(data.map(\.minutes).max() ?? 0, 1)
+        return VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "By category")
+            if data.isEmpty {
+                Text("No time blocked in this period.")
+                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+            } else {
+                ForEach(data, id: \.category.id) { entry in
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            HStack(spacing: 6) {
+                                Image(systemName: entry.category.icon)
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundStyle(entry.category.color).frame(width: 14)
+                                Text(entry.category.title).font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(Theme.textPrimary).lineLimit(1)
+                            }
+                            Spacer()
+                            Text(Fmt.duration(minutes: entry.minutes))
+                                .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                        GeometryReader { geo in
+                            Capsule().fill(entry.category.color)
+                                .frame(width: max(geo.size.width * CGFloat(entry.minutes) / CGFloat(peak), 4))
+                        }
+                        .frame(height: 5)
+                        .background(Theme.fill, in: Capsule())
+                    }
+                }
+            }
+        }
+        .panel()
     }
 
     private var calendarCard: some View {
