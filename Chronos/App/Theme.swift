@@ -97,12 +97,12 @@ enum Theme {
     enum Metric {
         /// Standard screen edge inset.
         static let screen: CGFloat = 20
-        /// Gap between stacked cards.
-        static let cardGap: CGFloat = 14
+        /// Gap between stacked cards — a touch more air so the app breathes.
+        static let cardGap: CGFloat = 16
         /// Inner padding for cards / rows.
-        static let cardPadding: CGFloat = 16
+        static let cardPadding: CGFloat = 18
         /// The house corner radius — soft, Apple-like.
-        static let radius: CGFloat = 18
+        static let radius: CGFloat = 20
         /// Smaller radius for chips / compact controls.
         static let radiusSmall: CGFloat = 12
     }

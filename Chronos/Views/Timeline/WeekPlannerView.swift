@@ -20,7 +20,7 @@ struct WeekPlannerView: View {
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var profileStore: ProfileStore
 
-    @AppStorage(Prefs.hourHeight) private var hourHeight = 64.0
+    @AppStorage(Prefs.hourHeight) private var hourHeight = 72.0
     @AppStorage(Prefs.snapMinutes) private var snapMinutes = 15
     @AppStorage(Prefs.defaultBlockMinutes) private var defaultBlockMinutes = 30
     @AppStorage(Prefs.dimPastBlocks) private var dimPastBlocks = true

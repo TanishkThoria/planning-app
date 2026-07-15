@@ -10,7 +10,7 @@ struct ChronosFocusLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: FocusActivityAttributes.self) { context in
             lockScreen(context)
-                .activityBackgroundTint(Color(rgb: 0x0E0E12))
+                .activityBackgroundTint(Color(rgb: 0x000000))
                 .activitySystemActionForegroundColor(.white)
         } dynamicIsland: { context in
             let accent = Color(rgb: context.attributes.accentHex)
@@ -21,7 +21,7 @@ struct ChronosFocusLiveActivity: Widget {
                         .foregroundStyle(accent)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    timerText(context, font: .system(size: 15, weight: .bold, design: .rounded))
+                    timerText(context, font: .system(size: 15, weight: .bold))
                         .foregroundStyle(.white)
                 }
                 DynamicIslandExpandedRegion(.center) {
@@ -41,7 +41,7 @@ struct ChronosFocusLiveActivity: Widget {
                 Image(systemName: context.state.isPaused ? "pause.fill" : "timer")
                     .foregroundStyle(accent)
             } compactTrailing: {
-                timerText(context, font: .system(size: 13, weight: .semibold, design: .rounded))
+                timerText(context, font: .system(size: 13, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: 44)
             } minimal: {
@@ -76,7 +76,7 @@ struct ChronosFocusLiveActivity: Widget {
                     .lineLimit(1)
             }
             Spacer()
-            timerText(context, font: .system(size: 26, weight: .bold, design: .rounded))
+            timerText(context, font: .system(size: 26, weight: .bold))
                 .foregroundStyle(.white)
                 .monospacedDigit()
         }

@@ -58,29 +58,40 @@ enum SnapshotWriter {
             frogEaten: false
         ))
 
+        // Match the timeline: colour blocks by category when the user has that
+        // on (unless they set an explicit per-block colour).
+        let colorByCategory = UserDefaults.standard.object(forKey: Prefs.colorByCategory) as? Bool ?? true
+        func blockColorHex(_ block: TimeBlock) -> UInt32 {
+            if colorByCategory && !block.hasColorOverride {
+                return TagStore.shared.category(for: block).colorHex
+            }
+            return block.color.hexRGB
+        }
+
         let snapshot = TodaySnapshot(
             generatedEpoch: now.timeIntervalSince1970,
-            current: current.map(snapshotBlock),
-            next: next.map(snapshotBlock),
+            current: current.map { snapshotBlock($0, colorHex: blockColorHex($0)) },
+            next: next.map { snapshotBlock($0, colorHex: blockColorHex($0)) },
             blockCount: dayBlocks.count,
             plannedMinutes: plannedMinutes,
             elapsedPlannedMinutes: min(elapsedPlanned, plannedMinutes),
             habits: habits,
             tasksDueToday: dueToday,
             tasksDoneToday: doneToday,
-            momentum: momentum
+            momentum: momentum,
+            accentHex: Theme.accent(named: accentName).hexRGB
         )
 
         SnapshotStore.write(snapshot)
         reloadWidgets()
     }
 
-    private static func snapshotBlock(_ block: TimeBlock) -> SnapshotBlock {
+    private static func snapshotBlock(_ block: TimeBlock, colorHex: UInt32) -> SnapshotBlock {
         SnapshotBlock(
             title: block.title,
             startEpoch: block.start.timeIntervalSince1970,
             endEpoch: block.end.timeIntervalSince1970,
-            colorHex: block.color.hexRGB
+            colorHex: colorHex
         )
     }
 

@@ -42,7 +42,7 @@ struct TaskRow: View {
                     withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
                 } label: {
                     Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 16, weight: .regular))
+                        .font(.system(size: 18, weight: .regular))
                         .foregroundStyle(
                             task.isCompleted
                                 ? Theme.success
@@ -53,105 +53,91 @@ struct TaskRow: View {
                 .padding(.top, 1)
             }
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 7) {
                 HStack(spacing: 6) {
                     Text(task.title)
-                        .font(.system(size: 13.5, weight: .medium))
+                        .font(.system(size: 14.5, weight: .medium))
                         .foregroundStyle(task.isCompleted ? Theme.textTertiary : Theme.textPrimary)
                         .strikethrough(task.isCompleted, color: Theme.textTertiary)
                         .lineLimit(2)
                     if task.priority != .none {
                         Text(task.priority.badge)
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.system(size: 11.5, weight: .bold))
                             .foregroundStyle(task.priority.color)
                     }
                     if task.energy != .none {
                         Image(systemName: task.energy.icon)
-                            .font(.system(size: 10))
+                            .font(.system(size: 11))
                             .foregroundStyle(task.energy.color)
                     }
                 }
 
                 if let notes = task.notes, !notes.isEmpty {
                     Text(notes)
-                        .font(.system(size: 11.5))
+                        .font(.system(size: 12))
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1)
                 }
 
-                HStack(spacing: 8) {
+                // Metadata reflows across as many lines as it needs — the
+                // category leads, followed by timing and context chips.
+                FlowLayout(spacing: 7, lineSpacing: 6) {
+                    CategoryBadge(category: category, showsLabel: true, size: 9)
                     if let due = task.dueLabel() {
-                        Label(due, systemImage: "calendar")
-                            .font(.system(size: 10.5))
-                            .foregroundStyle(task.isOverdue ? Theme.danger : Theme.textTertiary)
+                        metaChip(due, icon: "calendar",
+                                 tint: task.isOverdue ? Theme.danger : Theme.textSecondary)
                     }
                     if task.daysOverdue >= 2 {
                         Text("\(task.daysOverdue)d late")
-                            .font(.system(size: 9.5, weight: .bold))
+                            .font(.system(size: 10.5, weight: .bold))
                             .foregroundStyle(Theme.danger)
-                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .padding(.horizontal, 7).padding(.vertical, 3)
                             .background(Theme.danger.opacity(task.daysOverdue >= 7 ? 0.22 : 0.12), in: Capsule())
                     }
                     if task.puntCount >= 2 && !task.isCompleted {
                         Label("moved \(task.puntCount)×", systemImage: "arrow.uturn.forward")
-                            .font(.system(size: 9.5, weight: .semibold))
+                            .font(.system(size: 10.5, weight: .semibold))
                             .foregroundStyle(task.puntCount >= 4 ? Theme.danger : Theme.warning)
-                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .padding(.horizontal, 7).padding(.vertical, 3)
                             .background((task.puntCount >= 4 ? Theme.danger : Theme.warning).opacity(0.12), in: Capsule())
                             .help("This task has been rescheduled \(task.puntCount) times — consider splitting it or dropping it.")
                     }
                     if let est = task.estimateMinutes {
-                        Label("~\(Fmt.duration(minutes: est))", systemImage: "timer")
-                            .font(.system(size: 10.5))
-                            .foregroundStyle(Theme.textTertiary)
+                        metaChip("~\(Fmt.duration(minutes: est))", icon: "timer", tint: Theme.textSecondary)
                     }
                     if let first = linkedBlocks.first {
-                        Label(
-                            "\(Fmt.relativeDay(first.start)) \(Fmt.time.string(from: first.start))",
-                            systemImage: "rectangle.stack"
-                        )
-                        .font(.system(size: 10.5))
-                        .foregroundStyle(Theme.accentColor)
+                        metaChip("\(Fmt.relativeDay(first.start)) \(Fmt.time.string(from: first.start))",
+                                 icon: "rectangle.stack", tint: Theme.accentColor)
                     }
                     if !subtasks.isEmpty {
-                        Label(
-                            "\(subtasks.filter(\.isCompleted).count)/\(subtasks.count)",
-                            systemImage: "checklist"
-                        )
-                        .font(.system(size: 10.5))
-                        .foregroundStyle(Theme.textTertiary)
+                        metaChip("\(subtasks.filter(\.isCompleted).count)/\(subtasks.count)",
+                                 icon: "checklist", tint: Theme.textSecondary)
                     }
-                    CategoryBadge(category: category, showsLabel: true, size: 8)
-                    HStack(spacing: 4) {
-                        Circle().fill(task.color).frame(width: 5, height: 5)
-                        Text(task.listName)
-                            .font(.system(size: 10.5))
-                            .foregroundStyle(Theme.textTertiary)
-                    }
+                    metaChip(task.listName, dot: task.color, tint: Theme.textSecondary)
                 }
             }
 
-            Spacer(minLength: 4)
+            Spacer(minLength: 6)
 
             if !task.isCompleted && !selectionMode {
                 Button {
                     scheduleNextFree(dayOffset: 0)
                 } label: {
                     Image(systemName: "bolt.fill")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
-                        .frame(width: 24, height: 24)
+                        .frame(width: 28, height: 28)
                         .background(Theme.fill, in: Circle())
                 }
                 .buttonStyle(.plain)
                 .help("Schedule in next free slot")
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(
             isSelected ? Theme.accentColor.opacity(0.12) : Theme.surface,
-            in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+            in: RoundedRectangle(cornerRadius: 14, style: .continuous)
         )
         .contentShape(Rectangle())
         .draggable(task.id)
@@ -205,6 +191,23 @@ struct TaskRow: View {
                 service.deleteTask(id: task.id)
             } label: { Label("Delete", systemImage: "trash") }
         }
+    }
+
+    /// A neutral, capsule-backed metadata chip. Optional leading icon or color
+    /// dot; text always. Uniform styling keeps the reflowing meta line calm.
+    @ViewBuilder
+    private func metaChip(_ text: String, icon: String? = nil, dot: Color? = nil, tint: Color) -> some View {
+        HStack(spacing: 4) {
+            if let dot { Circle().fill(dot).frame(width: 6, height: 6) }
+            if let icon { Image(systemName: icon).font(.system(size: 10, weight: .medium)) }
+            Text(text)
+                .font(.system(size: 11, weight: .medium))
+                .lineLimit(1)
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
+        .background(Theme.fill, in: Capsule())
     }
 
     /// Tag the task's category (or return it to auto-detect).

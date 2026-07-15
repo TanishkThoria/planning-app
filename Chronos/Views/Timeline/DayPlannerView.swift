@@ -13,7 +13,7 @@ struct DayPlannerView: View {
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var profileStore: ProfileStore
 
-    @AppStorage(Prefs.hourHeight) private var hourHeight = 64.0
+    @AppStorage(Prefs.hourHeight) private var hourHeight = 72.0
     @AppStorage(Prefs.snapMinutes) private var snapMinutes = 15
     @AppStorage(Prefs.defaultBlockMinutes) private var defaultBlockMinutes = 30
     @AppStorage(Prefs.workStartMinutes) private var workStartMinutes = 9 * 60
@@ -260,11 +260,38 @@ struct DayPlannerView: View {
                     .onEnded { _ in pinchBaseHeight = nil }
             )
             .onAppear {
-                let anchor = model.selectedDate.isToday
-                    ? max(Date().minutesSinceMidnight / 60 - 1, 0)
-                    : max(workStartMinutes / 60 - 1, 0)
-                proxy.scrollTo("hour-\(min(max(anchor, 1), 23))", anchor: .top)
+                // Defer past the first layout pass — scrollTo in onAppear
+                // no-ops before the content has been measured, which is what
+                // left the timeline parked at midnight.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    recenterTimeline(proxy, animated: false)
+                }
             }
+            .onChange(of: model.selectedDate) { _, _ in
+                recenterTimeline(proxy, animated: true)
+            }
+        }
+    }
+
+    /// Bring the most relevant slice of the day into view: centered on the
+    /// current time for today, at the start of the workday otherwise. The full
+    /// 24 hours stays scrollable in both directions.
+    private func recenterTimeline(_ proxy: ScrollViewProxy, animated: Bool) {
+        let hour: Int
+        let anchor: UnitPoint
+        if model.selectedDate.isToday {
+            hour = min(max(Date().minutesSinceMidnight / 60, 1), 23)
+            anchor = .center
+        } else {
+            hour = min(max(workStartMinutes / 60, 1), 23)
+            anchor = .top
+        }
+        if animated {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                proxy.scrollTo("hour-\(hour)", anchor: anchor)
+            }
+        } else {
+            proxy.scrollTo("hour-\(hour)", anchor: anchor)
         }
     }
 

@@ -181,21 +181,21 @@ struct HeaderIconButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 5) {
+            HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                 if let label {
                     Text(label)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 13.5, weight: .semibold))
                 }
             }
             .foregroundStyle(prominent ? Theme.bg : Theme.textSecondary)
-            .padding(.horizontal, label == nil ? 8 : 11)
-            .frame(height: 26)
-            .frame(minWidth: 28)
+            .padding(.horizontal, label == nil ? 10 : 13)
+            .frame(height: 34)
+            .frame(minWidth: 34)
             .background(
                 prominent ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.fill),
-                in: RoundedRectangle(cornerRadius: 7, style: .continuous)
+                in: RoundedRectangle(cornerRadius: 9, style: .continuous)
             )
         }
         .buttonStyle(.plain)

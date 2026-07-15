@@ -43,6 +43,9 @@ struct TodaySnapshot: Codable {
     /// Today's momentum score (0–100), for the Lock Screen ring. Optional so
     /// snapshots written before this field decode cleanly.
     var momentum: Int? = nil
+    /// The user's chosen accent (0xRRGGBB) so widgets match the app. Optional
+    /// for backward-compatible decoding.
+    var accentHex: UInt32? = nil
 
     var habitsDone: Int { habits.filter(\.done).count }
 
@@ -54,7 +57,7 @@ struct TodaySnapshot: Codable {
                 title: "Deep Work",
                 startEpoch: Date().addingTimeInterval(1800).timeIntervalSince1970,
                 endEpoch: Date().addingTimeInterval(1800 + 5400).timeIntervalSince1970,
-                colorHex: 0x7C8CF8
+                colorHex: 0x0A84FF
             ),
             blockCount: 5,
             plannedMinutes: 360,

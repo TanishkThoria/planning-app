@@ -128,37 +128,37 @@ struct TimeBlockCard: View {
 
             HStack(alignment: .top, spacing: 0) {
                 UnevenRoundedRectangle(
-                    topLeadingRadius: 7, bottomLeadingRadius: 7,
+                    topLeadingRadius: 8, bottomLeadingRadius: 8,
                     bottomTrailingRadius: 0, topTrailingRadius: 0,
                     style: .continuous
                 )
                 .fill(tint)
-                .frame(width: 3)
+                .frame(width: 5)
 
-                VStack(alignment: .leading, spacing: 1) {
-                    HStack(alignment: .top, spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(alignment: .top, spacing: 5) {
                         if linkedTask != nil {
                             taskCheckbox
                         }
                         Text(block.title)
-                            .font(.system(size: compact ? 10.5 : 12, weight: .semibold))
+                            .font(.system(size: compact ? 11 : 12.5, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                             .strikethrough(linkedTask?.isCompleted == true, color: Theme.textSecondary)
                             .lineLimit(compact ? 2 : 3)
                         Spacer(minLength: 0)
                         if block.hasMeeting && displayHeight >= 26 {
                             Image(systemName: "video.fill")
-                                .font(.system(size: 8))
+                                .font(.system(size: 9))
                                 .foregroundStyle(Theme.accentColor)
                         }
                         if block.hasRecurrence && !compact && displayHeight >= 30 {
                             Image(systemName: "repeat")
-                                .font(.system(size: 8))
+                                .font(.system(size: 9))
                                 .foregroundStyle(Theme.textTertiary)
                         }
                         if !compact && displayHeight >= 30 {
                             Image(systemName: category.icon)
-                                .font(.system(size: 8, weight: .semibold))
+                                .font(.system(size: 9.5, weight: .semibold))
                                 .foregroundStyle(category.color)
                         }
                     }
@@ -166,18 +166,18 @@ struct TimeBlockCard: View {
                         Text(isInteracting
                              ? Fmt.timeRange(proposedStart, proposedEnd)
                              : Fmt.timeRange(block.start, block.end))
-                            .font(.system(size: 10, weight: .medium))
+                            .font(.system(size: 10.5, weight: .medium))
                             .foregroundStyle(isInteracting ? Theme.accentColor : Theme.textSecondary)
                     }
                     if displayHeight >= 66 && !compact, let location = block.location, !location.isEmpty {
                         Label(location, systemImage: "mappin")
-                            .font(.system(size: 9.5))
+                            .font(.system(size: 10))
                             .foregroundStyle(Theme.textTertiary)
                             .lineLimit(1)
                     }
                 }
-                .padding(.horizontal, 6)
-                .padding(.vertical, displayHeight < 26 ? 2 : 5)
+                .padding(.horizontal, 7)
+                .padding(.vertical, displayHeight < 26 ? 3 : 6)
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))

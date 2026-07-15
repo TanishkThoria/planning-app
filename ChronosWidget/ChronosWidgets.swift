@@ -51,12 +51,14 @@ extension Color {
 }
 
 private enum WTheme {
-    static let bg = Color(rgb: 0x0E0E12)
-    static let card = Color(rgb: 0x1A1B22)
-    static let primary = Color.white
-    static let secondary = Color.white.opacity(0.55)
-    static let tertiary = Color.white.opacity(0.32)
-    static let accent = Color(rgb: 0x7C8CF8)
+    // Mirrors the app's dark palette so the widgets read as the same system:
+    // true-black ground, elevated graphite cards, Apple system-blue accent.
+    static let bg = Color(rgb: 0x000000)
+    static let card = Color(rgb: 0x2C2C2E)
+    static let primary = Color(rgb: 0xF5F5F7)
+    static let secondary = Color.white.opacity(0.58)
+    static let tertiary = Color.white.opacity(0.34)
+    static let accent = Color(rgb: 0x0A84FF)
 }
 
 private func timeLabel(_ date: Date) -> String {
@@ -89,6 +91,9 @@ struct ChronosTodayView: View {
         guard snapshot.plannedMinutes > 0 else { return 0 }
         return min(1, Double(snapshot.elapsedPlannedMinutes) / Double(snapshot.plannedMinutes))
     }
+
+    /// The user's accent, carried in the snapshot (falls back to system blue).
+    private var accent: Color { snapshot.accentHex.map(Color.init(rgb:)) ?? WTheme.accent }
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
@@ -139,7 +144,7 @@ struct ChronosTodayView: View {
     private func stat(_ value: String, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             Text(value)
-                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(WTheme.primary)
             Text(label)
                 .font(.system(size: 9, weight: .medium))
@@ -154,10 +159,10 @@ struct ChronosTodayView: View {
                     .stroke(WTheme.card, lineWidth: 8)
                 Circle()
                     .trim(from: 0, to: progress)
-                    .stroke(WTheme.accent, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                    .stroke(accent, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                 Text("\(Int(progress * 100))%")
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(WTheme.primary)
             }
             .frame(width: 74, height: 74)
@@ -275,7 +280,7 @@ struct ChronosHabitsView: View {
                     .foregroundStyle(WTheme.tertiary)
                 Spacer()
                 Text("\(snapshot.habitsDone)/\(snapshot.habits.count)")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(WTheme.primary)
             }
             if snapshot.habits.isEmpty {

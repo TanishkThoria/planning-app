@@ -8,7 +8,7 @@ import SwiftUI
 struct PlannerScreen: View {
     @EnvironmentObject private var model: AppModel
 
-    @AppStorage(Prefs.hourHeight) private var hourHeight = 64.0
+    @AppStorage(Prefs.hourHeight) private var hourHeight = 72.0
 
     private var weekDays: [Date] {
         let start = model.selectedDate.startOfWeek
