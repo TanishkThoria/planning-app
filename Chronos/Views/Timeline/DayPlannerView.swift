@@ -246,6 +246,8 @@ struct DayPlannerView: View {
                     dayColumn
                         .padding(.trailing, 12)
                 }
+                // Real per-hour scroll anchors, matched to the grid height.
+                .overlay(alignment: .topLeading) { HourScrollAnchors(hourHeight: hourHeight) }
                 .padding(.vertical, 8)
             }
             .scrollIndicators(.hidden)

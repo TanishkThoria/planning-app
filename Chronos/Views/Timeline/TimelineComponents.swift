@@ -14,7 +14,6 @@ struct TimeGutter: View {
                     .foregroundStyle(Theme.textTertiary)
                     .padding(.trailing, 8)
                     .offset(y: CGFloat(hour) * hourHeight - 6)
-                    .id("hour-\(hour)")
             }
         }
         .frame(width: Self.width, height: 24 * hourHeight, alignment: .topTrailing)
@@ -22,6 +21,26 @@ struct TimeGutter: View {
 
     private func label(for hour: Int) -> String {
         Fmt.hourLabel.string(from: Date().startOfDay.at(minutes: hour * 60))
+    }
+}
+
+/// Invisible, *genuinely laid-out* anchors — one per hour — so ScrollViewReader
+/// can scroll to a time of day. The visible hour labels position themselves
+/// with `.offset`, a render transform: their real layout frame stays pinned at
+/// the top, so `scrollTo("hour-N")` on them always lands at midnight. A plain
+/// VStack of fixed-height segments gives each hour a true Y position to hit.
+struct HourScrollAnchors: View {
+    let hourHeight: CGFloat
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<24, id: \.self) { hour in
+                Color.clear
+                    .frame(height: hourHeight)
+                    .id("hour-\(hour)")
+            }
+        }
+        .allowsHitTesting(false)
     }
 }
 

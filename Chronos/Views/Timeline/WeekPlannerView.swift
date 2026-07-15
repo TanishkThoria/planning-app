@@ -63,19 +63,13 @@ struct WeekPlannerView: View {
                             TimeGutter(hourHeight: hourHeight)
                             weekBody(columnWidth: columnWidth, columnsWidth: columnsWidth, bodyWidth: bodyWidth)
                         }
+                        // Real per-hour scroll anchors (the visible labels use
+                        // .offset and can't be scrolled to — see HourScrollAnchors).
+                        .overlay(alignment: .topLeading) { HourScrollAnchors(hourHeight: hourHeight) }
                         .padding(.top, 8)
                     }
                     .scrollIndicators(.hidden)
-                    .onAppear {
-                        // Retry across a few frames — scrollTo no-ops before the
-                        // content is laid out (which parked the week at midnight).
-                        let start = min(max(workStartMinutes / 60, 1), 23)
-                        for delay in [0.0, 0.1, 0.25, 0.5, 0.9] {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                                proxy.scrollTo("hour-\(start)", anchor: .top)
-                            }
-                        }
-                    }
+                    .onAppear { centerOnNow(proxy) }
                 }
             }
         }
@@ -103,6 +97,17 @@ struct WeekPlannerView: View {
             service.deleteBlock(id: block.id, span: span)
         }
         pendingDelete = nil
+    }
+
+    /// Open centered on the current time. Retries across a few frames because
+    /// scrollTo no-ops until the content has been laid out.
+    private func centerOnNow(_ proxy: ScrollViewProxy) {
+        let hour = min(max(Date().minutesSinceMidnight / 60, 1), 23)
+        for delay in [0.0, 0.1, 0.25, 0.5, 0.9] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                proxy.scrollTo("hour-\(hour)", anchor: .center)
+            }
+        }
     }
 
     private var header: some View {
