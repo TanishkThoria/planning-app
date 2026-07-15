@@ -200,4 +200,7 @@ enum Prefs {
     static let socialStatusText = "pref.socialStatusText"
     /// Whether to share live presence with friends at all (privacy switch).
     static let sharePresence = "pref.sharePresence"
+    /// Optional phone or Apple ID a user shares so friends can Message/FaceTime
+    /// them to set up a study session. Never required.
+    static let socialContactHandle = "pref.socialContactHandle"
 }

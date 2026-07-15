@@ -5,6 +5,44 @@ import UIKit
 import AppKit
 #endif
 
+/// Message / Call / FaceTime a friend to set up a real study session. Chronos
+/// only opens the relevant Apple app with the handle the friend chose to share
+/// — it never places the call or sends anything itself.
+enum ContactLink {
+    case message, call, facetime, facetimeAudio
+    var icon: String {
+        switch self {
+        case .message: return "message.fill"
+        case .call: return "phone.fill"
+        case .facetime: return "video.fill"
+        case .facetimeAudio: return "phone.badge.waveform.fill"
+        }
+    }
+    var label: String {
+        switch self {
+        case .message: return "Message"
+        case .call: return "Call"
+        case .facetime: return "FaceTime"
+        case .facetimeAudio: return "Audio"
+        }
+    }
+    func url(for handle: String) -> URL? {
+        let h = handle.trimmingCharacters(in: .whitespaces)
+        let encoded = h.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? h
+        switch self {
+        case .message: return URL(string: "sms:\(encoded)")
+        case .call: return URL(string: "tel:\(encoded)")
+        case .facetime: return URL(string: "facetime:\(encoded)")
+        case .facetimeAudio: return URL(string: "facetime-audio:\(encoded)")
+        }
+    }
+    /// tel: only works for phone numbers, not Apple ID emails.
+    func applies(to handle: String) -> Bool {
+        let isEmail = handle.contains("@")
+        return self == .call ? !isEmail : true
+    }
+}
+
 /// The social hub: your live status, the friends you plan with, an activity
 /// feed, and the cheers they send you. Backed by your own iCloud (public
 /// CloudKit), so it stays server-free. Locked, but never a dead end, on the
@@ -303,6 +341,7 @@ private struct StatusEditor: View {
     @AppStorage(Prefs.socialStatusEmoji) private var emoji = ""
     @AppStorage(Prefs.socialStatusText) private var text = ""
     @AppStorage(Prefs.sharePresence) private var sharePresence = true
+    @AppStorage(Prefs.socialContactHandle) private var contactHandle = ""
 
     private let presets = ["🎯", "🔥", "📚", "💻", "☕️", "🧠", "😴", "🏃", "🎧", "✅"]
 
@@ -339,6 +378,27 @@ private struct StatusEditor: View {
                             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
                                 .strokeBorder(Theme.hairline, lineWidth: 1))
                     }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("REACHABLE AT (OPTIONAL)").font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                            .foregroundStyle(Theme.textTertiary)
+                        TextField("Phone or Apple ID email", text: $contactHandle)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 15))
+                            .foregroundStyle(Theme.textPrimary)
+                            #if os(iOS)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .keyboardType(.emailAddress)
+                            #endif
+                            .padding(14)
+                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .strokeBorder(Theme.hairline, lineWidth: 1))
+                        Text("Shared with friends so they can Message or FaceTime you to set up a study session. Leave blank to keep it private.")
+                            .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
                     Toggle(isOn: $sharePresence) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Share my live status").font(.system(size: 14, weight: .semibold))
@@ -372,10 +432,12 @@ private struct StatusEditor: View {
 private struct FriendProfileSheet: View {
     let status: FriendStatus
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @ObservedObject private var social = SocialService.shared
     @State private var cheered = false
 
     private let cheerEmojis = ["👏", "🔥", "💪", "🎯", "🙌"]
+    private var handle: String { status.presence.contactHandle.trimmingCharacters(in: .whitespaces) }
 
     var body: some View {
         NavigationStack {
@@ -392,6 +454,8 @@ private struct FriendProfileSheet: View {
                             .multilineTextAlignment(.center)
                     }
                     .padding(.top, 6)
+
+                    if !handle.isEmpty { contactRow }
 
                     HStack(spacing: 10) {
                         stat("flame.fill", "\(status.presence.streakDays)d", "Streak", Theme.warning)
@@ -466,5 +530,28 @@ private struct FriendProfileSheet: View {
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous)
             .strokeBorder(Theme.hairline, lineWidth: 1))
+    }
+
+    /// Message / Call / FaceTime — opens Apple's apps so you two can plan a real
+    /// session. Chronos never sends or dials anything itself.
+    private var contactRow: some View {
+        HStack(spacing: 10) {
+            ForEach([ContactLink.message, .call, .facetime], id: \.icon) { link in
+                if link.applies(to: handle) {
+                    Button {
+                        if let url = link.url(for: handle) { openURL(url) }
+                    } label: {
+                        VStack(spacing: 5) {
+                            Image(systemName: link.icon).font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(Color.accentColor)
+                            Text(link.label).font(.system(size: 10.5, weight: .medium)).foregroundStyle(Theme.textSecondary)
+                        }
+                        .frame(maxWidth: .infinity).padding(.vertical, 12)
+                        .background(Color.accentColor.opacity(0.10), in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
     }
 }

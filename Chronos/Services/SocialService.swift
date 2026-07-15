@@ -63,6 +63,8 @@ struct FriendPresence: Codable, Hashable {
     var displayName: String
     var statusEmoji: String = ""
     var statusText: String = ""
+    /// Optional contact handle (phone or Apple ID) the friend chose to share.
+    var contactHandle: String = ""
     var currentBlockTitle: String?
     var busy: BusyLevel = .free
     var momentum: Int = 0
@@ -322,6 +324,7 @@ final class SocialService: ObservableObject {
             displayName: myDisplayName,
             statusEmoji: UserDefaults.standard.string(forKey: Prefs.socialStatusEmoji) ?? "",
             statusText: UserDefaults.standard.string(forKey: Prefs.socialStatusText) ?? "",
+            contactHandle: UserDefaults.standard.string(forKey: Prefs.socialContactHandle) ?? "",
             currentBlockTitle: nil,
             busy: .free,
             momentum: latestStats.momentumToday,
@@ -428,6 +431,7 @@ final class SocialService: ObservableObject {
             displayName: myDisplayName,
             statusEmoji: UserDefaults.standard.string(forKey: Prefs.socialStatusEmoji) ?? "",
             statusText: UserDefaults.standard.string(forKey: Prefs.socialStatusText) ?? "",
+            contactHandle: UserDefaults.standard.string(forKey: Prefs.socialContactHandle) ?? "",
             currentBlockTitle: blockTitle,
             busy: busy,
             momentum: stats.momentumToday,
