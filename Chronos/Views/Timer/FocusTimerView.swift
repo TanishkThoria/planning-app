@@ -85,7 +85,7 @@ struct FocusTimerView: View {
     private var grabber: some View {
         HStack {
             Text(timer.isActive ? "Focus Session" : "Start Focusing")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
             Button {
@@ -138,7 +138,7 @@ struct FocusTimerView: View {
                             .animation(.snappy, value: wilted)
                     }
                     Text(timeText)
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .font(.system(size: 40, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                         .monospacedDigit()
                     if timer.completedPomodoros > 0 {
@@ -322,7 +322,7 @@ struct FocusTimerView: View {
                     .font(.system(size: 10.5, weight: .semibold))
                     .lineLimit(1).minimumScaleFactor(0.7)
                 Text("\(focus)/\(rest)")
-                    .font(.system(size: 9.5, weight: .medium, design: .rounded))
+                    .font(.system(size: 9.5, weight: .medium))
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
@@ -343,7 +343,7 @@ struct FocusTimerView: View {
             Spacer()
             Stepper(value: value, in: range, step: step) {
                 Text("\(value.wrappedValue) min")
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
             }
             .fixedSize()
@@ -391,7 +391,7 @@ struct FocusTimerPill: View {
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(timer.phase == .focus ? Color.accentColor : Theme.success)
                     Text(timeText)
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .font(.system(size: 13, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                         .monospacedDigit()
                     Text(timer.taskTitle)

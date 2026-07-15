@@ -234,7 +234,7 @@ struct TodayView: View {
                 } else {
                     ForEach(Array(intentions.enumerated()), id: \.offset) { idx, text in
                         HStack(spacing: 8) {
-                            Text("\(idx + 1)").font(.system(size: 11, weight: .bold, design: .rounded))
+                            Text("\(idx + 1)").font(.system(size: 11, weight: .bold))
                                 .foregroundStyle(Color.accentColor).frame(width: 14)
                             Text(text).font(.system(size: 12.5)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                             Spacer(minLength: 0)
@@ -257,7 +257,7 @@ struct TodayView: View {
                 Spacer()
                 let done = dueHabits.filter { life.doneToday($0) }.count
                 Text("\(done)/\(dueHabits.count)")
-                    .font(.system(size: 11, weight: .semibold, design: .rounded)).foregroundStyle(Theme.textSecondary)
+                    .font(.system(size: 11, weight: .semibold)).foregroundStyle(Theme.textSecondary)
             }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
@@ -354,7 +354,7 @@ struct TodayView: View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Today")
-                    .font(.system(size: 25, weight: .bold, design: .rounded))
+                    .font(.system(size: 25, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text(remainingCount == 0
                      ? "All tasks handled · \(Fmt.monthDay.string(from: today))"
@@ -439,7 +439,7 @@ struct TodayView: View {
                         .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Text("\(Fmt.duration(minutes: load.committedMinutes)) / \(Fmt.duration(minutes: load.freeMinutes)) free")
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 GeometryReader { geo in
@@ -478,7 +478,7 @@ struct TodayView: View {
                 .foregroundStyle(color)
             Spacer()
             Text("\(count)")
-                .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                .font(.system(size: 10.5, weight: .medium))
                 .foregroundStyle(Theme.textTertiary)
         }
         .padding(.top, 8)
@@ -493,7 +493,7 @@ struct TodayView: View {
             HStack(spacing: 10) {
                 VStack(alignment: .trailing, spacing: 1) {
                     Text(Fmt.time.string(from: block.start))
-                        .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                        .font(.system(size: 11.5, weight: .semibold))
                         .foregroundStyle(block.isNow ? Color.accentColor : Theme.textSecondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -576,17 +576,17 @@ private struct TodayTaskRow: View {
                 HStack(spacing: 6) {
                     if task.dueHasTime, let due = task.dueDate {
                         Text(Fmt.time.string(from: due))
-                            .font(.system(size: 10, design: .rounded))
+                            .font(.system(size: 10))
                             .foregroundStyle(task.isOverdue ? Theme.danger : Theme.textTertiary)
                     }
                     if task.energy != .none {
                         Label(task.energy.label, systemImage: task.energy.icon)
-                            .font(.system(size: 10, design: .rounded))
+                            .font(.system(size: 10))
                             .foregroundStyle(task.energy.color)
                     }
                     if let blocks = linkedFirst {
                         Label(Fmt.time.string(from: blocks.start), systemImage: "rectangle.stack")
-                            .font(.system(size: 10, design: .rounded))
+                            .font(.system(size: 10))
                             .foregroundStyle(Color.accentColor)
                     }
                 }

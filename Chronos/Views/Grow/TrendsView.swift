@@ -43,7 +43,7 @@ struct TrendsView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Trends")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Your last few weeks, at a glance")
                     .font(.system(size: 12, weight: .medium))
@@ -81,7 +81,7 @@ struct TrendsView: View {
                 if let avg = average(moods) {
                     Text(String(format: "mood %.1f · energy %@", avg,
                                 average(energies).map { String(format: "%.1f", $0) } ?? "—"))
-                        .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                        .font(.system(size: 10.5, weight: .medium))
                         .foregroundStyle(Theme.textTertiary)
                 }
             }
@@ -161,7 +161,7 @@ struct TrendsView: View {
                 }
                 Spacer()
                 Text("\(life.streak(habit))d streak · \(done)/\(due)")
-                    .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                    .font(.system(size: 10.5, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
             }
             HStack(spacing: 3) {
@@ -252,7 +252,7 @@ struct TrendsView: View {
                 }
                 Spacer()
                 Text(caption)
-                    .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                    .font(.system(size: 10.5, weight: .medium))
                     .foregroundStyle(fraction >= 1 ? Theme.success : Theme.textTertiary)
                     .lineLimit(1).minimumScaleFactor(0.8)
             }
@@ -306,12 +306,12 @@ struct TrendsView: View {
                         .foregroundStyle(Theme.textPrimary)
                     if let mood = entry.mood {
                         Label("\(mood)", systemImage: "face.smiling")
-                            .font(.system(size: 10, design: .rounded))
+                            .font(.system(size: 10))
                             .foregroundStyle(Theme.textTertiary)
                     }
                     if let energy = entry.energy {
                         Label("\(energy)", systemImage: "bolt")
-                            .font(.system(size: 10, design: .rounded))
+                            .font(.system(size: 10))
                             .foregroundStyle(Theme.textTertiary)
                     }
                     Spacer()

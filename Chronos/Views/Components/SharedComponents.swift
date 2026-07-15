@@ -17,7 +17,7 @@ struct PermissionGateView: View {
 
             VStack(spacing: 8) {
                 Text("Chronos")
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Your time blocks live in Apple Calendar and your tasks in Apple Reminders — nothing is duplicated, everything stays in sync.")
                     .font(.system(size: 13))
@@ -106,7 +106,7 @@ struct SectionHeader: View {
             Spacer()
             if let trailing {
                 Text(trailing)
-                    .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                    .font(.system(size: 10.5, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
             }
         }

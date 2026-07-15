@@ -105,7 +105,7 @@ struct TimeReportView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Time Report")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Where your hours actually went")
                     .font(.system(size: 11.5, weight: .medium))
@@ -137,7 +137,7 @@ struct TimeReportView: View {
     private func bigStat(_ value: String, _ label: String, delta: Int) -> some View {
         VStack(spacing: 3) {
             Text(value)
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1).minimumScaleFactor(0.6)
             Text(label.uppercased())
@@ -146,7 +146,7 @@ struct TimeReportView: View {
             if delta != 0 {
                 Label("\(delta > 0 ? "+" : "")\(Fmt.duration(minutes: abs(delta)))",
                       systemImage: delta > 0 ? "arrow.up.right" : "arrow.down.right")
-                    .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                    .font(.system(size: 9.5, weight: .semibold))
                     .foregroundStyle(delta > 0 ? Theme.success : Theme.textTertiary)
             } else {
                 Text("—").font(.system(size: 9.5)).foregroundStyle(Theme.textTertiary)
@@ -186,7 +186,7 @@ struct TimeReportView: View {
                             }
                             Spacer()
                             Text(Fmt.duration(minutes: entry.minutes))
-                                .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                                .font(.system(size: 11.5, weight: .semibold))
                                 .foregroundStyle(Theme.textSecondary)
                         }
                         GeometryReader { geo in
@@ -221,7 +221,7 @@ struct TimeReportView: View {
                             }
                             Spacer()
                             Text(Fmt.duration(minutes: entry.minutes))
-                                .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                                .font(.system(size: 11.5, weight: .semibold))
                                 .foregroundStyle(Theme.textSecondary)
                         }
                         GeometryReader { geo in
@@ -268,7 +268,7 @@ struct TimeReportView: View {
         HStack(spacing: 5) {
             Circle().fill(color).frame(width: 7, height: 7)
             Text("\(label) · \(Fmt.duration(minutes: minutes))")
-                .font(.system(size: 10.5, design: .rounded))
+                .font(.system(size: 10.5))
                 .foregroundStyle(Theme.textSecondary)
         }
     }

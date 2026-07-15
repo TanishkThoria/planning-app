@@ -145,7 +145,7 @@ struct DayPulseChip: View {
             HStack(spacing: 5) {
                 Circle().fill(result.tint).frame(width: 7, height: 7)
                 Text("\(result.score)")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(Theme.textSecondary)
             }
             .padding(.horizontal, 8)
@@ -165,12 +165,12 @@ struct DayPulseChip: View {
                             .rotationEffect(.degrees(-90))
                             .frame(width: 52, height: 52)
                         Text("\(result.score)")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .font(.system(size: 15, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
                     }
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Day pulse")
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .font(.system(size: 17, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
                         Text("The shape of this day, honestly")
                             .font(.system(size: 11.5))

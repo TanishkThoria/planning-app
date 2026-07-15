@@ -55,7 +55,7 @@ struct LMSSetupView: View {
     private var topBar: some View {
         HStack {
             Text("Connect your school")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
             Button { dismiss() } label: {
@@ -74,7 +74,7 @@ struct LMSSetupView: View {
         VStack(spacing: 18) {
             hero("graduationcap.fill")
             Text("Turn assignments into reminders, automatically")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .font(.system(size: 22, weight: .bold))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Theme.textPrimary)
             Text("Chronos can read your Canvas or Schoology calendar feed and turn every assignment into a reminder — with its due date, description, and a link back. Lectures and office hours stay on your calendar as events.")
@@ -122,7 +122,7 @@ struct LMSSetupView: View {
                 ForEach(Array(provider.steps.enumerated()), id: \.offset) { idx, text in
                     HStack(alignment: .top, spacing: 10) {
                         Text("\(idx + 1)")
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(Color.accentColor)
                             .frame(width: 18, height: 18)
                             .background(Color.accentColor.opacity(0.15), in: Circle())
@@ -247,7 +247,7 @@ struct LMSSetupView: View {
         VStack(spacing: 16) {
             hero("checkmark.circle.fill")
             Text("You're connected")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text(lms.lastSummary ?? "Your assignments are syncing.")
                 .font(.system(size: 14)).foregroundStyle(Theme.textSecondary)

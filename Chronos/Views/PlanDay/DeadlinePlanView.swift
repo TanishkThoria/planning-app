@@ -116,7 +116,7 @@ struct DeadlinePlanView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Plan Deadlines")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Work backwards from every due date")
                     .font(.system(size: 11.5, weight: .medium))
@@ -162,11 +162,11 @@ struct DeadlinePlanView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(Fmt.relativeDay(day))
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(day.isToday ? Color.accentColor : Theme.textPrimary)
                 Spacer()
                 Text(Fmt.duration(minutes: proposals.reduce(0) { $0 + $1.minutes }))
-                    .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                    .font(.system(size: 10.5, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
             }
             .padding(.leading, 2)
@@ -174,7 +174,7 @@ struct DeadlinePlanView: View {
             ForEach(proposals) { proposal in
                 HStack(spacing: 10) {
                     Text(Fmt.time.string(from: proposal.start))
-                        .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                        .font(.system(size: 11.5, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
                         .lineLimit(1).minimumScaleFactor(0.8)
                         .frame(width: 60, alignment: .leading)
@@ -184,13 +184,13 @@ struct DeadlinePlanView: View {
                             .lineLimit(1)
                         if let due = proposal.task.dueDate {
                             Text("due \(Fmt.relativeDay(due))")
-                                .font(.system(size: 9.5, design: .rounded))
+                                .font(.system(size: 9.5))
                                 .foregroundStyle(Theme.textTertiary)
                         }
                     }
                     Spacer()
                     Text(Fmt.duration(minutes: proposal.minutes))
-                        .font(.system(size: 10.5, design: .rounded))
+                        .font(.system(size: 10.5))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 .padding(.horizontal, 12).padding(.vertical, 8)

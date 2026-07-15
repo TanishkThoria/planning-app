@@ -10,7 +10,7 @@ struct TimeGutter: View {
             Color.clear
             ForEach(1..<24, id: \.self) { hour in
                 Text(label(for: hour))
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                    .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
                     .padding(.trailing, 8)
                     .offset(y: CGFloat(hour) * hourHeight - 6)
@@ -56,7 +56,7 @@ struct UpNextStrip: View {
                     .fill(Color.accentColor)
                     .frame(width: 5, height: 5)
                 Text(text)
-                    .font(.system(size: 11.5, weight: .medium, design: .rounded))
+                    .font(.system(size: 11.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
                 Spacer()
             }

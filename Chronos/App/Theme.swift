@@ -60,14 +60,16 @@ enum Theme {
         var id: String { name }
     }
 
+    /// Apple's system tint colors — single values that read well on both light
+    /// and dark, so `.tint` resolves `Color.accentColor` reliably everywhere.
     static let accentChoices: [AccentChoice] = [
-        .init(name: "Blue", color: dynamic(light: Color(hex: 0x007AFF), dark: Color(hex: 0x0A84FF))),
-        .init(name: "Indigo", color: dynamic(light: Color(hex: 0x5856D6), dark: Color(hex: 0x7C8CF8))),
-        .init(name: "Teal", color: dynamic(light: Color(hex: 0x0FB5AE), dark: Color(hex: 0x4FD1C5))),
-        .init(name: "Amber", color: dynamic(light: Color(hex: 0xE08600), dark: Color(hex: 0xF2B95C))),
-        .init(name: "Rose", color: dynamic(light: Color(hex: 0xE0568B), dark: Color(hex: 0xF0719B))),
-        .init(name: "Green", color: dynamic(light: Color(hex: 0x1FA855), dark: Color(hex: 0x5BD899))),
-        .init(name: "Graphite", color: dynamic(light: Color(hex: 0x8A8A8E), dark: Color(hex: 0xAEB6C2))),
+        .init(name: "Blue", color: Color(hex: 0x0A84FF)),
+        .init(name: "Indigo", color: Color(hex: 0x5E5CE6)),
+        .init(name: "Purple", color: Color(hex: 0xBF5AF2)),
+        .init(name: "Teal", color: Color(hex: 0x40C8E0)),
+        .init(name: "Green", color: Color(hex: 0x30D158)),
+        .init(name: "Orange", color: Color(hex: 0xFF9F0A)),
+        .init(name: "Pink", color: Color(hex: 0xFF375F)),
     ]
 
     static func accent(named name: String) -> Color {
@@ -77,7 +79,7 @@ enum Theme {
     // MARK: Type
 
     static func mono(_ size: CGFloat, weight: Font.Weight = .medium) -> Font {
-        .system(size: size, weight: weight, design: .rounded)
+        .system(size: size, weight: weight)
     }
 
     // MARK: Metrics — a slightly more generous, iOS-native spacing scale
@@ -138,8 +140,11 @@ extension View {
 /// (System / Light / Dark). Applied wherever a color scheme used to be forced.
 struct ChronosAppearance: ViewModifier {
     @AppStorage(Prefs.appearance) private var appearance = "system"
+    @AppStorage(Prefs.accentName) private var accentName = "Blue"
     func body(content: Content) -> some View {
-        content.preferredColorScheme(scheme)
+        content
+            .tint(Theme.accent(named: accentName))
+            .preferredColorScheme(scheme)
     }
     private var scheme: ColorScheme? {
         switch appearance {

@@ -170,7 +170,7 @@ struct PlanMyDayView: View {
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Text(Fmt.timeRange(window.start, window.end))
-                    .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                    .font(.system(size: 11.5, weight: .semibold))
                     .foregroundStyle(isIncluded ? Color.accentColor : Theme.textTertiary)
             }
             .padding(.horizontal, 12)
@@ -200,7 +200,7 @@ struct PlanMyDayView: View {
                         .lineLimit(1)
                     HStack(spacing: 6) {
                         Text("~\(Fmt.duration(minutes: task.estimateMinutes ?? defaultBlockMinutes))")
-                            .font(.system(size: 10.5, design: .rounded))
+                            .font(.system(size: 10.5))
                             .foregroundStyle(Theme.textTertiary)
                         if task.isOverdue {
                             Text("overdue")
@@ -220,7 +220,7 @@ struct PlanMyDayView: View {
                 if isIncluded {
                     if let proposal {
                         Text(Fmt.timeRange(proposal.start, proposal.end))
-                            .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                            .font(.system(size: 11.5, weight: .semibold))
                             .foregroundStyle(Color.accentColor)
                     } else {
                         Text("no room")

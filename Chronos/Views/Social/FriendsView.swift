@@ -101,7 +101,7 @@ struct FriendsView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     TextField("Your name", text: $displayName)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                     Button { editingStatus = true } label: {
                         HStack(spacing: 5) {
@@ -234,7 +234,7 @@ struct FriendsView: View {
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(Theme.warning)
                         Text(Fmt.duration(minutes: status.presence.weeklyFocus))
-                            .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                            .font(.system(size: 10.5, weight: .medium))
                             .foregroundStyle(Theme.textTertiary)
                     }
                 }
@@ -446,7 +446,7 @@ private struct FriendProfileSheet: View {
                     VStack(spacing: 10) {
                         Avatar(name: status.presence.displayName, emoji: status.presence.statusEmoji, size: 72)
                         Text(status.presence.displayName)
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .font(.system(size: 20, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
                         Text(headline)
                             .font(.system(size: 12.5))
@@ -522,7 +522,7 @@ private struct FriendProfileSheet: View {
     private func stat(_ icon: String, _ value: String, _ label: String, _ tint: Color) -> some View {
         VStack(spacing: 5) {
             Image(systemName: icon).font(.system(size: 15, weight: .semibold)).foregroundStyle(tint)
-            Text(value).font(.system(size: 17, weight: .bold, design: .rounded)).foregroundStyle(Theme.textPrimary)
+            Text(value).font(.system(size: 17, weight: .bold)).foregroundStyle(Theme.textPrimary)
             Text(label).font(.system(size: 10.5)).foregroundStyle(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity)

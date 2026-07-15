@@ -128,11 +128,11 @@ struct ReflowView: View {
                     .font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                 HStack(spacing: 6) {
                     Text(Fmt.timeRange(move.block.start, move.block.end))
-                        .font(.system(size: 10.5, design: .rounded)).foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary)
                         .strikethrough(color: Theme.textTertiary)
                     Image(systemName: "arrow.right").font(.system(size: 8)).foregroundStyle(Theme.textTertiary)
                     Text(Fmt.timeRange(move.newStart, move.newEnd))
-                        .font(.system(size: 10.5, weight: .semibold, design: .rounded)).foregroundStyle(Color.accentColor)
+                        .font(.system(size: 10.5, weight: .semibold)).foregroundStyle(Color.accentColor)
                 }
             }
             Spacer()

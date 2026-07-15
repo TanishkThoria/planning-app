@@ -74,7 +74,7 @@ struct WeeklyReviewView: View {
         VStack(alignment: .leading, spacing: 6) {
             Image(systemName: "calendar.badge.checkmark").font(.system(size: 28)).foregroundStyle(Color.accentColor)
             Text("Look back before you leap")
-                .font(.system(size: 22, weight: .bold, design: .rounded)).foregroundStyle(Theme.textPrimary)
+                .font(.system(size: 22, weight: .bold)).foregroundStyle(Theme.textPrimary)
             if let first = days.first, let last = days.last {
                 Text("\(Fmt.monthDay.string(from: first)) – \(Fmt.monthDay.string(from: last))")
                     .font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.textSecondary)
@@ -93,7 +93,7 @@ struct WeeklyReviewView: View {
 
     private func tile(_ value: String, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(value).font(.system(size: 19, weight: .bold, design: .rounded)).foregroundStyle(Theme.textPrimary)
+            Text(value).font(.system(size: 19, weight: .bold)).foregroundStyle(Theme.textPrimary)
                 .lineLimit(1).minimumScaleFactor(0.6)
             Text(label.uppercased()).font(.system(size: 9, weight: .semibold)).tracking(1).foregroundStyle(Theme.textTertiary)
         }
@@ -119,7 +119,7 @@ struct WeeklyReviewView: View {
                             }
                             Spacer()
                             Text("\(Int((p * 100).rounded()))%")
-                                .font(.system(size: 11, weight: .semibold, design: .rounded)).foregroundStyle(goal.color)
+                                .font(.system(size: 11, weight: .semibold)).foregroundStyle(goal.color)
                         }
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
@@ -173,7 +173,7 @@ struct WeeklyReviewView: View {
                     Text("\(done) of \(due) completed").font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
                     Spacer()
                     Text("\(Int((rate * 100).rounded()))%")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .font(.system(size: 13, weight: .bold))
                         .foregroundStyle(rate >= 0.7 ? Theme.success : Theme.warning)
                 }
             }

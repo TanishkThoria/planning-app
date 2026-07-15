@@ -149,7 +149,7 @@ struct CalibrationView: View {
                 .font(.system(size: 34))
                 .foregroundStyle(Color.accentColor)
             Text("Make Chronos yours")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.system(size: 20, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text("A two-minute interview about how your days actually work — when you sleep, when you eat, what's routine, and how flexible any of it is. Chronos uses this to plan around your life instead of over it.\n\nEverything stays on this device, and you can recalibrate anytime from Settings.")
                 .font(.system(size: 13))
@@ -273,7 +273,7 @@ struct CalibrationView: View {
                 .font(.system(size: 34))
                 .foregroundStyle(Theme.success)
             Text("Chronos knows your day now")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.system(size: 20, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
 
             VStack(alignment: .leading, spacing: 8) {
@@ -337,7 +337,7 @@ struct CalibrationView: View {
     private func stepIntro(_ title: String, _ subtitle: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text(subtitle)
                 .font(.system(size: 12.5))

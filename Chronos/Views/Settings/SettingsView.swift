@@ -56,7 +56,7 @@ struct SettingsView: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Settings")
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .font(.system(size: 22, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
                         Text("Tuned for how you plan")
                             .font(.system(size: 12, weight: .medium))
@@ -444,7 +444,7 @@ struct SettingsView: View {
                     settingsSection("About") {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Chronos")
-                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                .font(.system(size: 14, weight: .semibold))
                                 .foregroundStyle(Theme.textPrimary)
                             Text("Version \(Self.appVersion)")
                                 .font(.system(size: 12))

@@ -83,14 +83,14 @@ struct LeaderboardView: View {
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
             Text(board.display(row.value))
-                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
             ZStack(alignment: .top) {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(medalColor(medal).opacity(0.18))
                     .frame(height: height)
                 Text(medal)
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(medalColor(medal))
                     .padding(.top, 10)
             }
@@ -113,7 +113,7 @@ struct LeaderboardView: View {
             ForEach(rows) { row in
                 HStack(spacing: 12) {
                     Text("\(row.rank)")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .font(.system(size: 13, weight: .bold))
                         .foregroundStyle(Theme.textTertiary)
                         .frame(width: 22)
                     Avatar(name: row.presence.displayName, emoji: row.presence.statusEmoji, size: 34, ring: row.isYou)
@@ -127,7 +127,7 @@ struct LeaderboardView: View {
                     }
                     Spacer()
                     Text(board.display(row.value))
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(row.isYou ? Color.accentColor : Theme.textPrimary)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 11)
@@ -145,7 +145,7 @@ struct LeaderboardView: View {
                 .font(.system(size: 30))
                 .foregroundStyle(Color.accentColor)
             Text(board.display(board.value(social.myPresence)))
-                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .font(.system(size: 30, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text("Add friends to see how you stack up. Your \(board.title.lowercased()) is ready to race.")
                 .font(.system(size: 12.5))
@@ -218,7 +218,7 @@ struct Avatar: View {
                 .frame(width: size, height: size)
                 .overlay(
                     Text(initials)
-                        .font(.system(size: size * 0.38, weight: .bold, design: .rounded))
+                        .font(.system(size: size * 0.38, weight: .bold))
                         .foregroundStyle(tint)
                 )
                 .overlay(

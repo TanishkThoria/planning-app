@@ -130,7 +130,7 @@ struct DayReviewView: View {
     private func summaryMetric(_ value: String, _ label: String) -> some View {
         VStack(spacing: 3) {
             Text(value)
-                .font(.system(size: 19, weight: .bold, design: .rounded))
+                .font(.system(size: 19, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text(label.uppercased())
                 .font(.system(size: 9, weight: .semibold))
@@ -150,7 +150,7 @@ struct DayReviewView: View {
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(2)
                     Text(Fmt.timeRange(item.block.start, item.block.end))
-                        .font(.system(size: 11, design: .rounded))
+                        .font(.system(size: 11))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 Spacer()

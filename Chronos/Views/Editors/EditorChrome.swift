@@ -82,7 +82,7 @@ struct TitleField: View {
     var body: some View {
         TextField(placeholder, text: $text, axis: .vertical)
             .textFieldStyle(.plain)
-            .font(.system(size: 18, weight: .semibold, design: .rounded))
+            .font(.system(size: 18, weight: .semibold))
             .foregroundStyle(Theme.textPrimary)
             .lineLimit(1...3)
     }
@@ -102,7 +102,7 @@ struct DurationChips: View {
                     onPick(minutes)
                 } label: {
                     Text(Fmt.duration(minutes: minutes))
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(current == minutes ? Theme.bg : Theme.textSecondary)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 4)

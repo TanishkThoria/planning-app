@@ -13,7 +13,7 @@ struct MiniMonthView: View {
         VStack(spacing: 8) {
             HStack {
                 Text(Fmt.monthTitle.string(from: visibleMonth))
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Button { shiftMonth(-1) } label: {
@@ -63,7 +63,7 @@ struct MiniMonthView: View {
             onSelect()
         } label: {
             Text(Fmt.dayNumber.string(from: day))
-                .font(.system(size: 11, weight: isSelected || isToday ? .bold : .regular, design: .rounded))
+                .font(.system(size: 11, weight: isSelected || isToday ? .bold : .regular))
                 .frame(maxWidth: .infinity)
                 .frame(height: 22)
                 .foregroundStyle(

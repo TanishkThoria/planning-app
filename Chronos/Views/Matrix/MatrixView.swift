@@ -101,7 +101,7 @@ struct MatrixView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Matrix")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Drag tasks between quadrants — due dates and priorities update in Reminders")
                     .font(.system(size: 12, weight: .medium))
@@ -125,7 +125,7 @@ struct MatrixView: View {
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Text("\(items.count)")
-                    .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                    .font(.system(size: 10.5, weight: .semibold))
                     .foregroundStyle(quadrant.tint)
             }
             Text(quadrant.subtitle)
@@ -182,7 +182,7 @@ struct MatrixView: View {
                     .lineLimit(1)
                 if let due = task.dueLabel() {
                     Text(due)
-                        .font(.system(size: 9.5, design: .rounded))
+                        .font(.system(size: 9.5))
                         .foregroundStyle(task.isOverdue ? Theme.danger : Theme.textTertiary)
                 }
             }

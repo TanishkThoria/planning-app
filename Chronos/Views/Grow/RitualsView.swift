@@ -41,7 +41,7 @@ private struct RitualScaffold<Content: View>: View {
                             .font(.system(size: 10.5, weight: .semibold)).tracking(1.5)
                             .foregroundStyle(accent)
                         Text(title)
-                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                            .font(.system(size: 24, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
                     }
                     content
@@ -177,7 +177,7 @@ struct MorningRitualView: View {
             ) {
                 ForEach(0..<3, id: \.self) { i in
                     HStack(spacing: 8) {
-                        Text("\(i + 1)").font(.system(size: 13, weight: .bold, design: .rounded))
+                        Text("\(i + 1)").font(.system(size: 13, weight: .bold))
                             .foregroundStyle(Theme.warning).frame(width: 18)
                         TextField("I will…", text: intentionBinding(i))
                             .textFieldStyle(.plain).font(.system(size: 13.5))
@@ -259,7 +259,7 @@ struct EveningRitualView: View {
                                     Spacer()
                                     if life.streak(habit) > 0 {
                                         Label("\(life.streak(habit))", systemImage: "flame.fill")
-                                            .font(.system(size: 10.5, weight: .bold, design: .rounded)).foregroundStyle(Theme.warning)
+                                            .font(.system(size: 10.5, weight: .bold)).foregroundStyle(Theme.warning)
                                     }
                                 }
                                 .padding(.horizontal, 12).padding(.vertical, 10)

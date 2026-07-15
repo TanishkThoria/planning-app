@@ -42,7 +42,7 @@ struct MomentumCard: View {
                     HStack(spacing: 6) {
                         Image(systemName: "bolt.fill").font(.system(size: 11)).foregroundStyle(Color.accentColor)
                         Text("Lv \(store.level) · \(store.levelTitle)")
-                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .font(.system(size: 13, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
                     }
                     if store.streak() > 0 {
@@ -114,7 +114,7 @@ struct MomentumCard: View {
                             }
                             .frame(width: 70, height: 5)
                             Text("\(part.earned)/\(part.max)")
-                                .font(.system(size: 10, weight: .medium, design: .rounded))
+                                .font(.system(size: 10, weight: .medium))
                                 .foregroundStyle(Theme.textTertiary)
                                 .frame(width: 34, alignment: .trailing)
                         }
@@ -137,7 +137,7 @@ struct MomentumCard: View {
                 .frame(width: 60, height: 60)
                 .animation(.snappy, value: score)
             Text("\(score)")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.system(size: 20, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
         }
     }

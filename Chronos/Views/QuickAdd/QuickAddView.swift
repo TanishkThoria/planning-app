@@ -130,7 +130,7 @@ struct QuickAddView: View {
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                 Text(previewDetail)
-                    .font(.system(size: 11.5, design: .rounded))
+                    .font(.system(size: 11.5))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()

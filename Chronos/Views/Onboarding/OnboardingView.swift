@@ -93,7 +93,7 @@ struct OnboardingView: View {
             }
             VStack(spacing: 10) {
                 Text(page.title)
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                     .multilineTextAlignment(.center)
                 Text(page.subtitle)
@@ -147,7 +147,7 @@ struct OnboardingView: View {
             }
             VStack(spacing: 10) {
                 Text("A couple of permissions")
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                     .multilineTextAlignment(.center)
                 Text("Chronos stores everything in your own Apple Calendar and Reminders — nothing lives on a server.")

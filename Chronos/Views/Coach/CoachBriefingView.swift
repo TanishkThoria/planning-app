@@ -35,7 +35,7 @@ struct CoachBriefingView: View {
             }
             VStack(alignment: .leading, spacing: 1) {
                 Text("Coach")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: 20, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Your daily briefing")
                     .font(.system(size: 11, weight: .medium))

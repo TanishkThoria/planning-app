@@ -39,7 +39,7 @@ struct CrunchRadar: View {
                     Spacer()
                     if let peakDay = load.max(by: { $0.value < $1.value })?.key {
                         Text("peak \(Fmt.relativeDay(peakDay)) · \(Fmt.duration(minutes: peak))")
-                            .font(.system(size: 10, weight: .medium, design: .rounded))
+                            .font(.system(size: 10, weight: .medium))
                             .foregroundStyle(Theme.textTertiary)
                     }
                 }

@@ -41,7 +41,7 @@ struct GrowView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Grow")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Goals, habits & reflection")
                     .font(.system(size: 12, weight: .medium))
@@ -93,7 +93,7 @@ struct GrowView: View {
                 Spacer()
                 if life.journalStreak > 0 {
                     Label("\(life.journalStreak)d", systemImage: "flame.fill")
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(Theme.warning)
                 }
                 Button { model.journalPresented = true } label: {
@@ -178,12 +178,12 @@ struct GrowView: View {
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     Text(p.label)
-                        .font(.system(size: 11, design: .rounded))
+                        .font(.system(size: 11))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 Spacer()
                 Text("\(Int((p.fraction * 100).rounded()))%")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .font(.system(size: 13, weight: .bold))
                     .foregroundStyle(goal.color)
             }
             .panel(padding: 12)
@@ -278,7 +278,7 @@ struct GrowView: View {
             Spacer()
             if streak > 0 {
                 Label("\(streak)", systemImage: "flame.fill")
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(Theme.warning)
             }
         }

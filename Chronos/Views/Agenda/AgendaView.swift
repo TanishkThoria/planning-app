@@ -59,7 +59,7 @@ struct AgendaView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Agenda")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Next \(daysShown) days from \(Fmt.relativeDay(model.selectedDate).lowercased())")
                     .font(.system(size: 12, weight: .medium))
@@ -113,7 +113,7 @@ struct AgendaView: View {
                     .foregroundStyle(Theme.danger)
                 Spacer()
                 Text("\(overdueTasks.count)")
-                    .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                    .font(.system(size: 10.5, weight: .medium))
                     .foregroundStyle(Theme.danger)
             }
             .padding(.top, 16)
@@ -137,7 +137,7 @@ struct AgendaView: View {
             // Day header
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(Fmt.relativeDay(day))
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(day.isToday ? Color.accentColor : Theme.textPrimary)
                 Text(Fmt.monthDay.string(from: day))
                     .font(.system(size: 11.5, weight: .medium))
@@ -145,7 +145,7 @@ struct AgendaView: View {
                 Spacer()
                 if plannedMinutes > 0 {
                     Text(Fmt.duration(minutes: plannedMinutes))
-                        .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                        .font(.system(size: 10.5, weight: .semibold))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 Button {
@@ -248,12 +248,12 @@ private struct AgendaBlockRow: View {
             HStack(spacing: 10) {
                 VStack(alignment: .trailing, spacing: 1) {
                     Text(Fmt.time.string(from: block.start))
-                        .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                        .font(.system(size: 11.5, weight: .semibold))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     Text(Fmt.time.string(from: block.end))
-                        .font(.system(size: 10, design: .rounded))
+                        .font(.system(size: 10))
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -321,7 +321,7 @@ private struct AgendaTaskRow: View {
     var body: some View {
         HStack(spacing: 10) {
             Text(task.dueHasTime ? Fmt.time.string(from: task.dueDate ?? Date()) : "to do")
-                .font(.system(size: 10.5, weight: task.dueHasTime ? .semibold : .regular, design: .rounded))
+                .font(.system(size: 10.5, weight: task.dueHasTime ? .semibold : .regular))
                 .foregroundStyle(task.isOverdue ? Theme.danger : Theme.textTertiary)
                 .frame(width: 58, alignment: .trailing)
 

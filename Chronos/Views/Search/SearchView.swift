@@ -117,7 +117,7 @@ struct SearchView: View {
                         .foregroundStyle(Theme.textPrimary).lineLimit(1)
                     HStack(spacing: 6) {
                         if let due = task.dueLabel() {
-                            Text(due).font(.system(size: 10, design: .rounded))
+                            Text(due).font(.system(size: 10))
                                 .foregroundStyle(task.isOverdue ? Theme.danger : Theme.textTertiary)
                         }
                         Text(task.listName).font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
@@ -145,7 +145,7 @@ struct SearchView: View {
                     Text(block.isAllDay
                          ? "\(Fmt.relativeDay(block.start)) · all-day"
                          : "\(Fmt.relativeDay(block.start)) · \(Fmt.timeRange(block.start, block.end))")
-                        .font(.system(size: 10, design: .rounded)).foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
                 }
                 Spacer()
             }

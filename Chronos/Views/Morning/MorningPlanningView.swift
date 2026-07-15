@@ -140,7 +140,7 @@ struct MorningPlanningView: View {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("\(greeting).")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .font(.system(size: 20, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                     Text("Add everything you'd like to move forward today. Tag rough effort so deep work lands in your \(profileStore.profile.focus.rawValue.lowercased()) focus window.")
                         .font(.system(size: 12.5))
@@ -211,7 +211,7 @@ struct MorningPlanningView: View {
                     .lineLimit(1)
                 Spacer()
                 Text("~\(Fmt.duration(minutes: task.estimateMinutes ?? defaultBlockMinutes))")
-                    .font(.system(size: 10.5, design: .rounded))
+                    .font(.system(size: 10.5))
                     .foregroundStyle(Theme.textTertiary)
             }
             .padding(.horizontal, 12)
@@ -253,7 +253,7 @@ struct MorningPlanningView: View {
                     ForEach(proposals) { proposal in
                         HStack(spacing: 10) {
                             Text(Fmt.time.string(from: proposal.start))
-                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                .font(.system(size: 12, weight: .semibold))
                                 .foregroundStyle(Color.accentColor)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.8)
@@ -269,7 +269,7 @@ struct MorningPlanningView: View {
                                 .lineLimit(1)
                             Spacer()
                             Text(Fmt.duration(minutes: proposal.minutes))
-                                .font(.system(size: 11, design: .rounded))
+                                .font(.system(size: 11))
                                 .foregroundStyle(Theme.textTertiary)
                         }
                         .padding(.horizontal, 12)

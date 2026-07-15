@@ -41,7 +41,7 @@ struct BriefingContent: View {
 
     private var greetingCard: some View {
         Text(PlannerBrief.greeting(context))
-            .font(.system(size: 17, weight: .semibold, design: .rounded))
+            .font(.system(size: 17, weight: .semibold))
             .foregroundStyle(Theme.textPrimary)
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)

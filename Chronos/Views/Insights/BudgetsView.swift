@@ -68,7 +68,7 @@ struct BudgetsView: View {
                     set: { life.setBudget(calendarID: cal.id, hours: $0) }
                 ), in: 0...80, step: 0.5) {
                     Text(target > 0 ? String(format: "%g h", target) : "Off")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(target > 0 ? Theme.textPrimary : Theme.textTertiary)
                 }
                 .fixedSize()
@@ -83,7 +83,7 @@ struct BudgetsView: View {
                 }
                 .frame(height: 6)
                 Text("\(Fmt.duration(minutes: actual)) of \(String(format: "%g h", target)) this week")
-                    .font(.system(size: 10.5, design: .rounded)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary)
             }
         }
         .panel(padding: 12)

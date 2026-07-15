@@ -184,7 +184,7 @@ struct TaskEditorView: View {
                     .foregroundStyle(Theme.textTertiary)
                 Spacer()
                 Text(draft.estimateMinutes.map { Fmt.duration(minutes: $0) } ?? "Not set")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(draft.estimateMinutes == nil ? Theme.textTertiary : Theme.textPrimary)
             }
 
@@ -199,7 +199,7 @@ struct TaskEditorView: View {
                     step: 5
                 ) {
                     Text(draft.estimateMinutes.map { Fmt.duration(minutes: $0) } ?? "None")
-                        .font(.system(size: 12.5, design: .rounded))
+                        .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 if draft.estimateMinutes != nil {
@@ -224,7 +224,7 @@ struct TaskEditorView: View {
                             draft.estimateMinutes = minutes
                         } label: {
                             Text(Fmt.duration(minutes: minutes))
-                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                .font(.system(size: 11, weight: .semibold))
                                 .foregroundStyle(draft.estimateMinutes == minutes ? Theme.bg : Theme.textSecondary)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 5)
@@ -256,7 +256,7 @@ struct TaskEditorView: View {
                                     draft.sessionMinutes = minutes
                                 } label: {
                                     Text(Fmt.duration(minutes: minutes))
-                                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                        .font(.system(size: 11, weight: .semibold))
                                         .foregroundStyle(session == minutes ? Theme.bg : Theme.textSecondary)
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 5)

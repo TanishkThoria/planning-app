@@ -102,7 +102,7 @@ struct WeekPlannerView: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(Fmt.monthTitle.string(from: model.selectedDate))
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text(weekRangeLabel)
                     .font(.system(size: 12, weight: .medium))
@@ -157,7 +157,7 @@ struct WeekPlannerView: View {
                     .tracking(0.5)
                     .foregroundStyle(day.isToday ? Color.accentColor : Theme.textTertiary)
                 Text(Fmt.dayNumber.string(from: day))
-                    .font(.system(size: 15, weight: day.isToday ? .bold : .medium, design: .rounded))
+                    .font(.system(size: 15, weight: day.isToday ? .bold : .medium))
                     .foregroundStyle(day.isToday ? Color.accentColor : Theme.textPrimary)
                     .frame(width: 27, height: 27)
                     .background(

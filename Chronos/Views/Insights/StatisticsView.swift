@@ -120,7 +120,7 @@ struct StatisticsView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Statistics")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 if let first = weekDays.first, let last = weekDays.last {
                     Text("\(Fmt.monthDay.string(from: first)) – \(Fmt.monthDay.string(from: last))")
@@ -182,14 +182,14 @@ struct StatisticsView: View {
             Text(label).font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
             Spacer()
             Text(isMinutes ? Fmt.duration(minutes: current) : "\(current)")
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)
             if delta != 0 {
                 HStack(spacing: 2) {
                     Image(systemName: up ? "arrow.up.right" : "arrow.down.right")
                         .font(.system(size: 9, weight: .bold))
                     Text("\(abs(pct))%")
-                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .font(.system(size: 10, weight: .semibold))
                 }
                 .foregroundStyle(up ? Theme.success : Theme.danger)
                 .frame(width: 52, alignment: .trailing)
@@ -203,7 +203,7 @@ struct StatisticsView: View {
     private func statTile(_ value: String, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(value)
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.system(size: 20, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
@@ -231,7 +231,7 @@ struct StatisticsView: View {
             ZStack {
                 ProgressRing(fraction: fraction, size: 52, lineWidth: 5)
                 Text("\(Int((fraction * 100).rounded()))%")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .font(.system(size: 13, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
             }
             VStack(spacing: 1) {
@@ -239,7 +239,7 @@ struct StatisticsView: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
                 Text(caption)
-                    .font(.system(size: 9, design: .rounded))
+                    .font(.system(size: 9))
                     .foregroundStyle(Theme.textTertiary)
             }
         }
@@ -266,7 +266,7 @@ struct StatisticsView: View {
                     VStack(spacing: 5) {
                         Text(entry.plannedMinutes == busiest?.plannedMinutes && entry.plannedMinutes > 0
                              ? Fmt.duration(minutes: entry.plannedMinutes) : " ")
-                            .font(.system(size: 9, weight: .semibold, design: .rounded))
+                            .font(.system(size: 9, weight: .semibold))
                             .foregroundStyle(Theme.textSecondary)
                             .lineLimit(1)
                         ZStack(alignment: .bottom) {
@@ -331,7 +331,7 @@ struct StatisticsView: View {
     private func legendDot(_ color: Color, _ label: String) -> some View {
         HStack(spacing: 5) {
             Circle().fill(color).frame(width: 7, height: 7)
-            Text(label).font(.system(size: 11, design: .rounded)).foregroundStyle(Theme.textSecondary)
+            Text(label).font(.system(size: 11)).foregroundStyle(Theme.textSecondary)
         }
     }
 
@@ -358,7 +358,7 @@ struct StatisticsView: View {
                                 }
                                 Spacer()
                                 Text(Fmt.duration(minutes: entry.minutes))
-                                    .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                                    .font(.system(size: 11.5, weight: .semibold))
                                     .foregroundStyle(Theme.textSecondary)
                             }
                             GeometryReader { geo in
@@ -402,7 +402,7 @@ struct StatisticsView: View {
                             }
                             Spacer()
                             Text("\(Fmt.duration(minutes: entry.minutes)) / \(String(format: "%g h", entry.target))")
-                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                .font(.system(size: 11, weight: .semibold))
                                 .foregroundStyle(frac >= 1 ? Theme.success : Theme.textSecondary)
                         }
                         GeometryReader { geo in
@@ -444,7 +444,7 @@ struct StatisticsView: View {
                             .lineLimit(1)
                         if !badge.unlocked {
                             Text("\(Int(badge.progress * 100))%")
-                                .font(.system(size: 8.5, design: .rounded))
+                                .font(.system(size: 8.5))
                                 .foregroundStyle(Theme.textTertiary)
                         }
                     }
@@ -480,7 +480,7 @@ struct StatisticsView: View {
             Text(label).font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
             Spacer()
             Text(value)
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
         }

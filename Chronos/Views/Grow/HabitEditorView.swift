@@ -42,7 +42,7 @@ struct HabitEditorView: View {
                 FieldRow(label: "Times per week") {
                     Stepper(value: $habit.weeklyTarget, in: 1...7) {
                         Text("\(habit.weeklyTarget)")
-                            .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                            .font(.system(size: 12.5, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                     }
                     .fixedSize()

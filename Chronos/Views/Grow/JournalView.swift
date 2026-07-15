@@ -153,7 +153,7 @@ struct JournalView: View {
             ForEach(0..<3, id: \.self) { i in
                 HStack(spacing: 8) {
                     Text("\(i + 1)")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .font(.system(size: 12, weight: .bold))
                         .foregroundStyle(Theme.textTertiary)
                         .frame(width: 18)
                     TextField("Priority \(i + 1)", text: intentionBinding(i))

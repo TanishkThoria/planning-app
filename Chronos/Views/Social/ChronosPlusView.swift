@@ -60,7 +60,7 @@ struct ChronosPlusView: View {
                     .font(.system(size: 22, weight: .semibold))
                     .foregroundStyle(Color.accentColor)
                 Text("Chronos+")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
             }
             Text("Sync every device, race friends on the leaderboard, and see what the people you plan with are focusing on — all powered by your own iCloud, still zero-server and private.")
@@ -157,7 +157,7 @@ struct ChronosPlusView: View {
     private func guideStep(_ n: Int, _ text: String) -> some View {
         HStack(alignment: .top, spacing: 10) {
             Text("\(n)")
-                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(Color.accentColor)
                 .frame(width: 20, height: 20)
                 .background(Color.accentColor.opacity(0.15), in: Circle())

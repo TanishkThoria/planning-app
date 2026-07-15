@@ -158,7 +158,7 @@ struct TimeBlockCard: View {
                         Text(isInteracting
                              ? Fmt.timeRange(proposedStart, proposedEnd)
                              : Fmt.timeRange(block.start, block.end))
-                            .font(.system(size: 10, weight: .medium, design: .rounded))
+                            .font(.system(size: 10, weight: .medium))
                             .foregroundStyle(isInteracting ? Color.accentColor : Theme.textSecondary)
                     }
                     if displayHeight >= 66 && !compact, let location = block.location, !location.isEmpty {

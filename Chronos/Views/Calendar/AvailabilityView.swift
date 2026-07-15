@@ -96,7 +96,7 @@ struct AvailabilityView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Share Availability")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Your real free slots, ready to paste")
                     .font(.system(size: 11.5, weight: .medium))
@@ -161,13 +161,13 @@ struct AvailabilityView: View {
                     ForEach(slots) { entry in
                         HStack(alignment: .top, spacing: 10) {
                             Text(Fmt.weekdayShort.string(from: entry.day))
-                                .font(.system(size: 11.5, weight: .bold, design: .rounded))
+                                .font(.system(size: 11.5, weight: .bold))
                                 .foregroundStyle(entry.day.isToday ? Color.accentColor : Theme.textSecondary)
                                 .frame(width: 34, alignment: .leading)
                             Text(entry.gaps
                                 .map { "\(Fmt.time.string(from: $0.start))–\(Fmt.time.string(from: $0.end))" }
                                 .joined(separator: "  ·  "))
-                                .font(.system(size: 12, design: .rounded))
+                                .font(.system(size: 12))
                                 .foregroundStyle(Theme.textPrimary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }

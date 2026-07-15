@@ -79,19 +79,19 @@ struct TaskRow: View {
                 HStack(spacing: 8) {
                     if let due = task.dueLabel() {
                         Label(due, systemImage: "calendar")
-                            .font(.system(size: 10.5, design: .rounded))
+                            .font(.system(size: 10.5))
                             .foregroundStyle(task.isOverdue ? Theme.danger : Theme.textTertiary)
                     }
                     if task.daysOverdue >= 2 {
                         Text("\(task.daysOverdue)d late")
-                            .font(.system(size: 9.5, weight: .bold, design: .rounded))
+                            .font(.system(size: 9.5, weight: .bold))
                             .foregroundStyle(Theme.danger)
                             .padding(.horizontal, 6).padding(.vertical, 2)
                             .background(Theme.danger.opacity(task.daysOverdue >= 7 ? 0.22 : 0.12), in: Capsule())
                     }
                     if task.puntCount >= 2 && !task.isCompleted {
                         Label("moved \(task.puntCount)×", systemImage: "arrow.uturn.forward")
-                            .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                            .font(.system(size: 9.5, weight: .semibold))
                             .foregroundStyle(task.puntCount >= 4 ? Theme.danger : Theme.warning)
                             .padding(.horizontal, 6).padding(.vertical, 2)
                             .background((task.puntCount >= 4 ? Theme.danger : Theme.warning).opacity(0.12), in: Capsule())
@@ -99,7 +99,7 @@ struct TaskRow: View {
                     }
                     if let est = task.estimateMinutes {
                         Label("~\(Fmt.duration(minutes: est))", systemImage: "timer")
-                            .font(.system(size: 10.5, design: .rounded))
+                            .font(.system(size: 10.5))
                             .foregroundStyle(Theme.textTertiary)
                     }
                     if let first = linkedBlocks.first {
@@ -107,7 +107,7 @@ struct TaskRow: View {
                             "\(Fmt.relativeDay(first.start)) \(Fmt.time.string(from: first.start))",
                             systemImage: "rectangle.stack"
                         )
-                        .font(.system(size: 10.5, design: .rounded))
+                        .font(.system(size: 10.5))
                         .foregroundStyle(Color.accentColor)
                     }
                     if !subtasks.isEmpty {
@@ -115,7 +115,7 @@ struct TaskRow: View {
                             "\(subtasks.filter(\.isCompleted).count)/\(subtasks.count)",
                             systemImage: "checklist"
                         )
-                        .font(.system(size: 10.5, design: .rounded))
+                        .font(.system(size: 10.5))
                         .foregroundStyle(Theme.textTertiary)
                     }
                     HStack(spacing: 4) {
@@ -263,13 +263,13 @@ struct SubtaskRow: View {
 
             if let est = task.estimateMinutes {
                 Text("~\(Fmt.duration(minutes: est))")
-                    .font(.system(size: 10, design: .rounded))
+                    .font(.system(size: 10))
                     .foregroundStyle(Theme.textTertiary)
             }
 
             if let first = service.blocksLinked(to: task.id).first {
                 Label(Fmt.relativeDay(first.start), systemImage: "rectangle.stack")
-                    .font(.system(size: 10, design: .rounded))
+                    .font(.system(size: 10))
                     .foregroundStyle(Color.accentColor)
             }
 

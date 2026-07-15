@@ -96,7 +96,7 @@ struct GoalEditorView: View {
             FieldRow(label: "Hours per week") {
                 Stepper(value: $goal.weeklyHoursTarget, in: 0.5...80, step: 0.5) {
                     Text(String(format: "%g h", goal.weeklyHoursTarget))
-                        .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                        .font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                 }
                 .fixedSize()
@@ -140,7 +140,7 @@ struct GoalEditorView: View {
                     Text("Progress").font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
                     Spacer()
                     Text("\(Int((goal.milestoneProgress * 100).rounded()))%")
-                        .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                        .font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                 }
                 Slider(value: $goal.milestoneProgress, in: 0...1)

@@ -39,7 +39,7 @@ struct WrappedView: View {
     private var topBar: some View {
         HStack {
             Text("Year in Review")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
             Button { dismiss() } label: {
@@ -57,7 +57,7 @@ struct WrappedView: View {
             Spacer()
             Text("📆").font(.system(size: 40))
             Text("Not much to wrap up yet")
-                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text("Keep planning, focusing, and building habits — your Year in Review fills in as the year goes on.")
                 .font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
@@ -95,7 +95,7 @@ struct WrappedView: View {
                 .font(.system(size: 13, weight: .bold)).tracking(3)
                 .foregroundStyle(.white.opacity(0.8))
             Text("in time")
-                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .font(.system(size: 34, weight: .bold))
                 .foregroundStyle(.white)
             Text("Here's where your hours went.")
                 .font(.system(size: 13)).foregroundStyle(.white.opacity(0.75))
@@ -117,7 +117,7 @@ struct WrappedView: View {
                 .frame(width: 44)
             VStack(alignment: .leading, spacing: 2) {
                 Text(value)
-                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                    .font(.system(size: 36, weight: .bold))
                     .foregroundStyle(.white)
                     .lineLimit(1).minimumScaleFactor(0.5)
                 Text(label)
@@ -145,7 +145,7 @@ struct WrappedView: View {
             ForEach(Array(s.topCalendars.enumerated()), id: \.element.id) { idx, entry in
                 HStack(spacing: 12) {
                     Text("\(idx + 1)")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(entry.color)
                         .frame(width: 24)
                     Text(entry.title)
@@ -154,7 +154,7 @@ struct WrappedView: View {
                         .lineLimit(1)
                     Spacer()
                     Text("\(entry.minutes / 60)h")
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(Theme.textSecondary)
                 }
             }

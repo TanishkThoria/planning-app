@@ -156,7 +156,7 @@ struct DayPlannerView: View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(Fmt.weekdayFull.string(from: model.selectedDate))
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 HStack(spacing: 6) {
                     Text(Fmt.monthDayYear.string(from: model.selectedDate))
@@ -166,7 +166,7 @@ struct DayPlannerView: View {
                         Text("·")
                             .foregroundStyle(Theme.textTertiary)
                         Text("\(timedBlocks.count) blocks · \(Fmt.duration(minutes: plannedMinutes)) planned")
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(Theme.textTertiary)
                     }
                 }
@@ -430,12 +430,12 @@ private struct BacklogTaskRow: View {
                 HStack(spacing: 6) {
                     if let due = task.dueLabel() {
                         Text(due)
-                            .font(.system(size: 10, design: .rounded))
+                            .font(.system(size: 10))
                             .foregroundStyle(task.isOverdue ? Theme.danger : Theme.textTertiary)
                     }
                     if let est = task.estimateMinutes {
                         Text("~\(Fmt.duration(minutes: est))")
-                            .font(.system(size: 10, design: .rounded))
+                            .font(.system(size: 10))
                             .foregroundStyle(Theme.textTertiary)
                     }
                     Circle().fill(task.color).frame(width: 5, height: 5)

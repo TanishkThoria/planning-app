@@ -82,7 +82,7 @@ struct MonthView: View {
                         Circle().fill(Color.accentColor.opacity(0.16)).frame(width: 26, height: 26)
                     }
                     Text(Fmt.dayNumber.string(from: day))
-                        .font(.system(size: 13, weight: isToday || isSelected ? .bold : .medium, design: .rounded))
+                        .font(.system(size: 13, weight: isToday || isSelected ? .bold : .medium))
                         .foregroundStyle(isSelected ? Theme.bg : (isToday ? Color.accentColor : Theme.textPrimary))
                 }
                 .frame(height: 26)
@@ -140,7 +140,7 @@ struct MonthView: View {
         return VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(Fmt.relativeDay(day))
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Button {
@@ -170,7 +170,7 @@ struct MonthView: View {
                         HStack(spacing: 10) {
                             RoundedRectangle(cornerRadius: 2).fill(block.color).frame(width: 3, height: 26)
                             Text(block.isAllDay ? "all-day" : Fmt.time.string(from: block.start))
-                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                .font(.system(size: 11, weight: .semibold))
                                 .foregroundStyle(Theme.textSecondary).frame(width: 56, alignment: .leading)
                             Text(block.title).font(.system(size: 13)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                             Spacer()

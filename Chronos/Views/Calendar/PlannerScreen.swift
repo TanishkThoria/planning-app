@@ -31,7 +31,7 @@ struct PlannerScreen: View {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
-                        .font(.system(size: 21, weight: .bold, design: .rounded))
+                        .font(.system(size: 21, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     Text(subtitle)

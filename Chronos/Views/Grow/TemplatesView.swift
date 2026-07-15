@@ -143,7 +143,7 @@ struct TemplatesView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(template.name).font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                     Text("\(template.blocks.count) blocks\(span.isEmpty ? "" : " · \(span)")")
-                        .font(.system(size: 11, design: .rounded)).foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
                 }
                 Spacer()
                 Text("Apply")

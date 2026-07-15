@@ -200,7 +200,7 @@ struct DayColumn: View {
             )
             .overlay(alignment: .topLeading) {
                 Text(Fmt.timeRange(date.at(minutes: range.start), date.at(minutes: range.end)))
-                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                     .padding(.horizontal, 6).padding(.top, 3)
             }

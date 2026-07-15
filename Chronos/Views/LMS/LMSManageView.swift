@@ -64,7 +64,7 @@ struct LMSManageView: View {
     private var topBar: some View {
         HStack {
             Text("Schools")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
             Button { dismiss() } label: {

@@ -43,7 +43,7 @@ struct InsightsView: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Insights")
-                    .font(.system(size: 25, weight: .bold, design: .rounded))
+                    .font(.system(size: 25, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Your momentum & progress")
                     .font(.system(size: 12, weight: .medium))
@@ -75,7 +75,7 @@ struct InsightsView: View {
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(tint)
             Text(value)
-                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .font(.system(size: 17, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text(label)
                 .font(.system(size: 10.5, weight: .medium))

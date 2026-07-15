@@ -53,7 +53,7 @@ struct MomentumDetailView: View {
                     .frame(width: 92, height: 92)
                     .animation(.snappy, value: score)
                 VStack(spacing: 0) {
-                    Text("\(score)").font(.system(size: 30, weight: .bold, design: .rounded))
+                    Text("\(score)").font(.system(size: 30, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                     Text("today").font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
                 }
@@ -62,7 +62,7 @@ struct MomentumDetailView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "bolt.fill").font(.system(size: 12)).foregroundStyle(Color.accentColor)
                     Text("Level \(store.level) · \(store.levelTitle)")
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .font(.system(size: 15, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                 }
                 Text("\(store.pointsIntoLevel) / 500 to level \(store.level + 1)")
@@ -140,7 +140,7 @@ struct MomentumDetailView: View {
     private func streakTile(_ icon: String, _ value: String, _ label: String, _ tint: Color) -> some View {
         VStack(spacing: 5) {
             Image(systemName: icon).font(.system(size: 15, weight: .semibold)).foregroundStyle(tint)
-            Text(value).font(.system(size: 19, weight: .bold, design: .rounded)).foregroundStyle(Theme.textPrimary)
+            Text(value).font(.system(size: 19, weight: .bold)).foregroundStyle(Theme.textPrimary)
             Text(label).font(.system(size: 10)).foregroundStyle(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity)
@@ -163,7 +163,7 @@ struct MomentumDetailView: View {
                             Text(part.label).font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.textPrimary)
                             Spacer()
                             Text("\(part.earned)/\(part.max)")
-                                .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                                .font(.system(size: 11.5, weight: .semibold))
                                 .foregroundStyle(part.isComplete ? Theme.success : Theme.textTertiary)
                         }
                         GeometryReader { geo in
@@ -208,7 +208,7 @@ struct MomentumDetailView: View {
     private func statTile(_ icon: String, _ value: String, _ label: String) -> some View {
         VStack(spacing: 5) {
             Image(systemName: icon).font(.system(size: 14, weight: .semibold)).foregroundStyle(Color.accentColor)
-            Text(value).font(.system(size: 18, weight: .bold, design: .rounded)).foregroundStyle(Theme.textPrimary)
+            Text(value).font(.system(size: 18, weight: .bold)).foregroundStyle(Theme.textPrimary)
             Text(label).font(.system(size: 10)).foregroundStyle(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity)

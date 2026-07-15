@@ -38,7 +38,7 @@ struct CoachUnavailableView: View {
             Spacer()
             Image(systemName: "sparkles").font(.system(size: 34)).foregroundStyle(Color.accentColor)
             Text("Coach needs Apple Intelligence")
-                .font(.system(size: 18, weight: .bold, design: .rounded)).foregroundStyle(Theme.textPrimary)
+                .font(.system(size: 18, weight: .bold)).foregroundStyle(Theme.textPrimary)
             Text(unavailableReason)
                 .font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
@@ -135,7 +135,7 @@ struct CoachChatView: View {
             }
             VStack(alignment: .leading, spacing: 1) {
                 Text("Coach")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: 20, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 HStack(spacing: 5) {
                     Circle().fill(Theme.success).frame(width: 5, height: 5)
@@ -216,7 +216,7 @@ struct CoachChatView: View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(personalGreeting)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: 20, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("I can see your schedule, momentum, focus, and what your friends are up to. Ask me anything, or start here.")

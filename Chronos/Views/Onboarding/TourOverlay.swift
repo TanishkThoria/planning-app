@@ -78,7 +78,7 @@ struct TourOverlay: View {
                         .font(.system(size: 10, weight: .bold)).tracking(0.8)
                         .foregroundStyle(Theme.textTertiary)
                     Text(step.title)
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                 }
                 Spacer()

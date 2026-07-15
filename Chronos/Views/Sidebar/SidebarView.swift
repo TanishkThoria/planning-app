@@ -54,7 +54,7 @@ struct SidebarView: View {
                 .font(.system(size: 14))
                 .foregroundStyle(.tint)
             Text("CHRONOS")
-                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .font(.system(size: 13, weight: .bold))
                 .tracking(3)
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
@@ -75,7 +75,7 @@ struct SidebarView: View {
                 Spacer()
                 if let key = screen.shortcut {
                     Text("⌘\(String(key.character).uppercased())")
-                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(Theme.textTertiary)
                 }
             }

@@ -71,14 +71,14 @@ struct NowView: View {
                     .font(.system(size: 11, weight: .bold)).tracking(2)
                     .foregroundStyle(Color.accentColor)
                 Text(block.title)
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .font(.system(size: 34, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
                     .minimumScaleFactor(0.6)
 
                 Text(countdown(to: block.end) + " left")
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
                     .monospacedDigit()
 
@@ -115,7 +115,7 @@ struct NowView: View {
                     .foregroundStyle(Theme.textTertiary)
                     .monospacedDigit()
                 Text(block.title)
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                    .font(.system(size: 30, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                     .multilineTextAlignment(.center)
                     .lineLimit(3).minimumScaleFactor(0.6)
@@ -136,7 +136,7 @@ struct NowView: View {
         VStack(spacing: 16) {
             Text("🌿").font(.system(size: 44))
             Text("Nothing scheduled right now")
-                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .font(.system(size: 24, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
                 .multilineTextAlignment(.center)
             if let frog = model.frogTaskID.flatMap({ service.task(withID: $0) }), !frog.isCompleted {
@@ -178,7 +178,7 @@ struct NowView: View {
                     .lineLimit(1)
                 Spacer()
                 Text(Fmt.time.string(from: block.start))
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
             }
             .padding(.horizontal, 14).padding(.vertical, 10)

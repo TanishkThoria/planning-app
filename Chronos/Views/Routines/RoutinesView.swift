@@ -138,7 +138,7 @@ private struct RoutineEditorSheet: View {
                                     set: { $step.wrappedValue.seconds = $0 * 60 }
                                 ), in: 1...120) {
                                     Text("\(max(1, step.seconds / 60))m")
-                                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                                        .font(.system(size: 12, weight: .medium))
                                         .foregroundStyle(Theme.textSecondary).monospacedDigit()
                                 }
                                 .labelsHidden()
