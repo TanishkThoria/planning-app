@@ -10,6 +10,7 @@ struct InsightsView: View {
     @EnvironmentObject private var focusLog: FocusLog
     @ObservedObject private var momentum = MomentumStore.shared
     @ObservedObject private var paid = PaidFeatures.shared
+    @ObservedObject private var social = SocialService.shared
 
     var body: some View {
         VStack(spacing: 0) {
@@ -33,6 +34,7 @@ struct InsightsView: View {
             .scrollIndicators(.hidden)
         }
         .background(Theme.bg)
+        .task { if paid.isReady(.friends) { await social.refreshFriends() } }
     }
 
     // MARK: Header
@@ -113,11 +115,46 @@ struct InsightsView: View {
 
     // MARK: Social (Chronos+)
 
+    private var focusingFriends: [FriendStatus] {
+        social.friends.filter { $0.isLive && $0.presence.busy == .headsDown }
+    }
+
+    @ViewBuilder
+    private var focusTogetherCard: some View {
+        if !focusingFriends.isEmpty {
+            Button { model.startFocus(taskID: nil, title: "Focus") } label: {
+                HStack(spacing: 12) {
+                    HStack(spacing: -8) {
+                        ForEach(focusingFriends.prefix(3)) { f in
+                            Avatar(name: f.presence.displayName, emoji: f.presence.statusEmoji, size: 32)
+                                .overlay(Circle().strokeBorder(Theme.surface, lineWidth: 2))
+                        }
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(focusingFriends.count) focusing now")
+                            .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                        Text("Study alongside them — start a session too")
+                            .font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
+                    }
+                    Spacer()
+                    Image(systemName: "timer").font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.accentColor)
+                }
+                .padding(.horizontal, 14).padding(.vertical, 13)
+                .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous)
+                    .strokeBorder(Color.accentColor.opacity(0.28), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
     private var socialSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             SectionHeader(title: "Compete")
                 .padding(.horizontal, 2)
             VStack(spacing: 10) {
+                focusTogetherCard
                 reportCard("trophy", "Leaderboard", paid.isReady(.leaderboards)
                            ? "Weekly focus & momentum, ranked with friends"
                            : "Rank your focus with friends — a Chronos+ feature", tag: "Chronos+") {

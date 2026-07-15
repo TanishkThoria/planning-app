@@ -124,9 +124,11 @@ struct TrendsView: View {
 
     // MARK: Habit consistency (last 28 days)
 
+    private static let gridWeeks = 15
+
     private var habitsCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            SectionHeader(title: "Habit consistency · 4 weeks")
+            SectionHeader(title: "Habit consistency · \(Self.gridWeeks) weeks")
             if life.activeHabits.isEmpty {
                 Text("Add a habit in Grow and its consistency grid appears here.")
                     .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
@@ -139,12 +141,15 @@ struct TrendsView: View {
         .panel()
     }
 
+    /// Columns = weeks (oldest → newest), rows = weekdays: the GitHub/HabitKit
+    /// contribution grid people love to fill in and share.
     private func habitRow(_ habit: Habit) -> some View {
-        let days = (0..<28).reversed().map { today.adding(days: -$0) }
-        let done = days.filter { life.isDone(habit, on: $0) }.count
-        let due = days.filter { habit.isDue(on: $0) }.count
+        let last28 = (0..<28).map { today.adding(days: -$0) }
+        let done = last28.filter { life.isDone(habit, on: $0) }.count
+        let due = max(last28.filter { habit.isDue(on: $0) }.count, 1)
+        let base = today.startOfWeek.adding(days: -7 * (Self.gridWeeks - 1))
 
-        return VStack(alignment: .leading, spacing: 6) {
+        return VStack(alignment: .leading, spacing: 7) {
             HStack {
                 HStack(spacing: 6) {
                     Image(systemName: habit.iconName)
@@ -155,22 +160,36 @@ struct TrendsView: View {
                         .lineLimit(1)
                 }
                 Spacer()
-                Text("\(life.streak(habit))d streak · \(done)/\(max(due, 1))")
+                Text("\(life.streak(habit))d streak · \(done)/\(due)")
                     .font(.system(size: 10.5, weight: .medium, design: .rounded))
                     .foregroundStyle(Theme.textTertiary)
             }
             HStack(spacing: 3) {
-                ForEach(days, id: \.self) { day in
-                    RoundedRectangle(cornerRadius: 2, style: .continuous)
-                        .fill(life.isDone(habit, on: day) ? habit.color
-                              : life.isFrozen(habit, on: day) ? Color.cyan.opacity(0.55)
-                              : habit.isDue(on: day) ? Theme.fill : Theme.fill.opacity(0.4))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 10)
+                ForEach(0..<Self.gridWeeks, id: \.self) { week in
+                    VStack(spacing: 3) {
+                        ForEach(0..<7, id: \.self) { weekday in
+                            cell(habit, day: base.adding(days: week * 7 + weekday))
+                        }
+                    }
                 }
             }
         }
         .padding(.vertical, 2)
+    }
+
+    @ViewBuilder
+    private func cell(_ habit: Habit, day: Date) -> some View {
+        RoundedRectangle(cornerRadius: 2.5, style: .continuous)
+            .fill(cellColor(habit, day: day))
+            .frame(maxWidth: .infinity)
+            .aspectRatio(1, contentMode: .fit)
+    }
+
+    private func cellColor(_ habit: Habit, day: Date) -> Color {
+        if day > today { return .clear }
+        if life.isDone(habit, on: day) { return habit.color }
+        if life.isFrozen(habit, on: day) { return Color.cyan.opacity(0.55) }
+        return habit.isDue(on: day) ? Theme.fill : Theme.fill.opacity(0.4)
     }
 
     // MARK: Goals

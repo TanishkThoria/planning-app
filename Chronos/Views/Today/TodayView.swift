@@ -13,6 +13,8 @@ struct TodayView: View {
     @State private var now = Date()
     private let clock = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
     @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
+    @AppStorage(Prefs.workStartMinutes) private var workStartMinutes = 9 * 60
+    @AppStorage(Prefs.workEndMinutes) private var workEndMinutes = 18 * 60
 
     private var today: Date { Date().startOfDay }
 
@@ -299,6 +301,7 @@ struct TodayView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     dayActionsRow
+                    dayLoadBanner
                     frogCard
                     intentionsCard
                     if !dueHabits.isEmpty { habitsStrip }
@@ -408,6 +411,62 @@ struct TodayView: View {
             .background(Color.accentColor.opacity(0.12), in: Capsule())
         }
         .buttonStyle(.plain)
+    }
+
+    /// The realistic-workload guardrail: how the time your due tasks need
+    /// compares to the free time you have left today.
+    private var dayLoad: DayLoad.Result {
+        DayLoad.compute(
+            tasks: service.tasks,
+            events: service.blocks(on: today, hiddenCalendars: model.hiddenCalendarIDs),
+            workStart: workStartMinutes,
+            workEnd: workEndMinutes,
+            now: now
+        )
+    }
+
+    @ViewBuilder
+    private var dayLoadBanner: some View {
+        let load = dayLoad
+        if load.taskCount > 0 && load.committedMinutes > 0 {
+            let over = load.overcommitted
+            let tint = over ? Theme.warning : Theme.success
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Image(systemName: over ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+                        .font(.system(size: 12, weight: .semibold)).foregroundStyle(tint)
+                    Text(over ? "Today looks overloaded" : "Today fits")
+                        .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                    Text("\(Fmt.duration(minutes: load.committedMinutes)) / \(Fmt.duration(minutes: load.freeMinutes)) free")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(Theme.fill)
+                        Capsule().fill(tint)
+                            .frame(width: max(4, min(1.0, load.ratio) * geo.size.width))
+                    }
+                }
+                .frame(height: 6)
+                Text(over
+                     ? "Your \(load.taskCount) due task\(load.taskCount == 1 ? "" : "s") need about \(Fmt.duration(minutes: load.overBy)) more than you have free. Trim, defer, or auto-fit what's left."
+                     : "Your due tasks should fit the free time left today. Nice and realistic.")
+                    .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if over {
+                    Button { model.planDayPresented = true } label: {
+                        Label("Auto-fit my day", systemImage: "wand.and.stars")
+                            .font(.system(size: 12, weight: .semibold)).foregroundStyle(Color.accentColor)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 12).padding(.vertical, 11)
+            .background(tint.opacity(0.09), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(tint.opacity(0.22), lineWidth: 1))
+        }
     }
 
     private func sectionLabel(_ title: String, color: Color, count: Int) -> some View {
