@@ -42,7 +42,7 @@ struct AgendaView: View {
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .strokeBorder(day.isToday ? Color.accentColor.opacity(0.3) : Theme.hairline, lineWidth: 1)
+                                    .strokeBorder(day.isToday ? Theme.accentColor.opacity(0.3) : Theme.hairline, lineWidth: 1)
                             )
                     }
                 }
@@ -138,7 +138,7 @@ struct AgendaView: View {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(Fmt.relativeDay(day))
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(day.isToday ? Color.accentColor : Theme.textPrimary)
+                    .foregroundStyle(day.isToday ? Theme.accentColor : Theme.textPrimary)
                 Text(Fmt.monthDay.string(from: day))
                     .font(.system(size: 11.5, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)

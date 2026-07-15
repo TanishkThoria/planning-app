@@ -72,7 +72,7 @@ struct WrappedView: View {
         ScrollView {
             VStack(spacing: 14) {
                 heroCard(s)
-                heroStat("\(s.focusHours)", "hours focused", "\(s.focusSessions) sessions · longest \(Fmt.duration(minutes: s.longestFocusMinutes))", "timer", [Color.accentColor, Color.accentColor.opacity(0.5)])
+                heroStat("\(s.focusHours)", "hours focused", "\(s.focusSessions) sessions · longest \(Fmt.duration(minutes: s.longestFocusMinutes))", "timer", [Theme.accentColor, Theme.accentColor.opacity(0.5)])
                 heroStat("\(s.scheduledHours)", "hours time-blocked", "\(s.blockCount) blocks placed on your calendar", "rectangle.stack.fill", [Theme.success, Theme.success.opacity(0.5)])
                 heroStat("\(s.tasksCompleted)", "tasks completed", s.mostProductiveWeekday.map { "\($0)s were your most productive day" } ?? "one done thing at a time", "checkmark.circle.fill", [Color(hex: 0xF2B95C), Color(hex: 0xF0719B)])
                 if s.deepHours > 0 {
@@ -103,7 +103,7 @@ struct WrappedView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 34)
         .background(
-            LinearGradient(colors: [Color.accentColor, Color(hex: 0xF0719B)],
+            LinearGradient(colors: [Theme.accentColor, Color(hex: 0xF0719B)],
                            startPoint: .topLeading, endPoint: .bottomTrailing),
             in: RoundedRectangle(cornerRadius: 20, style: .continuous)
         )
@@ -171,7 +171,7 @@ struct WrappedView: View {
                 .foregroundStyle(Theme.bg)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)
-                .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+                .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
         }
         .padding(.top, 4)
     }

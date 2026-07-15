@@ -28,10 +28,10 @@ struct CoachBriefingView: View {
     private var header: some View {
         HStack(spacing: 10) {
             ZStack {
-                Circle().fill(Color.accentColor.opacity(0.16)).frame(width: 34, height: 34)
+                Circle().fill(Theme.accentColor.opacity(0.16)).frame(width: 34, height: 34)
                 Image(systemName: "sun.horizon.fill")
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
             }
             VStack(alignment: .leading, spacing: 1) {
                 Text("Coach")

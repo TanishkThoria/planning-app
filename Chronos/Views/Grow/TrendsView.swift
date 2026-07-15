@@ -90,7 +90,7 @@ struct TrendsView: View {
                     .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
-                valueStrip(label: "Mood", tint: Color.accentColor, values: entries.map { $0?.mood })
+                valueStrip(label: "Mood", tint: Theme.accentColor, values: entries.map { $0?.mood })
                 valueStrip(label: "Energy", tint: Theme.success, values: entries.map { $0?.energy })
                 HStack {
                     Text(Fmt.monthDay.string(from: last30.first ?? today))
@@ -345,7 +345,7 @@ struct TrendsView: View {
     private func detailLine(_ icon: String, _ label: String, _ text: String) -> some View {
         HStack(alignment: .top, spacing: 7) {
             Image(systemName: icon)
-                .font(.system(size: 10)).foregroundStyle(Color.accentColor)
+                .font(.system(size: 10)).foregroundStyle(Theme.accentColor)
                 .frame(width: 14).padding(.top, 2)
             VStack(alignment: .leading, spacing: 1) {
                 Text(label.uppercased())

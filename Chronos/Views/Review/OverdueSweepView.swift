@@ -96,12 +96,12 @@ struct OverdueSweepView: View {
         VStack(alignment: .leading, spacing: 5) {
             Text(Fmt.relativeDay(day))
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(day.isToday ? Color.accentColor : Theme.textPrimary).padding(.leading, 2)
+                .foregroundStyle(day.isToday ? Theme.accentColor : Theme.textPrimary).padding(.leading, 2)
             ForEach(proposals) { p in
                 HStack(spacing: 10) {
                     Text(Fmt.time.string(from: p.start))
                         .font(.system(size: 11.5, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                         .lineLimit(1).minimumScaleFactor(0.8)
                         .frame(width: 60, alignment: .leading)
                     Text(p.task.title).font(.system(size: 12.5)).foregroundStyle(Theme.textPrimary).lineLimit(1)
@@ -137,7 +137,7 @@ struct OverdueSweepView: View {
                 Text("Schedule All")
                     .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.bg)
                     .padding(.horizontal, 18).padding(.vertical, 7)
-                    .background(Color.accentColor, in: Capsule())
+                    .background(Theme.accentColor, in: Capsule())
             }
             .buttonStyle(.plain)
             .disabled(total == 0).opacity(total == 0 ? 0.4 : 1)

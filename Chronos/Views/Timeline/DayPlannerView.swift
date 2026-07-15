@@ -349,7 +349,7 @@ struct BacklogRail: View {
                 } label: {
                     Image(systemName: "wand.and.stars")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
                 .help("Plan My Day")
@@ -447,7 +447,7 @@ private struct BacklogTaskRow: View {
             Button(action: onSchedule) {
                 Image(systemName: "bolt.fill")
                     .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .frame(width: 22, height: 22)
                     .background(Theme.fill, in: Circle())
             }

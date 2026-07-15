@@ -60,7 +60,7 @@ struct OnboardingView: View {
             HStack(spacing: 6) {
                 ForEach(0...lastStep, id: \.self) { i in
                     Capsule()
-                        .fill(i == step ? Color.accentColor : Theme.fill)
+                        .fill(i == step ? Theme.accentColor : Theme.fill)
                         .frame(width: i == step ? 20 : 6, height: 6)
                         .animation(.snappy, value: step)
                 }
@@ -84,11 +84,11 @@ struct OnboardingView: View {
             Spacer()
             ZStack {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(Color.accentColor.opacity(0.14))
+                    .fill(Theme.accentColor.opacity(0.14))
                     .frame(width: 108, height: 108)
                 Image(systemName: page.icon)
                     .font(.system(size: 46, weight: .medium))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .symbolRenderingMode(.hierarchical)
             }
             VStack(spacing: 10) {
@@ -110,7 +110,7 @@ struct OnboardingView: View {
                         HStack(spacing: 12) {
                             Image(systemName: bullet.icon)
                                 .font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Theme.accentColor)
                                 .frame(width: 24)
                             Text(bullet.text)
                                 .font(.system(size: 13.5))
@@ -138,11 +138,11 @@ struct OnboardingView: View {
             Spacer()
             ZStack {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(Color.accentColor.opacity(0.14))
+                    .fill(Theme.accentColor.opacity(0.14))
                     .frame(width: 108, height: 108)
                 Image(systemName: "lock.shield")
                     .font(.system(size: 46, weight: .medium))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .symbolRenderingMode(.hierarchical)
             }
             VStack(spacing: 10) {
@@ -179,7 +179,7 @@ struct OnboardingView: View {
                     HStack(spacing: 12) {
                         Image(systemName: "graduationcap.fill")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(Theme.accentColor)
                             .frame(width: 26)
                         VStack(alignment: .leading, spacing: 2) {
                             Text("I'm a student")
@@ -198,7 +198,7 @@ struct OnboardingView: View {
                     .padding(.horizontal, 14).padding(.vertical, 12)
                     .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .strokeBorder(wantsLMS ? Color.accentColor.opacity(0.4) : Color.clear, lineWidth: 1))
+                        .strokeBorder(wantsLMS ? Theme.accentColor.opacity(0.4) : Color.clear, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
             }
@@ -212,7 +212,7 @@ struct OnboardingView: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Theme.accentColor)
                 .frame(width: 26)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -233,7 +233,7 @@ struct OnboardingView: View {
             } else {
                 Button("Enable", action: action)
                     .font(.system(size: 12.5, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .buttonStyle(.plain)
             }
         }
@@ -254,7 +254,7 @@ struct OnboardingView: View {
                     .foregroundStyle(Theme.bg)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
-                    .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+                    .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
             }
             .buttonStyle(.plain)
 

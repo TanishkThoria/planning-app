@@ -54,7 +54,7 @@ struct JournalView: View {
                             HStack {
                                 Text(memory.label)
                                     .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(Color.accentColor)
+                                    .foregroundStyle(Theme.accentColor)
                                 Spacer()
                                 Image(systemName: "chevron.right").font(.system(size: 9, weight: .bold))
                                     .foregroundStyle(Theme.textTertiary)
@@ -120,7 +120,7 @@ struct JournalView: View {
     private var headerBar: some View {
         HStack {
             Button("Done") { persist(); dismiss() }
-                .buttonStyle(.plain).font(.system(size: 13, weight: .semibold)).foregroundStyle(Color.accentColor)
+                .buttonStyle(.plain).font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.accentColor)
                 .keyboardShortcut(.defaultAction)
             Spacer()
             VStack(spacing: 1) {

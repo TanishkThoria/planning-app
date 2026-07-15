@@ -47,11 +47,11 @@ struct BriefingContent: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
             .background(
-                LinearGradient(colors: [Color.accentColor.opacity(0.16), Color.accentColor.opacity(0.05)],
+                LinearGradient(colors: [Theme.accentColor.opacity(0.16), Theme.accentColor.opacity(0.05)],
                                startPoint: .topLeading, endPoint: .bottomTrailing),
                 in: RoundedRectangle(cornerRadius: 16, style: .continuous)
             )
-            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Color.accentColor.opacity(0.2), lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Theme.accentColor.opacity(0.2), lineWidth: 1))
     }
 
     // MARK: Insight card
@@ -96,7 +96,7 @@ struct BriefingContent: View {
     private var suggestionsCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
-                Image(systemName: "lightbulb").font(.system(size: 12)).foregroundStyle(Color.accentColor)
+                Image(systemName: "lightbulb").font(.system(size: 12)).foregroundStyle(Theme.accentColor)
                 Text("SUGGESTIONS")
                     .font(.system(size: 10.5, weight: .semibold)).tracking(1.2)
                     .foregroundStyle(Theme.textTertiary)
@@ -120,9 +120,9 @@ struct BriefingContent: View {
                             Button { perform(action) } label: {
                                 Text(label)
                                     .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(Color.accentColor)
+                                    .foregroundStyle(Theme.accentColor)
                                     .padding(.horizontal, 10).padding(.vertical, 4)
-                                    .background(Color.accentColor.opacity(0.12), in: Capsule())
+                                    .background(Theme.accentColor.opacity(0.12), in: Capsule())
                             }
                             .buttonStyle(.plain)
                             .padding(.top, 1)
@@ -160,7 +160,7 @@ struct BriefingContent: View {
             HStack(spacing: 9) {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .frame(width: 20)
                 Text(title)
                     .font(.system(size: 12.5, weight: .semibold))
@@ -183,7 +183,7 @@ struct BriefingContent: View {
             HStack(spacing: 12) {
                 Image(systemName: "chart.bar.xaxis")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .frame(width: 22)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("This week")

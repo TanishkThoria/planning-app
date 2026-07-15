@@ -272,7 +272,7 @@ struct BlockEditorView: View {
         HStack(spacing: 8) {
             Image(systemName: "link")
                 .font(.system(size: 11))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Theme.accentColor)
             VStack(alignment: .leading, spacing: 1) {
                 Text("Linked to reminder")
                     .font(.system(size: 10))
@@ -289,7 +289,7 @@ struct BlockEditorView: View {
                 .foregroundStyle(Theme.textSecondary)
         }
         .padding(10)
-        .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .background(Theme.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
     }
 
     private func save() {

@@ -132,7 +132,7 @@ struct ReflowView: View {
                         .strikethrough(color: Theme.textTertiary)
                     Image(systemName: "arrow.right").font(.system(size: 8)).foregroundStyle(Theme.textTertiary)
                     Text(Fmt.timeRange(move.newStart, move.newEnd))
-                        .font(.system(size: 10.5, weight: .semibold)).foregroundStyle(Color.accentColor)
+                        .font(.system(size: 10.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
                 }
             }
             Spacer()
@@ -154,7 +154,7 @@ struct ReflowView: View {
                 Text("Reflow")
                     .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.bg)
                     .padding(.horizontal, 18).padding(.vertical, 7)
-                    .background(Color.accentColor, in: Capsule())
+                    .background(Theme.accentColor, in: Capsule())
             }
             .buttonStyle(.plain)
             .disabled(moves.isEmpty)

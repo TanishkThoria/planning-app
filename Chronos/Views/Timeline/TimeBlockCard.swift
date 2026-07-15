@@ -149,7 +149,7 @@ struct TimeBlockCard: View {
                         if block.hasMeeting && displayHeight >= 26 {
                             Image(systemName: "video.fill")
                                 .font(.system(size: 8))
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Theme.accentColor)
                         }
                         if block.hasRecurrence && !compact && displayHeight >= 30 {
                             Image(systemName: "repeat")
@@ -167,7 +167,7 @@ struct TimeBlockCard: View {
                              ? Fmt.timeRange(proposedStart, proposedEnd)
                              : Fmt.timeRange(block.start, block.end))
                             .font(.system(size: 10, weight: .medium))
-                            .foregroundStyle(isInteracting ? Color.accentColor : Theme.textSecondary)
+                            .foregroundStyle(isInteracting ? Theme.accentColor : Theme.textSecondary)
                     }
                     if displayHeight >= 66 && !compact, let location = block.location, !location.isEmpty {
                         Label(location, systemImage: "mappin")

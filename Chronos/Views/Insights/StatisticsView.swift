@@ -271,7 +271,7 @@ struct StatisticsView: View {
                             .lineLimit(1)
                         ZStack(alignment: .bottom) {
                             UnevenRoundedRectangle(topLeadingRadius: 4, topTrailingRadius: 4, style: .continuous)
-                                .fill(entry.day.isToday ? Color.accentColor : Color.accentColor.opacity(0.4))
+                                .fill(entry.day.isToday ? Theme.accentColor : Theme.accentColor.opacity(0.4))
                                 .frame(height: max(CGFloat(entry.plannedMinutes) / CGFloat(maxMinutes) * 90, entry.plannedMinutes > 0 ? 3 : 1))
                             // Focused-time overlay (darker cap) shows how much
                             // planned time was actually timed.
@@ -284,7 +284,7 @@ struct StatisticsView: View {
                         .frame(maxWidth: .infinity)
                         Text(Fmt.weekdayShort.string(from: entry.day).prefix(1))
                             .font(.system(size: 9.5, weight: .semibold))
-                            .foregroundStyle(entry.day.isToday ? Color.accentColor : Theme.textTertiary)
+                            .foregroundStyle(entry.day.isToday ? Theme.accentColor : Theme.textTertiary)
                     }
                 }
             }
@@ -384,7 +384,7 @@ struct StatisticsView: View {
                 Spacer(minLength: 8)
                 Button { model.budgetsPresented = true } label: {
                     Text(budgeted.isEmpty ? "Set" : "Edit")
-                        .font(.system(size: 11, weight: .semibold)).foregroundStyle(Color.accentColor)
+                        .font(.system(size: 11, weight: .semibold)).foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
             }
@@ -432,11 +432,11 @@ struct StatisticsView: View {
                     VStack(spacing: 5) {
                         ZStack {
                             Circle()
-                                .fill(badge.unlocked ? Color.accentColor.opacity(0.18) : Theme.fill)
+                                .fill(badge.unlocked ? Theme.accentColor.opacity(0.18) : Theme.fill)
                                 .frame(width: 40, height: 40)
                             Image(systemName: badge.icon)
                                 .font(.system(size: 16))
-                                .foregroundStyle(badge.unlocked ? Color.accentColor : Theme.textTertiary)
+                                .foregroundStyle(badge.unlocked ? Theme.accentColor : Theme.textTertiary)
                         }
                         Text(badge.title)
                             .font(.system(size: 10, weight: .semibold))

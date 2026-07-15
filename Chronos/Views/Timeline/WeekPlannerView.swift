@@ -155,13 +155,13 @@ struct WeekPlannerView: View {
                 Text(Fmt.weekdayShort.string(from: day).uppercased())
                     .font(.system(size: 10.5, weight: .semibold))
                     .tracking(0.5)
-                    .foregroundStyle(day.isToday ? Color.accentColor : Theme.textTertiary)
+                    .foregroundStyle(day.isToday ? Theme.accentColor : Theme.textTertiary)
                 Text(Fmt.dayNumber.string(from: day))
                     .font(.system(size: 15, weight: day.isToday ? .bold : .medium))
-                    .foregroundStyle(day.isToday ? Color.accentColor : Theme.textPrimary)
+                    .foregroundStyle(day.isToday ? Theme.accentColor : Theme.textPrimary)
                     .frame(width: 27, height: 27)
                     .background(
-                        day.isToday ? AnyShapeStyle(Color.accentColor.opacity(0.15))
+                        day.isToday ? AnyShapeStyle(Theme.accentColor.opacity(0.15))
                             : (day.isSameDay(as: model.selectedDate) ? AnyShapeStyle(Theme.fill) : AnyShapeStyle(Color.clear)),
                         in: Circle()
                     )

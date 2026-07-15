@@ -69,7 +69,7 @@ struct NowView: View {
             VStack(spacing: 20) {
                 Text("RIGHT NOW")
                     .font(.system(size: 11, weight: .bold)).tracking(2)
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                 Text(block.title)
                     .font(.system(size: 34, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
@@ -210,9 +210,9 @@ struct NowView: View {
     private func actionPill(_ title: String, _ icon: String, filled: Bool) -> some View {
         Label(title, systemImage: icon)
             .font(.system(size: 14, weight: .semibold))
-            .foregroundStyle(filled ? Theme.bg : Color.accentColor)
+            .foregroundStyle(filled ? Theme.bg : Theme.accentColor)
             .padding(.horizontal, 18).padding(.vertical, 11)
-            .background(filled ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Color.accentColor.opacity(0.14)),
+            .background(filled ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.accentColor.opacity(0.14)),
                         in: Capsule())
     }
 
@@ -222,7 +222,7 @@ struct NowView: View {
         return GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule().fill(Theme.fill)
-                Capsule().fill(Color.accentColor)
+                Capsule().fill(Theme.accentColor)
                     .frame(width: geo.size.width * (done / total))
             }
         }

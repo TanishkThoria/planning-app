@@ -49,7 +49,7 @@ struct CalendarFilterView: View {
     private var headerBar: some View {
         HStack {
             Button("Done") { dismiss() }
-                .buttonStyle(.plain).font(.system(size: 13, weight: .semibold)).foregroundStyle(Color.accentColor)
+                .buttonStyle(.plain).font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.accentColor)
                 .keyboardShortcut(.defaultAction)
             Spacer()
             Text("Show & Hide").font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
@@ -72,7 +72,7 @@ struct CalendarFilterView: View {
                 SectionHeader(title: title, trailing: "\(items.filter { !hidden.contains($0.id) }.count)/\(items.count)")
                 Spacer(minLength: 8)
                 Button("All", action: showAll)
-                    .buttonStyle(.plain).font(.system(size: 11, weight: .medium)).foregroundStyle(Color.accentColor)
+                    .buttonStyle(.plain).font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.accentColor)
                 Button("None", action: hideAll)
                     .buttonStyle(.plain).font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.textTertiary)
             }

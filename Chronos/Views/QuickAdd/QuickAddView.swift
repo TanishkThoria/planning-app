@@ -41,7 +41,7 @@ struct QuickAddView: View {
             HStack(spacing: 10) {
                 Image(systemName: "sparkles")
                     .font(.system(size: 15))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                 TextField("Deep work 9-11am · Standup tmr 9:15 15m · todo Ship it fri !!", text: $text)
                     .textFieldStyle(.plain)
                     .font(.system(size: 16, weight: .medium))
@@ -53,7 +53,7 @@ struct QuickAddView: View {
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(Color.accentColor.opacity(0.4), lineWidth: 1)
+                    .strokeBorder(Theme.accentColor.opacity(0.4), lineWidth: 1)
             )
 
             HStack {
@@ -74,7 +74,7 @@ struct QuickAddView: View {
                         .foregroundStyle(Theme.bg)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 6)
-                        .background(Color.accentColor, in: Capsule())
+                        .background(Theme.accentColor, in: Capsule())
                 }
                 .buttonStyle(.plain)
                 .disabled(!parsed.isValid)
@@ -122,7 +122,7 @@ struct QuickAddView: View {
         HStack(spacing: 10) {
             Image(systemName: parsed.kind == .block ? "rectangle.stack.fill" : "checkmark.circle.fill")
                 .font(.system(size: 13))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Theme.accentColor)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(parsed.title)
@@ -136,7 +136,7 @@ struct QuickAddView: View {
             Spacer()
         }
         .padding(12)
-        .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(Theme.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     private var previewDetail: String {

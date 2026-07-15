@@ -61,7 +61,7 @@ enum Theme {
     }
 
     /// Apple's system tint colors — single values that read well on both light
-    /// and dark, so `.tint` resolves `Color.accentColor` reliably everywhere.
+    /// and dark, so `.tint` resolves `Theme.accentColor` reliably everywhere.
     static let accentChoices: [AccentChoice] = [
         .init(name: "Blue", color: Color(hex: 0x0A84FF)),
         .init(name: "Indigo", color: Color(hex: 0x5E5CE6)),
@@ -74,6 +74,16 @@ enum Theme {
 
     static func accent(named name: String) -> Color {
         accentChoices.first(where: { $0.name == name })?.color ?? accentChoices[0].color
+    }
+
+    /// The user's chosen accent as a live `Color`, resolved from the stored
+    /// preference every time it's read. This is the single source of truth the
+    /// whole app paints with — use it instead of SwiftUI's `Theme.accentColor`,
+    /// which resolves the fixed asset-catalog color and would ignore the user's
+    /// pick. Because the root re-renders whenever the accent preference changes,
+    /// every `Theme.accentColor` updates instantly and stays put across screens.
+    static var accentColor: Color {
+        accent(named: UserDefaults.standard.string(forKey: Prefs.accentName) ?? "Blue")
     }
 
     // MARK: Type

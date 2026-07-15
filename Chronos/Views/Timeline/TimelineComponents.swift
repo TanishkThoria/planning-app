@@ -53,7 +53,7 @@ struct UpNextStrip: View {
         if let text = statusText {
             HStack(spacing: 6) {
                 Circle()
-                    .fill(Color.accentColor)
+                    .fill(Theme.accentColor)
                     .frame(width: 5, height: 5)
                 Text(text)
                     .font(.system(size: 11.5, weight: .medium))

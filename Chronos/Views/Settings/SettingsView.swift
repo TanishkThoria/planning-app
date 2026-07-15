@@ -95,7 +95,7 @@ struct SettingsView: View {
                                     systemImage: "person.crop.circle.badge.checkmark"
                                 )
                                 .font(.system(size: 12.5, weight: .semibold))
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Theme.accentColor)
                             }
                             .buttonStyle(.plain)
                         }
@@ -313,7 +313,7 @@ struct SettingsView: View {
                                 Text("Chronos has no database. Blocks are Apple Calendar events; tasks are Apple Reminders. Edits made anywhere — including Siri, the Apple apps, or other devices — appear here automatically, and vice-versa.")
                             } icon: {
                                 Image(systemName: "arrow.triangle.2.circlepath")
-                                    .foregroundStyle(Color.accentColor)
+                                    .foregroundStyle(Theme.accentColor)
                             }
                             .font(.system(size: 12))
                             .foregroundStyle(Theme.textSecondary)
@@ -327,7 +327,7 @@ struct SettingsView: View {
                         } label: {
                             Label("Refresh now", systemImage: "arrow.clockwise")
                                 .font(.system(size: 12.5, weight: .medium))
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Theme.accentColor)
                         }
                         .buttonStyle(.plain)
                         .padding(.horizontal, 4)
@@ -341,7 +341,7 @@ struct SettingsView: View {
                             HStack(spacing: 10) {
                                 Image(systemName: "sparkles")
                                     .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(Color.accentColor)
+                                    .foregroundStyle(Theme.accentColor)
                                     .frame(width: 20)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text("iCloud sync, leaderboards & friends")
@@ -377,7 +377,7 @@ struct SettingsView: View {
                             HStack(spacing: 10) {
                                 Image(systemName: "graduationcap.fill")
                                     .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(Color.accentColor)
+                                    .foregroundStyle(Theme.accentColor)
                                     .frame(width: 20)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(LMSStore.shared.isConfigured ? "Manage schools" : "Connect your school")
@@ -407,7 +407,7 @@ struct SettingsView: View {
                             HStack(spacing: 10) {
                                 Image(systemName: "map")
                                     .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(Color.accentColor)
+                                    .foregroundStyle(Theme.accentColor)
                                     .frame(width: 20)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text("Take the tour")
@@ -435,10 +435,10 @@ struct SettingsView: View {
                                 ShareLink(item: life.exportJSON()) {
                                     Label("Back up Grow data", systemImage: "square.and.arrow.up")
                                         .font(.system(size: 12.5, weight: .semibold))
-                                        .foregroundStyle(Color.accentColor)
+                                        .foregroundStyle(Theme.accentColor)
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 10)
-                                        .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                        .background(Theme.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                                 }
                                 Button {
                                     restoreText = ""; restoring = true

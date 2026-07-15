@@ -73,7 +73,7 @@ struct GrowView: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(Theme.bg)
                     .frame(width: 28, height: 26)
-                    .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                    .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
             }
             .menuIndicator(.hidden)
         }
@@ -97,7 +97,7 @@ struct GrowView: View {
                         .foregroundStyle(Theme.warning)
                 }
                 Button { model.journalPresented = true } label: {
-                    Text("History").font(.system(size: 11, weight: .medium)).foregroundStyle(Color.accentColor)
+                    Text("History").font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
             }
@@ -141,7 +141,7 @@ struct GrowView: View {
                     model.goalEditor = GoalEditContext(goal: Goal(), isNew: true)
                 } label: {
                     Image(systemName: "plus").font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
             }
@@ -236,7 +236,7 @@ struct GrowView: View {
                     model.habitEditor = HabitEditContext(habit: Habit(), isNew: true)
                 } label: {
                     Image(systemName: "plus").font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
             }

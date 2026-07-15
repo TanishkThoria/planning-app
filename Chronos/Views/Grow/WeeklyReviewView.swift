@@ -46,7 +46,7 @@ struct WeeklyReviewView: View {
             footer
         }
         .background(
-            LinearGradient(colors: [Color.accentColor.opacity(0.12), Theme.elevated],
+            LinearGradient(colors: [Theme.accentColor.opacity(0.12), Theme.elevated],
                            startPoint: .top, endPoint: .center).ignoresSafeArea()
         )
         .background(Theme.elevated)
@@ -72,7 +72,7 @@ struct WeeklyReviewView: View {
 
     private var intro: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Image(systemName: "calendar.badge.checkmark").font(.system(size: 28)).foregroundStyle(Color.accentColor)
+            Image(systemName: "calendar.badge.checkmark").font(.system(size: 28)).foregroundStyle(Theme.accentColor)
             Text("Look back before you leap")
                 .font(.system(size: 22, weight: .bold)).foregroundStyle(Theme.textPrimary)
             if let first = days.first, let last = days.last {
@@ -198,7 +198,7 @@ struct WeeklyReviewView: View {
                 Label("Plan Next Week", systemImage: "wand.and.stars")
                     .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.bg)
                     .padding(.horizontal, 16).padding(.vertical, 8)
-                    .background(Color.accentColor, in: Capsule())
+                    .background(Theme.accentColor, in: Capsule())
             }
             .buttonStyle(.plain)
             .keyboardShortcut(.defaultAction)

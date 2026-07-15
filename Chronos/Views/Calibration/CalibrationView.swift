@@ -86,7 +86,7 @@ struct CalibrationView: View {
             HStack(spacing: 5) {
                 ForEach(Step.allCases, id: \.rawValue) { item in
                     Capsule()
-                        .fill(item.rawValue <= step.rawValue ? Color.accentColor : Theme.fill)
+                        .fill(item.rawValue <= step.rawValue ? Theme.accentColor : Theme.fill)
                         .frame(width: item == step ? 18 : 6, height: 4)
                 }
             }
@@ -107,7 +107,7 @@ struct CalibrationView: View {
                     .foregroundStyle(Theme.bg)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
-                    .background(Color.accentColor, in: Capsule())
+                    .background(Theme.accentColor, in: Capsule())
             }
             .buttonStyle(.plain)
             .keyboardShortcut(.defaultAction)
@@ -147,7 +147,7 @@ struct CalibrationView: View {
         VStack(alignment: .leading, spacing: 14) {
             Image(systemName: "person.crop.circle.badge.checkmark")
                 .font(.system(size: 34))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Theme.accentColor)
             Text("Make Chronos yours")
                 .font(.system(size: 20, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
@@ -223,7 +223,7 @@ struct CalibrationView: View {
             } label: {
                 Label("Add a routine", systemImage: "plus.circle.fill")
                     .font(.system(size: 12.5, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
             }
             .buttonStyle(.plain)
 
@@ -317,7 +317,7 @@ struct CalibrationView: View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: icon)
                 .font(.system(size: 12.5, weight: .semibold))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Theme.accentColor)
                 .frame(width: 20)
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
@@ -351,7 +351,7 @@ struct CalibrationView: View {
             HStack(spacing: 10) {
                 Image(systemName: selected ? "largecircle.fill.circle" : "circle")
                     .font(.system(size: 14))
-                    .foregroundStyle(selected ? Color.accentColor : Theme.textTertiary)
+                    .foregroundStyle(selected ? Theme.accentColor : Theme.textTertiary)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
                         .font(.system(size: 13, weight: .semibold))
@@ -364,7 +364,7 @@ struct CalibrationView: View {
             }
             .padding(10)
             .background(
-                selected ? Color.accentColor.opacity(0.1) : Theme.surface,
+                selected ? Theme.accentColor.opacity(0.1) : Theme.surface,
                 in: RoundedRectangle(cornerRadius: 10, style: .continuous)
             )
             .contentShape(Rectangle())
@@ -376,7 +376,7 @@ struct CalibrationView: View {
         HStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.system(size: 12))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Theme.accentColor)
                 .frame(width: 18)
             Text(text)
                 .font(.system(size: 12.5))
@@ -456,7 +456,7 @@ private struct RoutineEditorCard: View {
                             .foregroundStyle(isOn ? Theme.bg : Theme.textSecondary)
                             .frame(width: 24, height: 24)
                             .background(
-                                isOn ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Theme.fill),
+                                isOn ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.fill),
                                 in: Circle()
                             )
                     }

@@ -34,7 +34,7 @@ struct TaskRow: View {
             if selectionMode {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 16))
-                    .foregroundStyle(isSelected ? Color.accentColor : Theme.textTertiary)
+                    .foregroundStyle(isSelected ? Theme.accentColor : Theme.textTertiary)
                     .padding(.top, 1)
             } else {
                 Button {
@@ -111,7 +111,7 @@ struct TaskRow: View {
                             systemImage: "rectangle.stack"
                         )
                         .font(.system(size: 10.5))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                     }
                     if !subtasks.isEmpty {
                         Label(
@@ -139,7 +139,7 @@ struct TaskRow: View {
                 } label: {
                     Image(systemName: "bolt.fill")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                         .frame(width: 24, height: 24)
                         .background(Theme.fill, in: Circle())
                 }
@@ -150,7 +150,7 @@ struct TaskRow: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(
-            isSelected ? Color.accentColor.opacity(0.12) : Theme.surface,
+            isSelected ? Theme.accentColor.opacity(0.12) : Theme.surface,
             in: RoundedRectangle(cornerRadius: 10, style: .continuous)
         )
         .contentShape(Rectangle())
@@ -297,7 +297,7 @@ struct SubtaskRow: View {
             if let first = service.blocksLinked(to: task.id).first {
                 Label(Fmt.relativeDay(first.start), systemImage: "rectangle.stack")
                     .font(.system(size: 10))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
             }
 
             Spacer(minLength: 4)

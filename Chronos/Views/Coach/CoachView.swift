@@ -36,7 +36,7 @@ struct CoachUnavailableView: View {
                 .padding([.top, .horizontal], 16)
             }
             Spacer()
-            Image(systemName: "sparkles").font(.system(size: 34)).foregroundStyle(Color.accentColor)
+            Image(systemName: "sparkles").font(.system(size: 34)).foregroundStyle(Theme.accentColor)
             Text("Coach needs Apple Intelligence")
                 .font(.system(size: 18, weight: .bold)).foregroundStyle(Theme.textPrimary)
             Text(unavailableReason)
@@ -128,10 +128,10 @@ struct CoachChatView: View {
     private var header: some View {
         HStack(spacing: 10) {
             ZStack {
-                Circle().fill(Color.accentColor.opacity(0.16)).frame(width: 34, height: 34)
+                Circle().fill(Theme.accentColor.opacity(0.16)).frame(width: 34, height: 34)
                 Image(systemName: "sparkles")
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
             }
             VStack(alignment: .leading, spacing: 1) {
                 Text("Coach")
@@ -159,17 +159,17 @@ struct CoachChatView: View {
             HStack(spacing: 8) {
                 Image(systemName: "arrow.uturn.backward.circle")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                 Text("Continue previous conversation")
                     .font(.system(size: 12.5, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(Theme.textTertiary)
             }
             .padding(.horizontal, 14).padding(.vertical, 10)
-            .background(Color.accentColor.opacity(0.10))
+            .background(Theme.accentColor.opacity(0.10))
         }
         .buttonStyle(.plain)
     }
@@ -256,7 +256,7 @@ struct CoachChatView: View {
                 }
                 Spacer(minLength: 4)
                 Text(insight.actionLabel)
-                    .font(.system(size: 11.5, weight: .semibold)).foregroundStyle(Color.accentColor)
+                    .font(.system(size: 11.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
             }
             .padding(13)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -278,7 +278,7 @@ struct CoachChatView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 5) {
                 Image(systemName: "sparkles").font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                 Text("ASK YOUR COACH")
                     .font(.system(size: 10.5, weight: .semibold)).tracking(1.2)
                     .foregroundStyle(Theme.textTertiary)
@@ -288,7 +288,7 @@ struct CoachChatView: View {
                     HStack(spacing: 8) {
                         Image(systemName: starter.icon)
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(Theme.accentColor)
                             .frame(width: 18)
                         Text(starter.text)
                             .font(.system(size: 12.5, weight: .medium))
@@ -338,7 +338,7 @@ struct CoachChatView: View {
                     .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(Theme.bg)
                     .frame(width: 36, height: 36)
-                    .background(canSend ? Color.accentColor : Theme.fill, in: Circle())
+                    .background(canSend ? Theme.accentColor : Theme.fill, in: Circle())
             }
             .buttonStyle(.plain)
             .disabled(!canSend)
@@ -658,15 +658,15 @@ private struct MessageBubble: View {
                     .font(.system(size: 13.5))
                     .foregroundStyle(Theme.textPrimary)
                     .padding(.horizontal, 13).padding(.vertical, 9)
-                    .background(Color.accentColor.opacity(0.16), in: RoundedRectangle(cornerRadius: 15, style: .continuous))
+                    .background(Theme.accentColor.opacity(0.16), in: RoundedRectangle(cornerRadius: 15, style: .continuous))
             }
         } else {
             HStack(alignment: .top, spacing: 9) {
                 ZStack {
-                    Circle().fill(Color.accentColor.opacity(0.16)).frame(width: 26, height: 26)
+                    Circle().fill(Theme.accentColor.opacity(0.16)).frame(width: 26, height: 26)
                     Image(systemName: "sparkles")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                 }
                 VStack(alignment: .leading, spacing: 8) {
                     Text(message.text)
@@ -680,9 +680,9 @@ private struct MessageBubble: View {
                         Button { onAction(action) } label: {
                             Text(label)
                                 .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Theme.accentColor)
                                 .padding(.horizontal, 12).padding(.vertical, 6)
-                                .background(Color.accentColor.opacity(0.12), in: Capsule())
+                                .background(Theme.accentColor.opacity(0.12), in: Capsule())
                         }
                         .buttonStyle(.plain)
                     }
@@ -700,10 +700,10 @@ private struct ThinkingBubble: View {
     var body: some View {
         HStack(alignment: .top, spacing: 9) {
             ZStack {
-                Circle().fill(Color.accentColor.opacity(0.16)).frame(width: 26, height: 26)
+                Circle().fill(Theme.accentColor.opacity(0.16)).frame(width: 26, height: 26)
                 Image(systemName: "sparkles")
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
             }
             HStack(spacing: 4) {
                 ForEach(0..<3) { i in

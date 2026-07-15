@@ -161,7 +161,7 @@ struct PlanMyDayView: View {
             HStack(spacing: 10) {
                 Image(systemName: isIncluded ? "checkmark.square.fill" : "square")
                     .font(.system(size: 15))
-                    .foregroundStyle(isIncluded ? Color.accentColor : Theme.textTertiary)
+                    .foregroundStyle(isIncluded ? Theme.accentColor : Theme.textTertiary)
                 Image(systemName: "repeat")
                     .font(.system(size: 10))
                     .foregroundStyle(Theme.textTertiary)
@@ -171,7 +171,7 @@ struct PlanMyDayView: View {
                 Spacer()
                 Text(Fmt.timeRange(window.start, window.end))
                     .font(.system(size: 11.5, weight: .semibold))
-                    .foregroundStyle(isIncluded ? Color.accentColor : Theme.textTertiary)
+                    .foregroundStyle(isIncluded ? Theme.accentColor : Theme.textTertiary)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 9)
@@ -191,7 +191,7 @@ struct PlanMyDayView: View {
             HStack(spacing: 10) {
                 Image(systemName: isIncluded ? "checkmark.square.fill" : "square")
                     .font(.system(size: 15))
-                    .foregroundStyle(isIncluded ? Color.accentColor : Theme.textTertiary)
+                    .foregroundStyle(isIncluded ? Theme.accentColor : Theme.textTertiary)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(task.title)
@@ -221,7 +221,7 @@ struct PlanMyDayView: View {
                     if let proposal {
                         Text(Fmt.timeRange(proposal.start, proposal.end))
                             .font(.system(size: 11.5, weight: .semibold))
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(Theme.accentColor)
                     } else {
                         Text("no room")
                             .font(.system(size: 11, weight: .medium))
@@ -261,7 +261,7 @@ struct PlanMyDayView: View {
                     .foregroundStyle(Theme.bg)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 7)
-                    .background(Color.accentColor, in: Capsule())
+                    .background(Theme.accentColor, in: Capsule())
             }
             .buttonStyle(.plain)
             .disabled(totalBlocks == 0)

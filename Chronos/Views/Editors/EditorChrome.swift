@@ -30,7 +30,7 @@ struct EditorSheet<Content: View>: View {
                 }
                 .buttonStyle(.plain)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(confirmDisabled ? Theme.textTertiary : Color.accentColor)
+                .foregroundStyle(confirmDisabled ? Theme.textTertiary : Theme.accentColor)
                 .disabled(confirmDisabled)
                 .keyboardShortcut(.defaultAction)
             }
@@ -107,7 +107,7 @@ struct DurationChips: View {
                         .padding(.horizontal, 9)
                         .padding(.vertical, 4)
                         .background(
-                            current == minutes ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Theme.fill),
+                            current == minutes ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.fill),
                             in: Capsule()
                         )
                 }

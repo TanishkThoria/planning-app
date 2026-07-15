@@ -162,7 +162,7 @@ struct AvailabilityView: View {
                         HStack(alignment: .top, spacing: 10) {
                             Text(Fmt.weekdayShort.string(from: entry.day))
                                 .font(.system(size: 11.5, weight: .bold))
-                                .foregroundStyle(entry.day.isToday ? Color.accentColor : Theme.textSecondary)
+                                .foregroundStyle(entry.day.isToday ? Theme.accentColor : Theme.textSecondary)
                                 .frame(width: 34, alignment: .leading)
                             Text(entry.gaps
                                 .map { "\(Fmt.time.string(from: $0.start))–\(Fmt.time.string(from: $0.end))" }
@@ -190,7 +190,7 @@ struct AvailabilityView: View {
                     .foregroundStyle(copied ? Theme.success : Theme.bg)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(copied ? Theme.success.opacity(0.15) : Color.accentColor,
+                    .background(copied ? Theme.success.opacity(0.15) : Theme.accentColor,
                                 in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .buttonStyle(.plain)
@@ -199,9 +199,9 @@ struct AvailabilityView: View {
             Button { withAnimation(.snappy) { showQR.toggle() } } label: {
                 Image(systemName: showQR ? "qrcode.viewfinder" : "qrcode")
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(showQR ? Theme.bg : Color.accentColor)
+                    .foregroundStyle(showQR ? Theme.bg : Theme.accentColor)
                     .frame(width: 46, height: 44)
-                    .background(showQR ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Color.accentColor.opacity(0.12)),
+                    .background(showQR ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.accentColor.opacity(0.12)),
                                in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .buttonStyle(.plain)
@@ -210,9 +210,9 @@ struct AvailabilityView: View {
             ShareLink(item: composedText) {
                 Image(systemName: "square.and.arrow.up")
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .frame(width: 46, height: 44)
-                    .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .background(Theme.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .disabled(slots.isEmpty)
         }

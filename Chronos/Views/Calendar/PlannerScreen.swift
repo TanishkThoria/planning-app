@@ -97,9 +97,9 @@ struct PlannerScreen: View {
                 Image(systemName: icon).font(.system(size: 11, weight: .semibold))
                 Text(title).font(.system(size: 12, weight: .semibold))
             }
-            .foregroundStyle(Color.accentColor)
+            .foregroundStyle(Theme.accentColor)
             .padding(.horizontal, 11).padding(.vertical, 7)
-            .background(Color.accentColor.opacity(0.12), in: Capsule())
+            .background(Theme.accentColor.opacity(0.12), in: Capsule())
         }
         .buttonStyle(.plain)
     }
@@ -108,18 +108,18 @@ struct PlannerScreen: View {
         HStack(spacing: 2) {
             Button { hourHeight = max(40, hourHeight - 10) } label: {
                 Image(systemName: "minus.magnifyingglass").font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .padding(.horizontal, 8).padding(.vertical, 7)
             }
             .buttonStyle(.plain)
             Button { hourHeight = min(160, hourHeight + 10) } label: {
                 Image(systemName: "plus.magnifyingglass").font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .padding(.horizontal, 8).padding(.vertical, 7)
             }
             .buttonStyle(.plain)
         }
-        .background(Color.accentColor.opacity(0.12), in: Capsule())
+        .background(Theme.accentColor.opacity(0.12), in: Capsule())
     }
 
     // MARK: Title text

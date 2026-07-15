@@ -79,13 +79,13 @@ enum PlannerBrief {
 
     static func focus(_ ctx: PlannerContext) -> Item {
         if let current = ctx.todayBlocks.first(where: { $0.start <= ctx.now && ctx.now < $0.end }) {
-            return Item(icon: "scope", tint: .accentColor, title: "Focus right now",
+            return Item(icon: "scope", tint: Theme.accentColor, title: "Focus right now",
                         message: "Stay with \(current.title) — it runs until \(Fmt.time.string(from: current.end)).",
                         action: .focus, actionLabel: "Start focus timer")
         }
         if let next = ctx.todayBlocks.first(where: { $0.start > ctx.now }) {
             let mins = max(1, Int(next.start.timeIntervalSince(ctx.now) / 60))
-            return Item(icon: "clock.badge", tint: .accentColor, title: "Up next",
+            return Item(icon: "clock.badge", tint: Theme.accentColor, title: "Up next",
                         message: "\(next.title) at \(Fmt.time.string(from: next.start)) — about \(Fmt.duration(minutes: mins)) to wrap loose ends or get set up.",
                         action: nil, actionLabel: nil)
         }
@@ -94,7 +94,7 @@ enum PlannerBrief {
             .sorted { ($0.dueDate ?? .distantFuture) < ($1.dueDate ?? .distantFuture) }
             .first
         if let top {
-            return Item(icon: "scope", tint: .accentColor, title: "What to focus on",
+            return Item(icon: "scope", tint: Theme.accentColor, title: "What to focus on",
                         message: "Nothing's scheduled right now. Your most pressing task is \(top.title) — want to block time for it?",
                         action: .planDay, actionLabel: "Plan my day")
         }
@@ -123,11 +123,11 @@ enum PlannerBrief {
                         action: nil, actionLabel: nil)
         }
         if planned == 0 {
-            return Item(icon: "square.dashed", tint: .accentColor, title: "Today's load",
+            return Item(icon: "square.dashed", tint: Theme.accentColor, title: "Today's load",
                         message: "Nothing booked yet. Turn your open tasks into real time blocks whenever you're ready.",
                         action: .planDay, actionLabel: "Plan my day")
         }
-        return Item(icon: "gauge.with.dots.needle.33percent", tint: .accentColor, title: "Today's load",
+        return Item(icon: "gauge.with.dots.needle.33percent", tint: Theme.accentColor, title: "Today's load",
                     message: "Only \(dur) planned today — plenty of room to add a deep-work block or pull tomorrow's work forward.",
                     action: .planDay, actionLabel: "Plan my day")
     }
@@ -157,7 +157,7 @@ enum PlannerBrief {
 
     static func week(_ ctx: PlannerContext) -> Item {
         let pct = Int((ctx.stats.completionRate * 100).rounded())
-        return Item(icon: "chart.line.uptrend.xyaxis", tint: .accentColor, title: "This week",
+        return Item(icon: "chart.line.uptrend.xyaxis", tint: Theme.accentColor, title: "This week",
                     message: "\(Fmt.duration(minutes: ctx.stats.focusMinutes)) focused, \(ctx.stats.tasksCompleted) task\(ctx.stats.tasksCompleted == 1 ? "" : "s") done, a \(ctx.stats.streakDays)-day streak, and \(pct)% of due tasks complete.",
                     action: .openStats, actionLabel: "See statistics")
     }

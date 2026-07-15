@@ -77,13 +77,13 @@ struct MonthView: View {
             VStack(spacing: 4) {
                 ZStack {
                     if isSelected {
-                        Circle().fill(Color.accentColor).frame(width: 26, height: 26)
+                        Circle().fill(Theme.accentColor).frame(width: 26, height: 26)
                     } else if isToday {
-                        Circle().fill(Color.accentColor.opacity(0.16)).frame(width: 26, height: 26)
+                        Circle().fill(Theme.accentColor.opacity(0.16)).frame(width: 26, height: 26)
                     }
                     Text(Fmt.dayNumber.string(from: day))
                         .font(.system(size: 13, weight: isToday || isSelected ? .bold : .medium))
-                        .foregroundStyle(isSelected ? Theme.bg : (isToday ? Color.accentColor : Theme.textPrimary))
+                        .foregroundStyle(isSelected ? Theme.bg : (isToday ? Theme.accentColor : Theme.textPrimary))
                 }
                 .frame(height: 26)
 
@@ -149,7 +149,7 @@ struct MonthView: View {
                 } label: {
                     Image(systemName: "plus").font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(Theme.bg).frame(width: 26, height: 24)
-                        .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                        .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                 }
                 .buttonStyle(.plain)
                 Button { model.openDay(day) } label: {

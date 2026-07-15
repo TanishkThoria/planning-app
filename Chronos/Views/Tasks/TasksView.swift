@@ -265,7 +265,7 @@ struct TasksView: View {
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(entryFocused ? Color.accentColor.opacity(0.5) : Theme.hairline, lineWidth: 1)
+                .strokeBorder(entryFocused ? Theme.accentColor.opacity(0.5) : Theme.hairline, lineWidth: 1)
         )
     }
 
@@ -308,7 +308,7 @@ struct TasksView: View {
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 5)
                                 .background(
-                                    filter == item ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Theme.fill),
+                                    filter == item ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.fill),
                                     in: Capsule()
                                 )
                         }

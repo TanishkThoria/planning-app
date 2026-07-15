@@ -67,10 +67,10 @@ struct MiniMonthView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 22)
                 .foregroundStyle(
-                    isSelected ? Theme.bg : (isToday ? Color.accentColor : Theme.textSecondary)
+                    isSelected ? Theme.bg : (isToday ? Theme.accentColor : Theme.textSecondary)
                 )
                 .background(
-                    isSelected ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Color.clear),
+                    isSelected ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Color.clear),
                     in: RoundedRectangle(cornerRadius: 5, style: .continuous)
                 )
         }

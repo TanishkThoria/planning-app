@@ -97,6 +97,11 @@ struct RootView: View {
         .background(Theme.bg.ignoresSafeArea())
         .chronosAppearance()
         .tint(Theme.accent(named: accentName))
+        // Re-key on the accent so every `Theme.accentColor` in the tree is
+        // re-read the instant the preference changes — a full, live recolor.
+        // Accent changes originate in the Settings sheet, so this rebuild is
+        // off-screen and imperceptible.
+        .id(accentName)
     }
 
     // Staged (lifecycle → dataObservers → settingObservers) so no single

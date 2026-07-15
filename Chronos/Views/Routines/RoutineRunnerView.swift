@@ -68,7 +68,7 @@ struct RoutineRunnerView: View {
             Button { voiceEnabled.toggle(); if !voiceEnabled { speaker.stop() } } label: {
                 Image(systemName: voiceEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(voiceEnabled ? Color.accentColor : Theme.textTertiary)
+                    .foregroundStyle(voiceEnabled ? Theme.accentColor : Theme.textTertiary)
             }
             .buttonStyle(.plain)
         }
@@ -93,7 +93,7 @@ struct RoutineRunnerView: View {
                 Circle().stroke(Theme.fill, lineWidth: 10)
                 Circle()
                     .trim(from: 0, to: stepProgress)
-                    .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                    .stroke(Theme.accentColor, style: StrokeStyle(lineWidth: 10, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(.linear(duration: 0.3), value: stepProgress)
                 Text(timeText(remaining))
@@ -125,8 +125,8 @@ struct RoutineRunnerView: View {
         HStack(spacing: 4) {
             ForEach(Array(steps.enumerated()), id: \.element.id) { idx, _ in
                 Capsule()
-                    .fill(idx < stepIndex ? Color.accentColor
-                          : idx == stepIndex ? Color.accentColor.opacity(0.55) : Theme.fill)
+                    .fill(idx < stepIndex ? Theme.accentColor
+                          : idx == stepIndex ? Theme.accentColor.opacity(0.55) : Theme.fill)
                     .frame(height: 4)
             }
         }
@@ -135,7 +135,7 @@ struct RoutineRunnerView: View {
     private var controls: some View {
         HStack(spacing: 14) {
             control("backward.fill", "Back", Theme.textSecondary) { begin(max(0, stepIndex - 1)) }
-            control(running ? "pause.fill" : "play.fill", running ? "Pause" : "Resume", Color.accentColor, prominent: true) {
+            control(running ? "pause.fill" : "play.fill", running ? "Pause" : "Resume", Theme.accentColor, prominent: true) {
                 running ? pause() : resume()
             }
             control("forward.fill", "Skip", Theme.textSecondary) { advance() }
@@ -173,7 +173,7 @@ struct RoutineRunnerView: View {
             Button { dismiss() } label: {
                 Text("Done").font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.bg)
                     .frame(maxWidth: .infinity).padding(.vertical, 14)
-                    .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
             .buttonStyle(.plain)
         }

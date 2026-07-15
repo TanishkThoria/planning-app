@@ -103,7 +103,7 @@ struct TemplatesView: View {
             Text("Templates").font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
             Spacer()
             Button("Import") { importCode = ""; importing = true }
-                .buttonStyle(.plain).font(.system(size: 13, weight: .semibold)).foregroundStyle(Color.accentColor)
+                .buttonStyle(.plain).font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.accentColor)
         }
         .padding(.horizontal, 16).padding(.vertical, 12)
     }
@@ -116,7 +116,7 @@ struct TemplatesView: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "square.and.arrow.down.on.square")
-                    .font(.system(size: 15)).foregroundStyle(Color.accentColor)
+                    .font(.system(size: 15)).foregroundStyle(Theme.accentColor)
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Save \(Fmt.relativeDay(day)) as a template")
                         .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
@@ -139,7 +139,7 @@ struct TemplatesView: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "square.grid.3x3.fill")
-                    .font(.system(size: 15)).foregroundStyle(Color.accentColor)
+                    .font(.system(size: 15)).foregroundStyle(Theme.accentColor)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(template.name).font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                     Text("\(template.blocks.count) blocks\(span.isEmpty ? "" : " · \(span)")")
@@ -149,7 +149,7 @@ struct TemplatesView: View {
                 Text("Apply")
                     .font(.system(size: 11, weight: .semibold)).foregroundStyle(Theme.bg)
                     .padding(.horizontal, 10).padding(.vertical, 4)
-                    .background(Color.accentColor, in: Capsule())
+                    .background(Theme.accentColor, in: Capsule())
             }
             .panel(padding: 12)
         }

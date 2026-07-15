@@ -110,7 +110,7 @@ struct FriendsView: View {
                                 .foregroundStyle(statusText.isEmpty ? Theme.textTertiary : Theme.textSecondary)
                                 .lineLimit(1)
                             Image(systemName: "pencil").font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Theme.accentColor)
                         }
                     }
                     .buttonStyle(.plain)
@@ -133,9 +133,9 @@ struct FriendsView: View {
                 Button { copyCode() } label: {
                     Label(copied ? "Copied" : "Share", systemImage: copied ? "checkmark" : "square.and.arrow.up")
                         .font(.system(size: 12.5, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                         .padding(.horizontal, 12).padding(.vertical, 8)
-                        .background(Color.accentColor.opacity(0.12), in: Capsule())
+                        .background(Theme.accentColor.opacity(0.12), in: Capsule())
                 }
                 .buttonStyle(.plain)
             }
@@ -197,7 +197,7 @@ struct FriendsView: View {
                 social.addFriend(code: newCode); newCode = ""
             } label: {
                 Text("Add").font(.system(size: 12.5, weight: .semibold))
-                    .foregroundStyle(newCode.isEmpty ? Theme.textTertiary : Color.accentColor)
+                    .foregroundStyle(newCode.isEmpty ? Theme.textTertiary : Theme.accentColor)
             }
             .buttonStyle(.plain).disabled(newCode.isEmpty)
         }
@@ -267,7 +267,7 @@ struct FriendsView: View {
                             .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
                     }
                     .padding(.horizontal, 14).padding(.vertical, 11)
-                    .background(Color.accentColor.opacity(0.07), in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
+                    .background(Theme.accentColor.opacity(0.07), in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
                 }
             }
         }
@@ -357,10 +357,10 @@ private struct StatusEditor: View {
                                 Button { emoji = (emoji == e ? "" : e); Haptics.light() } label: {
                                     Text(e).font(.system(size: 26))
                                         .frame(width: 48, height: 48)
-                                        .background(emoji == e ? Color.accentColor.opacity(0.18) : Theme.surface,
+                                        .background(emoji == e ? Theme.accentColor.opacity(0.18) : Theme.surface,
                                                     in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                                         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                            .strokeBorder(emoji == e ? Color.accentColor : Theme.hairline, lineWidth: 1))
+                                            .strokeBorder(emoji == e ? Theme.accentColor : Theme.hairline, lineWidth: 1))
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -460,7 +460,7 @@ private struct FriendProfileSheet: View {
                     HStack(spacing: 10) {
                         stat("flame.fill", "\(status.presence.streakDays)d", "Streak", Theme.warning)
                         stat("timer", Fmt.duration(minutes: status.presence.weeklyFocus), "This week", Theme.success)
-                        stat("bolt.fill", "\(status.presence.momentum)", "Momentum", Color.accentColor)
+                        stat("bolt.fill", "\(status.presence.momentum)", "Momentum", Theme.accentColor)
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
@@ -543,11 +543,11 @@ private struct FriendProfileSheet: View {
                     } label: {
                         VStack(spacing: 5) {
                             Image(systemName: link.icon).font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Theme.accentColor)
                             Text(link.label).font(.system(size: 10.5, weight: .medium)).foregroundStyle(Theme.textSecondary)
                         }
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
-                        .background(Color.accentColor.opacity(0.10), in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
+                        .background(Theme.accentColor.opacity(0.10), in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }

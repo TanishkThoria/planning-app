@@ -108,11 +108,11 @@ struct LMSSetupView: View {
                             Text(p.name).font(.system(size: 11, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.7)
                         }
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
-                        .foregroundStyle(provider == p ? Color.accentColor : Theme.textSecondary)
-                        .background(provider == p ? Color.accentColor.opacity(0.14) : Theme.surface,
+                        .foregroundStyle(provider == p ? Theme.accentColor : Theme.textSecondary)
+                        .background(provider == p ? Theme.accentColor.opacity(0.14) : Theme.surface,
                                     in: RoundedRectangle(cornerRadius: 11, style: .continuous))
                         .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous)
-                            .strokeBorder(provider == p ? Color.accentColor.opacity(0.4) : Theme.hairline, lineWidth: 1))
+                            .strokeBorder(provider == p ? Theme.accentColor.opacity(0.4) : Theme.hairline, lineWidth: 1))
                     }
                     .buttonStyle(.plain)
                 }
@@ -123,9 +123,9 @@ struct LMSSetupView: View {
                     HStack(alignment: .top, spacing: 10) {
                         Text("\(idx + 1)")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(Theme.accentColor)
                             .frame(width: 18, height: 18)
-                            .background(Color.accentColor.opacity(0.15), in: Circle())
+                            .background(Theme.accentColor.opacity(0.15), in: Circle())
                         Text(text).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer(minLength: 0)
@@ -157,7 +157,7 @@ struct LMSSetupView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(canSubscribe ? Theme.bg : Theme.textTertiary)
                     .frame(maxWidth: .infinity).padding(.vertical, 12)
-                    .background(canSubscribe ? Color.accentColor : Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .background(canSubscribe ? Theme.accentColor : Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .buttonStyle(.plain)
             .disabled(!canSubscribe)
@@ -169,7 +169,7 @@ struct LMSSetupView: View {
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "icloud")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                 Text("Want it on every device? Add the subscription at icloud.com/calendar (or in Calendar on a Mac with Location: iCloud) instead — it then syncs everywhere automatically. Subscribing on iPhone keeps it on this device only.")
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.textTertiary)
@@ -194,7 +194,7 @@ struct LMSSetupView: View {
                     Button { service.refresh() } label: {
                         Label("Refresh", systemImage: "arrow.clockwise").font(.system(size: 11, weight: .semibold))
                     }
-                    .buttonStyle(.plain).foregroundStyle(Color.accentColor)
+                    .buttonStyle(.plain).foregroundStyle(Theme.accentColor)
                 }
                 if subscribed.isEmpty {
                     Text("No subscribed calendars found yet. Make sure you tapped Subscribe in the Calendar app, then Refresh.")
@@ -279,7 +279,7 @@ struct LMSSetupView: View {
                 }
                 .foregroundStyle(Theme.bg)
                 .frame(maxWidth: .infinity).padding(.vertical, 13)
-                .background(primaryEnabled ? Color.accentColor : Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .background(primaryEnabled ? Theme.accentColor : Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .buttonStyle(.plain)
             .disabled(!primaryEnabled)
@@ -353,10 +353,10 @@ struct LMSSetupView: View {
 
     private func hero(_ icon: String) -> some View {
         ZStack {
-            Circle().fill(Color.accentColor.opacity(0.14)).frame(width: 92, height: 92)
+            Circle().fill(Theme.accentColor.opacity(0.14)).frame(width: 92, height: 92)
             Image(systemName: icon)
                 .font(.system(size: 40, weight: .medium))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Theme.accentColor)
                 .symbolRenderingMode(.hierarchical)
         }
     }
@@ -364,7 +364,7 @@ struct LMSSetupView: View {
     private func bullet(_ icon: String, _ text: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon).font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.accentColor).frame(width: 22)
+                .foregroundStyle(Theme.accentColor).frame(width: 22)
             Text(text).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
@@ -384,12 +384,12 @@ struct LMSSetupView: View {
                 Spacer()
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 18))
-                    .foregroundStyle(selected ? Color.accentColor : Theme.textTertiary)
+                    .foregroundStyle(selected ? Theme.accentColor : Theme.textTertiary)
             }
             .padding(.horizontal, 12).padding(.vertical, 10)
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(selected ? Color.accentColor.opacity(0.4) : Theme.hairline, lineWidth: 1))
+                .strokeBorder(selected ? Theme.accentColor.opacity(0.4) : Theme.hairline, lineWidth: 1))
         }
         .buttonStyle(.plain)
     }

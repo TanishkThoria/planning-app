@@ -162,7 +162,7 @@ struct DayReviewView: View {
                     service.toggleTaskCompletion(id: item.task.id)
                     handled.insert(item.block.id)
                 }
-                reviewAction("More time", "plus.circle", tint: Color.accentColor) {
+                reviewAction("More time", "plus.circle", tint: Theme.accentColor) {
                     scheduleFollowUp(item, extend: true)
                 }
                 reviewAction("Reschedule", "arrow.uturn.forward", tint: Theme.warning) {
@@ -207,7 +207,7 @@ struct DayReviewView: View {
                     .foregroundStyle(Theme.bg)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 7)
-                    .background(Color.accentColor, in: Capsule())
+                    .background(Theme.accentColor, in: Capsule())
             }
             .buttonStyle(.plain)
         }

@@ -121,7 +121,7 @@ struct TodayView: View {
                         Text("🐸").font(.system(size: 13))
                         Text("EAT THE FROG")
                             .font(.system(size: 10, weight: .bold)).tracking(1.2)
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(Theme.accentColor)
                         Spacer()
                         Menu {
                             frogPickerItems
@@ -152,7 +152,7 @@ struct TodayView: View {
                                 .font(.system(size: 11.5, weight: .semibold))
                                 .foregroundStyle(Theme.bg)
                                 .padding(.horizontal, 11).padding(.vertical, 6)
-                                .background(Color.accentColor, in: Capsule())
+                                .background(Theme.accentColor, in: Capsule())
                         }
                         .buttonStyle(.plain)
                         Button {
@@ -161,9 +161,9 @@ struct TodayView: View {
                         } label: {
                             Label("Done", systemImage: "checkmark")
                                 .font(.system(size: 11.5, weight: .semibold))
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Theme.accentColor)
                                 .padding(.horizontal, 11).padding(.vertical, 6)
-                                .background(Color.accentColor.opacity(0.12), in: Capsule())
+                                .background(Theme.accentColor.opacity(0.12), in: Capsule())
                         }
                         .buttonStyle(.plain)
                         Spacer()
@@ -171,12 +171,12 @@ struct TodayView: View {
                 }
                 .padding(12)
                 .background(
-                    LinearGradient(colors: [Color.accentColor.opacity(0.14), Color.accentColor.opacity(0.04)],
+                    LinearGradient(colors: [Theme.accentColor.opacity(0.14), Theme.accentColor.opacity(0.04)],
                                    startPoint: .topLeading, endPoint: .bottomTrailing),
                     in: RoundedRectangle(cornerRadius: 12, style: .continuous)
                 )
                 .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(Color.accentColor.opacity(0.25), lineWidth: 1))
+                    .strokeBorder(Theme.accentColor.opacity(0.25), lineWidth: 1))
             }
         } else if !frogCandidates.isEmpty {
             Menu {
@@ -235,7 +235,7 @@ struct TodayView: View {
                     ForEach(Array(intentions.enumerated()), id: \.offset) { idx, text in
                         HStack(spacing: 8) {
                             Text("\(idx + 1)").font(.system(size: 11, weight: .bold))
-                                .foregroundStyle(Color.accentColor).frame(width: 14)
+                                .foregroundStyle(Theme.accentColor).frame(width: 14)
                             Text(text).font(.system(size: 12.5)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                             Spacer(minLength: 0)
                         }
@@ -321,7 +321,7 @@ struct TodayView: View {
                     }
 
                     if !upcomingBlocks.isEmpty {
-                        sectionLabel("Coming up", color: Color.accentColor, count: upcomingBlocks.count)
+                        sectionLabel("Coming up", color: Theme.accentColor, count: upcomingBlocks.count)
                             .padding(.top, overdue.isEmpty ? 0 : 10)
                         ForEach(upcomingBlocks) { block in
                             upcomingBlockRow(block)
@@ -406,9 +406,9 @@ struct TodayView: View {
                 Image(systemName: icon).font(.system(size: 11.5, weight: .semibold))
                 Text(title).font(.system(size: 12.5, weight: .semibold))
             }
-            .foregroundStyle(Color.accentColor)
+            .foregroundStyle(Theme.accentColor)
             .padding(.horizontal, 12).padding(.vertical, 8)
-            .background(Color.accentColor.opacity(0.12), in: Capsule())
+            .background(Theme.accentColor.opacity(0.12), in: Capsule())
         }
         .buttonStyle(.plain)
     }
@@ -458,7 +458,7 @@ struct TodayView: View {
                 if over {
                     Button { model.planDayPresented = true } label: {
                         Label("Auto-fit my day", systemImage: "wand.and.stars")
-                            .font(.system(size: 12, weight: .semibold)).foregroundStyle(Color.accentColor)
+                            .font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.accentColor)
                     }
                     .buttonStyle(.plain)
                 }
@@ -494,13 +494,13 @@ struct TodayView: View {
                 VStack(alignment: .trailing, spacing: 1) {
                     Text(Fmt.time.string(from: block.start))
                         .font(.system(size: 11.5, weight: .semibold))
-                        .foregroundStyle(block.isNow ? Color.accentColor : Theme.textSecondary)
+                        .foregroundStyle(block.isNow ? Theme.accentColor : Theme.textSecondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     if block.isNow {
                         Text("now")
                             .font(.system(size: 8.5, weight: .bold))
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(Theme.accentColor)
                     }
                 }
                 .frame(width: 62, alignment: .trailing)
@@ -518,10 +518,10 @@ struct TodayView: View {
                     Link(destination: url) {
                         Label("Join", systemImage: "video.fill")
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(block.isNow ? Theme.bg : Color.accentColor)
+                            .foregroundStyle(block.isNow ? Theme.bg : Theme.accentColor)
                             .padding(.horizontal, 9).padding(.vertical, 5)
-                            .background(block.isNow ? AnyShapeStyle(Color.accentColor)
-                                        : AnyShapeStyle(Color.accentColor.opacity(0.14)), in: Capsule())
+                            .background(block.isNow ? AnyShapeStyle(Theme.accentColor)
+                                        : AnyShapeStyle(Theme.accentColor.opacity(0.14)), in: Capsule())
                     }
                     .buttonStyle(.plain)
                 }
@@ -533,7 +533,7 @@ struct TodayView: View {
                 } label: {
                     Image(systemName: "timer")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
             }
@@ -587,7 +587,7 @@ private struct TodayTaskRow: View {
                     if let blocks = linkedFirst {
                         Label(Fmt.time.string(from: blocks.start), systemImage: "rectangle.stack")
                             .font(.system(size: 10))
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(Theme.accentColor)
                     }
                 }
             }

@@ -115,7 +115,7 @@ struct FocusTimerView: View {
                 Text(timer.phase == .focus ? "FOCUS" : "BREAK")
                     .font(.system(size: 11, weight: .bold))
                     .tracking(2)
-                    .foregroundStyle(timer.phase == .focus ? Color.accentColor : Theme.success)
+                    .foregroundStyle(timer.phase == .focus ? Theme.accentColor : Theme.success)
             }
 
             ZStack {
@@ -124,7 +124,7 @@ struct FocusTimerView: View {
                 Circle()
                     .trim(from: 0, to: ringFraction)
                     .stroke(
-                        timer.phase == .focus ? Color.accentColor : Theme.success,
+                        timer.phase == .focus ? Theme.accentColor : Theme.success,
                         style: StrokeStyle(lineWidth: 10, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
@@ -179,7 +179,7 @@ struct FocusTimerView: View {
                 controlButton(
                     icon: timer.isRunning ? "pause.fill" : "play.fill",
                     label: timer.isRunning ? "Pause" : "Resume",
-                    tint: Color.accentColor,
+                    tint: Theme.accentColor,
                     prominent: true
                 ) {
                     timer.toggle()
@@ -260,7 +260,7 @@ struct FocusTimerView: View {
 
             if let title = presetTitle {
                 HStack(spacing: 8) {
-                    Image(systemName: "target").foregroundStyle(Color.accentColor)
+                    Image(systemName: "target").foregroundStyle(Theme.accentColor)
                     Text(title)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
@@ -301,7 +301,7 @@ struct FocusTimerView: View {
                     .foregroundStyle(Theme.bg)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .buttonStyle(.plain)
         }
@@ -326,11 +326,11 @@ struct FocusTimerView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
-            .foregroundStyle(selected ? Color.accentColor : Theme.textSecondary)
-            .background(selected ? Color.accentColor.opacity(0.14) : Theme.surface,
+            .foregroundStyle(selected ? Theme.accentColor : Theme.textSecondary)
+            .background(selected ? Theme.accentColor.opacity(0.14) : Theme.surface,
                         in: RoundedRectangle(cornerRadius: 9, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .strokeBorder(selected ? Color.accentColor.opacity(0.4) : Theme.hairline, lineWidth: 1))
+                .strokeBorder(selected ? Theme.accentColor.opacity(0.4) : Theme.hairline, lineWidth: 1))
         }
         .buttonStyle(.plain)
     }
@@ -389,7 +389,7 @@ struct FocusTimerPill: View {
                 HStack(spacing: 9) {
                     Image(systemName: timer.phase == .focus ? "timer" : "cup.and.saucer.fill")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(timer.phase == .focus ? Color.accentColor : Theme.success)
+                        .foregroundStyle(timer.phase == .focus ? Theme.accentColor : Theme.success)
                     Text(timeText)
                         .font(.system(size: 13, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)

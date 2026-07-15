@@ -63,7 +63,7 @@ struct InsightsView: View {
         let s = weekStats
         return HStack(spacing: 10) {
             statTile("timer", "Focus", Fmt.duration(minutes: s.focusMinutes), Theme.success)
-            statTile("checkmark.circle", "Done", "\(s.tasksCompleted)", Color.accentColor)
+            statTile("checkmark.circle", "Done", "\(s.tasksCompleted)", Theme.accentColor)
             statTile("flame", "Streak", "\(s.streakDays)d", .orange)
             statTile("chart.pie", "On time", "\(Int((s.completionRate * 100).rounded()))%", .purple)
         }
@@ -138,12 +138,12 @@ struct InsightsView: View {
                     }
                     Spacer()
                     Image(systemName: "timer").font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 13)
-                .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous))
+                .background(Theme.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous)
-                    .strokeBorder(Color.accentColor.opacity(0.28), lineWidth: 1))
+                    .strokeBorder(Theme.accentColor.opacity(0.28), lineWidth: 1))
             }
             .buttonStyle(.plain)
         }
@@ -174,7 +174,7 @@ struct InsightsView: View {
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
@@ -184,9 +184,9 @@ struct InsightsView: View {
                         if let tag {
                             Text(tag)
                                 .font(.system(size: 9, weight: .bold))
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Theme.accentColor)
                                 .padding(.horizontal, 6).padding(.vertical, 2)
-                                .background(Color.accentColor.opacity(0.14), in: Capsule())
+                                .background(Theme.accentColor.opacity(0.14), in: Capsule())
                         }
                     }
                     Text(subtitle)

@@ -60,7 +60,7 @@ struct MomentumDetailView: View {
             }
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
-                    Image(systemName: "bolt.fill").font(.system(size: 12)).foregroundStyle(Color.accentColor)
+                    Image(systemName: "bolt.fill").font(.system(size: 12)).foregroundStyle(Theme.accentColor)
                     Text("Level \(store.level) · \(store.levelTitle)")
                         .font(.system(size: 15, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
@@ -70,7 +70,7 @@ struct MomentumDetailView: View {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Capsule().fill(Theme.fill)
-                        Capsule().fill(Color.accentColor)
+                        Capsule().fill(Theme.accentColor)
                             .frame(width: max(4, geo.size.width * store.progressToNextLevel))
                     }
                 }
@@ -87,9 +87,9 @@ struct MomentumDetailView: View {
             HStack(spacing: 12) {
                 Image(systemName: part.icon)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .frame(width: 30, height: 30)
-                    .background(Color.accentColor.opacity(0.14), in: Circle())
+                    .background(Theme.accentColor.opacity(0.14), in: Circle())
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Biggest boost right now")
                         .font(.system(size: 10.5, weight: .semibold)).tracking(0.6)
@@ -102,12 +102,12 @@ struct MomentumDetailView: View {
                 }
                 Spacer()
                 Image(systemName: "arrow.right.circle.fill")
-                    .font(.system(size: 20)).foregroundStyle(Color.accentColor)
+                    .font(.system(size: 20)).foregroundStyle(Theme.accentColor)
             }
             .padding(16)
-            .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous))
+            .background(Theme.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous)
-                .strokeBorder(Color.accentColor.opacity(0.3), lineWidth: 1))
+                .strokeBorder(Theme.accentColor.opacity(0.3), lineWidth: 1))
         }
         .buttonStyle(.plain)
     }
@@ -121,7 +121,7 @@ struct MomentumDetailView: View {
                 streakTile("flame.fill", "\(store.streak())", "Momentum", Theme.warning)
                 streakTile("trophy.fill", "\(store.bestStreak())", "Best ever", Color(hex: 0xF2C14E))
                 streakTile("timer", "\(focusStreak)", "Focus", Theme.success)
-                streakTile("wand.and.stars", "\(planningStreak)", "Planning", Color.accentColor)
+                streakTile("wand.and.stars", "\(planningStreak)", "Planning", Theme.accentColor)
             }
             if store.availableFreezes > 0 {
                 HStack(spacing: 8) {
@@ -169,7 +169,7 @@ struct MomentumDetailView: View {
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
                                 Capsule().fill(Theme.fill)
-                                Capsule().fill(part.isComplete ? Theme.success : Color.accentColor)
+                                Capsule().fill(part.isComplete ? Theme.success : Theme.accentColor)
                                     .frame(width: geo.size.width * (Double(part.earned) / Double(part.max)))
                             }
                         }
@@ -183,7 +183,7 @@ struct MomentumDetailView: View {
                                         .multilineTextAlignment(.leading)
                                     Spacer(minLength: 4)
                                     Image(systemName: "arrow.right").font(.system(size: 9, weight: .bold))
-                                        .foregroundStyle(Color.accentColor)
+                                        .foregroundStyle(Theme.accentColor)
                                 }
                             }
                             .buttonStyle(.plain)
@@ -207,7 +207,7 @@ struct MomentumDetailView: View {
 
     private func statTile(_ icon: String, _ value: String, _ label: String) -> some View {
         VStack(spacing: 5) {
-            Image(systemName: icon).font(.system(size: 14, weight: .semibold)).foregroundStyle(Color.accentColor)
+            Image(systemName: icon).font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.accentColor)
             Text(value).font(.system(size: 18, weight: .bold)).foregroundStyle(Theme.textPrimary)
             Text(label).font(.system(size: 10)).foregroundStyle(Theme.textSecondary)
         }
@@ -265,7 +265,7 @@ struct MomentumDetailView: View {
 
     private var score: Int { MomentumEngine.score(input) }
     private var scoreColor: Color {
-        score >= 70 ? Theme.success : (score >= 40 ? Color.accentColor : Theme.warning)
+        score >= 70 ? Theme.success : (score >= 40 ? Theme.accentColor : Theme.warning)
     }
 
     private var focusStreak: Int {

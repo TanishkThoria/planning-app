@@ -128,13 +128,13 @@ struct LeaderboardView: View {
                     Spacer()
                     Text(board.display(row.value))
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(row.isYou ? Color.accentColor : Theme.textPrimary)
+                        .foregroundStyle(row.isYou ? Theme.accentColor : Theme.textPrimary)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 11)
-                .background(row.isYou ? Color.accentColor.opacity(0.08) : Theme.surface,
+                .background(row.isYou ? Theme.accentColor.opacity(0.08) : Theme.surface,
                             in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous)
-                    .strokeBorder(row.isYou ? Color.accentColor.opacity(0.35) : Theme.hairline, lineWidth: 1))
+                    .strokeBorder(row.isYou ? Theme.accentColor.opacity(0.35) : Theme.hairline, lineWidth: 1))
             }
         }
     }
@@ -143,7 +143,7 @@ struct LeaderboardView: View {
         VStack(spacing: 10) {
             Image(systemName: board.icon)
                 .font(.system(size: 30))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Theme.accentColor)
             Text(board.display(board.value(social.myPresence)))
                 .font(.system(size: 30, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
@@ -162,7 +162,7 @@ struct LeaderboardView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 Image(systemName: social.gameCenterAuthenticated ? "checkmark.seal.fill" : "gamecontroller")
-                    .foregroundStyle(social.gameCenterAuthenticated ? Theme.success : Color.accentColor)
+                    .foregroundStyle(social.gameCenterAuthenticated ? Theme.success : Theme.accentColor)
                 Text(social.gameCenterAuthenticated ? "Also ranking on Game Center" : "Add Game Center ranking")
                     .font(.system(size: 13.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
@@ -178,7 +178,7 @@ struct LeaderboardView: View {
                 Button { social.authenticateGameCenter() } label: {
                     Text("Sign in to Game Center")
                         .font(.system(size: 12.5, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
             }
@@ -222,7 +222,7 @@ struct Avatar: View {
                         .foregroundStyle(tint)
                 )
                 .overlay(
-                    Circle().strokeBorder(ring ? Color.accentColor : Color.clear, lineWidth: 2)
+                    Circle().strokeBorder(ring ? Theme.accentColor : Color.clear, lineWidth: 2)
                         .padding(-3)
                 )
             if !emoji.isEmpty {

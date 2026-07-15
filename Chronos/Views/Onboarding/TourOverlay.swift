@@ -43,7 +43,7 @@ struct TourOverlay: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(Color.white.opacity(0.18))
-                    Capsule().fill(Color.accentColor)
+                    Capsule().fill(Theme.accentColor)
                         .frame(width: max(6, geo.size.width * tour.progress))
                 }
             }
@@ -67,11 +67,11 @@ struct TourOverlay: View {
             HStack(spacing: 11) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 11, style: .continuous)
-                        .fill(Color.accentColor.opacity(0.16))
+                        .fill(Theme.accentColor.opacity(0.16))
                         .frame(width: 42, height: 42)
                     Image(systemName: step.icon)
                         .font(.system(size: 19, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(tour.index + 1) of \(tour.steps.count)")
@@ -99,10 +99,10 @@ struct TourOverlay: View {
                         Spacer(minLength: 0)
                         Image(systemName: "arrow.right").font(.system(size: 11, weight: .bold))
                     }
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .padding(.horizontal, 13).padding(.vertical, 10)
                     .frame(maxWidth: .infinity)
-                    .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                    .background(Theme.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
                 }
                 .buttonStyle(.plain)
             }
@@ -125,7 +125,7 @@ struct TourOverlay: View {
                         .foregroundStyle(Theme.bg)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
                 .buttonStyle(.plain)
             }

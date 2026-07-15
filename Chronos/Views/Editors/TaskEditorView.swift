@@ -118,10 +118,10 @@ struct TaskEditorView: View {
                 } label: {
                     Label("Start focus timer", systemImage: "timer")
                         .font(.system(size: 12.5, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 9)
-                        .background(Color.accentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                        .background(Theme.accentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 }
                 .buttonStyle(.plain)
             }
@@ -231,7 +231,7 @@ struct TaskEditorView: View {
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 5)
                                 .background(
-                                    draft.estimateMinutes == minutes ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Theme.fill),
+                                    draft.estimateMinutes == minutes ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.fill),
                                     in: Capsule()
                                 )
                         }
@@ -263,7 +263,7 @@ struct TaskEditorView: View {
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 5)
                                         .background(
-                                            session == minutes ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Theme.fill),
+                                            session == minutes ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.fill),
                                             in: Capsule()
                                         )
                                 }

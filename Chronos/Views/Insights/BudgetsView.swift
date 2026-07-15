@@ -44,7 +44,7 @@ struct BudgetsView: View {
     private var headerBar: some View {
         HStack {
             Button("Done") { dismiss() }
-                .buttonStyle(.plain).font(.system(size: 13, weight: .semibold)).foregroundStyle(Color.accentColor)
+                .buttonStyle(.plain).font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.accentColor)
                 .keyboardShortcut(.defaultAction)
             Spacer()
             Text("Time Budgets").font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)

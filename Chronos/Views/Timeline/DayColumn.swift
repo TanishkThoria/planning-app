@@ -193,10 +193,10 @@ struct DayColumn: View {
         let y = CGFloat(range.start) / 60 * hourHeight
         let height = max(CGFloat(range.end - range.start) / 60 * hourHeight, 12)
         return RoundedRectangle(cornerRadius: 7, style: .continuous)
-            .fill(Color.accentColor.opacity(0.25))
+            .fill(Theme.accentColor.opacity(0.25))
             .overlay(
                 RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .strokeBorder(Color.accentColor, lineWidth: 1.5)
+                    .strokeBorder(Theme.accentColor, lineWidth: 1.5)
             )
             .overlay(alignment: .topLeading) {
                 Text(Fmt.timeRange(date.at(minutes: range.start), date.at(minutes: range.end)))

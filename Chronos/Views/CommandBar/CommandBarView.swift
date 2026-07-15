@@ -67,7 +67,7 @@ struct CommandBarView: View {
         HStack(spacing: 10) {
             Image(systemName: "command")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Theme.accentColor)
             TextField("Search actions, jump anywhere, or add…", text: $query)
                 .textFieldStyle(.plain)
                 .font(.system(size: 16, weight: .medium))
@@ -99,7 +99,7 @@ struct CommandBarView: View {
             HStack(spacing: 12) {
                 Image(systemName: command.icon)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(command.title)
@@ -129,7 +129,7 @@ struct CommandBarView: View {
             HStack(spacing: 12) {
                 Image(systemName: "plus.circle.fill")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(trimmedQuery.isEmpty ? "Quick add…" : "Add \u{201C}\(trimmedQuery)\u{201D}")
@@ -144,7 +144,7 @@ struct CommandBarView: View {
             }
             .padding(.horizontal, 10).padding(.vertical, 9)
             .contentShape(Rectangle())
-            .background(Color.accentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .background(Theme.accentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
         }
         .buttonStyle(.plain)
     }

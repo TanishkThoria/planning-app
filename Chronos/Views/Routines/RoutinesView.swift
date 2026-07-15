@@ -20,9 +20,9 @@ struct RoutinesView: View {
                     Button { editing = Routine(name: "New routine", emoji: "✨", steps: [RoutineStep(title: "First step", seconds: 300)]) } label: {
                         Label("New routine", systemImage: "plus")
                             .font(.system(size: 13.5, weight: .semibold))
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(Theme.accentColor)
                             .frame(maxWidth: .infinity).padding(.vertical, 13)
-                            .background(Color.accentColor.opacity(0.10), in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous))
+                            .background(Theme.accentColor.opacity(0.10), in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }
@@ -50,7 +50,7 @@ struct RoutinesView: View {
     private var intro: some View {
         HStack(spacing: 8) {
             Image(systemName: voiceEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
-                .font(.system(size: 12)).foregroundStyle(Color.accentColor)
+                .font(.system(size: 12)).foregroundStyle(Theme.accentColor)
             Text("Guided, hands-free. Each step counts down and is announced aloud — great for mornings and beating time-blindness.")
                 .font(.system(size: 11.5)).foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -77,7 +77,7 @@ struct RoutinesView: View {
                 Label("Start", systemImage: "play.fill")
                     .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.bg)
                     .padding(.horizontal, 16).padding(.vertical, 9)
-                    .background(Color.accentColor, in: Capsule())
+                    .background(Theme.accentColor, in: Capsule())
             }
             .buttonStyle(.plain)
         }
@@ -119,8 +119,8 @@ private struct RoutineEditorSheet: View {
                             ForEach(emojis, id: \.self) { e in
                                 Button { routine.emoji = e } label: {
                                     Text(e).font(.system(size: 22)).frame(width: 42, height: 42)
-                                        .background(routine.emoji == e ? Color.accentColor.opacity(0.18) : Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                                        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(routine.emoji == e ? Color.accentColor : Theme.hairline, lineWidth: 1))
+                                        .background(routine.emoji == e ? Theme.accentColor.opacity(0.18) : Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(routine.emoji == e ? Theme.accentColor : Theme.hairline, lineWidth: 1))
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -152,7 +152,7 @@ private struct RoutineEditorSheet: View {
                             .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
                         }
                         Button { routine.steps.append(RoutineStep(title: "New step", seconds: 300)) } label: {
-                            Label("Add step", systemImage: "plus").font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Color.accentColor)
+                            Label("Add step", systemImage: "plus").font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
                         }
                         .buttonStyle(.plain)
                     }

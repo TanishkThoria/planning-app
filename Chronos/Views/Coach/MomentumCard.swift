@@ -40,7 +40,7 @@ struct MomentumCard: View {
                 ring
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
-                        Image(systemName: "bolt.fill").font(.system(size: 11)).foregroundStyle(Color.accentColor)
+                        Image(systemName: "bolt.fill").font(.system(size: 11)).foregroundStyle(Theme.accentColor)
                         Text("Lv \(store.level) · \(store.levelTitle)")
                             .font(.system(size: 13, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
@@ -63,7 +63,7 @@ struct MomentumCard: View {
                 Button { model.momentumDetailPresented = true } label: {
                     HStack(spacing: 8) {
                         Image(systemName: next.icon).font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(Theme.accentColor)
                         Text(next.tip).font(.system(size: 11.5, weight: .medium))
                             .foregroundStyle(Theme.textPrimary).lineLimit(1)
                         Spacer(minLength: 4)
@@ -71,7 +71,7 @@ struct MomentumCard: View {
                             .foregroundStyle(Theme.textTertiary)
                     }
                     .padding(.horizontal, 11).padding(.vertical, 8)
-                    .background(Color.accentColor.opacity(0.09), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    .background(Theme.accentColor.opacity(0.09), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 }
                 .buttonStyle(.plain)
             }
@@ -85,13 +85,13 @@ struct MomentumCard: View {
                             .font(.system(size: 9, weight: .semibold))
                             .rotationEffect(.degrees(expanded ? 180 : 0))
                     }
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
                 Spacer()
                 Button { model.momentumDetailPresented = true } label: {
                     Text("Streaks & tips →").font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
             }
@@ -108,7 +108,7 @@ struct MomentumCard: View {
                             GeometryReader { geo in
                                 ZStack(alignment: .leading) {
                                     Capsule().fill(Theme.fill)
-                                    Capsule().fill(part.earned >= part.max ? Theme.success : Color.accentColor)
+                                    Capsule().fill(part.earned >= part.max ? Theme.success : Theme.accentColor)
                                         .frame(width: geo.size.width * (Double(part.earned) / Double(part.max)))
                                 }
                             }
@@ -143,14 +143,14 @@ struct MomentumCard: View {
     }
 
     private var scoreColor: Color {
-        score >= 70 ? Theme.success : (score >= 40 ? Color.accentColor : Theme.warning)
+        score >= 70 ? Theme.success : (score >= 40 ? Theme.accentColor : Theme.warning)
     }
 
     private var levelBar: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule().fill(Theme.fill)
-                Capsule().fill(Color.accentColor.opacity(0.7))
+                Capsule().fill(Theme.accentColor.opacity(0.7))
                     .frame(width: max(3, geo.size.width * store.progressToNextLevel))
             }
         }
@@ -164,7 +164,7 @@ struct MomentumCard: View {
         return HStack(alignment: .bottom, spacing: 2) {
             ForEach(Array(trend.enumerated()), id: \.offset) { idx, value in
                 Capsule()
-                    .fill(idx == trend.count - 1 ? Color.accentColor : Color.accentColor.opacity(0.35))
+                    .fill(idx == trend.count - 1 ? Theme.accentColor : Theme.accentColor.opacity(0.35))
                     .frame(width: 3, height: max(3, CGFloat(value) / CGFloat(peak) * 34))
             }
         }

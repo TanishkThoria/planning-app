@@ -52,7 +52,7 @@ struct CrunchRadar: View {
                                 .frame(height: 20)
                             Text(Fmt.weekdayShort.string(from: day).prefix(1))
                                 .font(.system(size: 8, weight: .semibold))
-                                .foregroundStyle(day.isToday ? Color.accentColor : Theme.textTertiary)
+                                .foregroundStyle(day.isToday ? Theme.accentColor : Theme.textTertiary)
                         }
                         .frame(maxWidth: .infinity)
                     }
@@ -62,7 +62,7 @@ struct CrunchRadar: View {
                 } label: {
                     Label("Spread the work out", systemImage: "calendar.badge.clock")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
             }
@@ -76,6 +76,6 @@ struct CrunchRadar: View {
         let intensity = Double(minutes) / Double(max(peak, 1))
         if intensity > 0.75 { return Theme.danger.opacity(0.85) }
         if intensity > 0.45 { return Theme.warning.opacity(0.8) }
-        return Color.accentColor.opacity(0.35 + intensity * 0.4)
+        return Theme.accentColor.opacity(0.35 + intensity * 0.4)
     }
 }

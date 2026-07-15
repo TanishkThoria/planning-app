@@ -210,7 +210,7 @@ struct DayPulseChip: View {
                             .foregroundStyle(Theme.bg)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 11)
-                            .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                            .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 }

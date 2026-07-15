@@ -194,7 +194,7 @@ struct HeaderIconButton: View {
             .frame(height: 26)
             .frame(minWidth: 28)
             .background(
-                prominent ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Theme.fill),
+                prominent ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.fill),
                 in: RoundedRectangle(cornerRadius: 7, style: .continuous)
             )
         }
@@ -214,7 +214,7 @@ struct ProgressRing: View {
                 .stroke(Theme.fill, lineWidth: lineWidth)
             Circle()
                 .trim(from: 0, to: max(0.001, min(1, fraction)))
-                .stroke(Color.accentColor, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                .stroke(Theme.accentColor, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 .rotationEffect(.degrees(-90))
         }
         .frame(width: size, height: size)

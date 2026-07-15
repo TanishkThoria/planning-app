@@ -87,11 +87,11 @@ struct LMSManageView: View {
             HStack(spacing: 10) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.accentColor.opacity(0.14))
+                        .fill(Theme.accentColor.opacity(0.14))
                         .frame(width: 38, height: 38)
                     Image(systemName: source.provider.icon)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(source.name)
@@ -186,9 +186,9 @@ struct LMSManageView: View {
                         .font(.system(size: 13.5, weight: .semibold))
                     Spacer()
                 }
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Theme.accentColor)
                 .padding(.horizontal, 13).padding(.vertical, 11)
-                .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                .background(Theme.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
             }
             .buttonStyle(.plain)
             .disabled(lms.isSyncing)
@@ -215,7 +215,7 @@ struct LMSManageView: View {
                 .foregroundStyle(Theme.bg)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .buttonStyle(.plain)
     }

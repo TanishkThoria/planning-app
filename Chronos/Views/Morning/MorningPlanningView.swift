@@ -199,7 +199,7 @@ struct MorningPlanningView: View {
             HStack(spacing: 10) {
                 Image(systemName: isIn ? "checkmark.square.fill" : "square")
                     .font(.system(size: 15))
-                    .foregroundStyle(isIn ? Color.accentColor : Theme.textTertiary)
+                    .foregroundStyle(isIn ? Theme.accentColor : Theme.textTertiary)
                 if task.energy != .none {
                     Image(systemName: task.energy.icon)
                         .font(.system(size: 10))
@@ -254,7 +254,7 @@ struct MorningPlanningView: View {
                         HStack(spacing: 10) {
                             Text(Fmt.time.string(from: proposal.start))
                                 .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Theme.accentColor)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.8)
                                 .frame(width: 62, alignment: .leading)
@@ -310,7 +310,7 @@ struct MorningPlanningView: View {
                     .foregroundStyle(Theme.bg)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 8)
-                    .background(Color.accentColor, in: Capsule())
+                    .background(Theme.accentColor, in: Capsule())
             }
             .buttonStyle(.plain)
             .disabled(step == .dump ? includedCount == 0 : proposals.isEmpty)

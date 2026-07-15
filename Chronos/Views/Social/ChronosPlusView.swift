@@ -58,7 +58,7 @@ struct ChronosPlusView: View {
             HStack(spacing: 10) {
                 Image(systemName: "sparkles")
                     .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                 Text("Chronos+")
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
@@ -72,7 +72,7 @@ struct ChronosPlusView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             LinearGradient(
-                colors: [Color.accentColor.opacity(0.18), Theme.surface],
+                colors: [Theme.accentColor.opacity(0.18), Theme.surface],
                 startPoint: .topLeading, endPoint: .bottomTrailing
             ),
             in: RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -119,7 +119,7 @@ struct ChronosPlusView: View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Ready when you are", systemImage: "lock.open")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Theme.accentColor)
             Text("Every Chronos+ feature is already built in. They switch on the moment your app is signed with a paid Apple Developer account, which adds the iCloud, App Group and Game Center capabilities. No new code — just capabilities.")
                 .font(.system(size: 12.5))
                 .foregroundStyle(Theme.textSecondary)
@@ -158,9 +158,9 @@ struct ChronosPlusView: View {
         HStack(alignment: .top, spacing: 10) {
             Text("\(n)")
                 .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Theme.accentColor)
                 .frame(width: 20, height: 20)
-                .background(Color.accentColor.opacity(0.15), in: Circle())
+                .background(Theme.accentColor.opacity(0.15), in: Circle())
             Text(text)
                 .font(.system(size: 12))
                 .foregroundStyle(Theme.textSecondary)
@@ -200,7 +200,7 @@ struct ChronosPlusView: View {
         return HStack(spacing: 12) {
             Image(systemName: capability.icon)
                 .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(ready ? Color.accentColor : Theme.textTertiary)
+                .foregroundStyle(ready ? Theme.accentColor : Theme.textTertiary)
                 .frame(width: 22)
             VStack(alignment: .leading, spacing: 2) {
                 Text(capability.title)
@@ -251,7 +251,7 @@ struct ChronosPlusView: View {
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accentColor)
                     .frame(width: 22)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)

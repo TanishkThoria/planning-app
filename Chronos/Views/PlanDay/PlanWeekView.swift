@@ -129,7 +129,7 @@ struct PlanWeekView: View {
             HStack(spacing: 10) {
                 Image(systemName: isIn ? "checkmark.square.fill" : "square")
                     .font(.system(size: 15))
-                    .foregroundStyle(isIn ? Color.accentColor : Theme.textTertiary)
+                    .foregroundStyle(isIn ? Theme.accentColor : Theme.textTertiary)
                 if task.energy != .none {
                     Image(systemName: task.energy.icon).font(.system(size: 10)).foregroundStyle(task.energy.color)
                 }
@@ -154,13 +154,13 @@ struct PlanWeekView: View {
         VStack(alignment: .leading, spacing: 5) {
             Text(Fmt.relativeDay(day))
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(day.isToday ? Color.accentColor : Theme.textPrimary)
+                .foregroundStyle(day.isToday ? Theme.accentColor : Theme.textPrimary)
                 .padding(.leading, 2)
             ForEach(proposals) { proposal in
                 HStack(spacing: 10) {
                     Text(Fmt.time.string(from: proposal.start))
                         .font(.system(size: 11.5, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accentColor)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                         .frame(width: 60, alignment: .leading)
@@ -187,7 +187,7 @@ struct PlanWeekView: View {
                 Text("Add to Calendar")
                     .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.bg)
                     .padding(.horizontal, 16).padding(.vertical, 7)
-                    .background(Color.accentColor, in: Capsule())
+                    .background(Theme.accentColor, in: Capsule())
             }
             .buttonStyle(.plain)
             .disabled(totalPlanned == 0)
