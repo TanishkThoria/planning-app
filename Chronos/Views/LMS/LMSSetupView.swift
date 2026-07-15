@@ -55,7 +55,7 @@ struct LMSSetupView: View {
     private var topBar: some View {
         HStack {
             Text("Connect your school")
-                .font(.system(size: 15, weight: .bold))
+                .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
             Button { dismiss() } label: {
@@ -78,7 +78,7 @@ struct LMSSetupView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Theme.textPrimary)
             Text("Chronos can read your Canvas or Schoology calendar feed and turn every assignment into a reminder — with its due date, description, and a link back. Lectures and office hours stay on your calendar as events.")
-                .font(.system(size: 14))
+                .font(.system(size: 15))
                 .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
@@ -99,13 +99,13 @@ struct LMSSetupView: View {
     private var connectStep: some View {
         VStack(alignment: .leading, spacing: 18) {
             Text("Which platform?")
-                .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textSecondary)
+                .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textSecondary)
             HStack(spacing: 8) {
                 ForEach(LMSProvider.allCases) { p in
                     Button { provider = p } label: {
                         VStack(spacing: 6) {
-                            Image(systemName: p.icon).font(.system(size: 18, weight: .semibold))
-                            Text(p.name).font(.system(size: 11, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.7)
+                            Image(systemName: p.icon).font(.system(size: 19, weight: .semibold))
+                            Text(p.name).font(.system(size: 12.5, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.7)
                         }
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
                         .foregroundStyle(provider == p ? Theme.accentColor : Theme.textSecondary)
@@ -122,11 +122,11 @@ struct LMSSetupView: View {
                 ForEach(Array(provider.steps.enumerated()), id: \.offset) { idx, text in
                     HStack(alignment: .top, spacing: 10) {
                         Text("\(idx + 1)")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.system(size: 12.5, weight: .bold))
                             .foregroundStyle(Theme.accentColor)
                             .frame(width: 18, height: 18)
                             .background(Theme.accentColor.opacity(0.15), in: Circle())
-                        Text(text).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+                        Text(text).font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer(minLength: 0)
                     }
@@ -137,10 +137,10 @@ struct LMSSetupView: View {
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("Feed URL").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.textSecondary)
+                Text("Feed URL").font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Theme.textSecondary)
                 TextField("https://…/feed.ics", text: $feedText)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 13))
+                    .font(.system(size: 14.5))
                     .foregroundStyle(Theme.textPrimary)
                     #if os(iOS)
                     .textInputAutocapitalization(.never)
@@ -154,7 +154,7 @@ struct LMSSetupView: View {
 
             Button { openSubscribe() } label: {
                 Label("Subscribe in Calendar", systemImage: "calendar.badge.plus")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(canSubscribe ? Theme.bg : Theme.textTertiary)
                     .frame(maxWidth: .infinity).padding(.vertical, 12)
                     .background(canSubscribe ? Theme.accentColor : Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -163,15 +163,15 @@ struct LMSSetupView: View {
             .disabled(!canSubscribe)
 
             Text("This opens the system Calendar and asks you to confirm the subscription. Come back here when you're done.")
-                .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "icloud")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 13.5, weight: .semibold))
                     .foregroundStyle(Theme.accentColor)
                 Text("Want it on every device? Add the subscription at icloud.com/calendar (or in Calendar on a Mac with Location: iCloud) instead — it then syncs everywhere automatically. Subscribing on iPhone keeps it on this device only.")
-                    .font(.system(size: 11))
+                    .font(.system(size: 12.5))
                     .foregroundStyle(Theme.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -189,16 +189,16 @@ struct LMSSetupView: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text("Pick your school calendar")
-                        .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textSecondary)
+                        .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textSecondary)
                     Spacer()
                     Button { service.refresh() } label: {
-                        Label("Refresh", systemImage: "arrow.clockwise").font(.system(size: 11, weight: .semibold))
+                        Label("Refresh", systemImage: "arrow.clockwise").font(.system(size: 12.5, weight: .semibold))
                     }
                     .buttonStyle(.plain).foregroundStyle(Theme.accentColor)
                 }
                 if subscribed.isEmpty {
                     Text("No subscribed calendars found yet. Make sure you tapped Subscribe in the Calendar app, then Refresh.")
-                        .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(12)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -221,10 +221,10 @@ struct LMSSetupView: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 Text("Put assignments in this list")
-                    .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textSecondary)
+                    .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textSecondary)
                 if editableLists.isEmpty {
                     Text("No writable reminder lists found.")
-                        .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
                 } else {
                     ForEach(editableLists) { list in
                         selectRow(title: list.title, subtitle: list.sourceTitle, color: list.color,
@@ -250,10 +250,10 @@ struct LMSSetupView: View {
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text(lms.lastSummary ?? "Your assignments are syncing.")
-                .font(.system(size: 14)).foregroundStyle(Theme.textSecondary)
+                .font(.system(size: 15)).foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
             Text("Chronos will keep your assignments up to date automatically. Manage this anytime in Settings.")
-                .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -265,7 +265,7 @@ struct LMSSetupView: View {
         HStack(spacing: 10) {
             if step == .connect || step == .map {
                 Button { back() } label: {
-                    Text("Back").font(.system(size: 14, weight: .semibold))
+                    Text("Back").font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Theme.textSecondary)
                         .frame(maxWidth: .infinity).padding(.vertical, 13)
                         .background(Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -275,7 +275,7 @@ struct LMSSetupView: View {
             Button { advance() } label: {
                 HStack(spacing: 7) {
                     if importing { ProgressView().controlSize(.small) }
-                    Text(primaryTitle).font(.system(size: 14, weight: .semibold))
+                    Text(primaryTitle).font(.system(size: 15, weight: .semibold))
                 }
                 .foregroundStyle(Theme.bg)
                 .frame(maxWidth: .infinity).padding(.vertical, 13)
@@ -363,9 +363,9 @@ struct LMSSetupView: View {
 
     private func bullet(_ icon: String, _ text: String) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: icon).font(.system(size: 14, weight: .semibold))
+            Image(systemName: icon).font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Theme.accentColor).frame(width: 22)
-            Text(text).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+            Text(text).font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
@@ -376,14 +376,14 @@ struct LMSSetupView: View {
             HStack(spacing: 10) {
                 Circle().fill(color).frame(width: 10, height: 10)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(title).font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.textPrimary).lineLimit(1)
+                    Text(title).font(.system(size: 14.5, weight: .medium)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                     if !subtitle.isEmpty {
-                        Text(subtitle).font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary).lineLimit(1)
+                        Text(subtitle).font(.system(size: 12)).foregroundStyle(Theme.textTertiary).lineLimit(1)
                     }
                 }
                 Spacer()
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 18))
+                    .font(.system(size: 19))
                     .foregroundStyle(selected ? Theme.accentColor : Theme.textTertiary)
             }
             .padding(.horizontal, 12).padding(.vertical, 10)

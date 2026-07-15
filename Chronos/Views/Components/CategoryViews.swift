@@ -101,21 +101,21 @@ struct CategoryField: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: resolved.icon)
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(resolved.color)
                     Text(resolved.title)
-                        .font(.system(size: 12.5, weight: .medium))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                     if override == nil {
                         Text("Auto")
-                            .font(.system(size: 9, weight: .semibold))
+                            .font(.system(size: 10, weight: .semibold))
                             .foregroundStyle(Theme.textTertiary)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 1)
                             .background(Theme.fill, in: Capsule())
                     }
                     Image(systemName: "chevron.up.chevron.down")
-                        .font(.system(size: 9))
+                        .font(.system(size: 10))
                         .foregroundStyle(Theme.textTertiary)
                 }
             }
@@ -136,10 +136,10 @@ struct CategoryLegend: View {
             ForEach(ActivityCategory.allCases) { category in
                 HStack(spacing: 5) {
                     Image(systemName: category.icon)
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(.system(size: 11.5, weight: .semibold))
                         .foregroundStyle(category.color)
                     Text(category.title)
-                        .font(.system(size: 11.5, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
                     Spacer(minLength: 0)

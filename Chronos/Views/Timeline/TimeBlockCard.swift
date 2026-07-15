@@ -141,24 +141,24 @@ struct TimeBlockCard: View {
                             taskCheckbox
                         }
                         Text(block.title)
-                            .font(.system(size: compact ? 11 : 12.5, weight: .semibold))
+                            .font(.system(size: compact ? 12 : 13.5, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                             .strikethrough(linkedTask?.isCompleted == true, color: Theme.textSecondary)
                             .lineLimit(compact ? 2 : 3)
                         Spacer(minLength: 0)
                         if block.hasMeeting && displayHeight >= 26 {
                             Image(systemName: "video.fill")
-                                .font(.system(size: 9))
+                                .font(.system(size: 10))
                                 .foregroundStyle(Theme.accentColor)
                         }
                         if block.hasRecurrence && !compact && displayHeight >= 30 {
                             Image(systemName: "repeat")
-                                .font(.system(size: 9))
+                                .font(.system(size: 10))
                                 .foregroundStyle(Theme.textTertiary)
                         }
                         if !compact && displayHeight >= 30 {
                             Image(systemName: category.icon)
-                                .font(.system(size: 9.5, weight: .semibold))
+                                .font(.system(size: 11, weight: .semibold))
                                 .foregroundStyle(category.color)
                         }
                     }
@@ -166,12 +166,12 @@ struct TimeBlockCard: View {
                         Text(isInteracting
                              ? Fmt.timeRange(proposedStart, proposedEnd)
                              : Fmt.timeRange(block.start, block.end))
-                            .font(.system(size: 10.5, weight: .medium))
+                            .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(isInteracting ? Theme.accentColor : Theme.textSecondary)
                     }
                     if displayHeight >= 66 && !compact, let location = block.location, !location.isEmpty {
                         Label(location, systemImage: "mappin")
-                            .font(.system(size: 10))
+                            .font(.system(size: 11.5))
                             .foregroundStyle(Theme.textTertiary)
                             .lineLimit(1)
                     }
@@ -195,7 +195,7 @@ struct TimeBlockCard: View {
     private var taskCheckbox: some View {
         Button(action: onToggleTask) {
             Image(systemName: linkedTask?.isCompleted == true ? "checkmark.circle.fill" : "circle")
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: 12.5, weight: .medium))
                 .foregroundStyle(linkedTask?.isCompleted == true ? Theme.success : Theme.textSecondary)
         }
         .buttonStyle(.plain)

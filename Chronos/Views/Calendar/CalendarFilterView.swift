@@ -49,12 +49,12 @@ struct CalendarFilterView: View {
     private var headerBar: some View {
         HStack {
             Button("Done") { dismiss() }
-                .buttonStyle(.plain).font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                .buttonStyle(.plain).font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
                 .keyboardShortcut(.defaultAction)
             Spacer()
-            Text("Show & Hide").font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+            Text("Show & Hide").font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
             Spacer()
-            Text("Done").font(.system(size: 13)).hidden()
+            Text("Done").font(.system(size: 14.5)).hidden()
         }
         .padding(.horizontal, 16).padding(.vertical, 12)
     }
@@ -72,12 +72,12 @@ struct CalendarFilterView: View {
                 SectionHeader(title: title, trailing: "\(items.filter { !hidden.contains($0.id) }.count)/\(items.count)")
                 Spacer(minLength: 8)
                 Button("All", action: showAll)
-                    .buttonStyle(.plain).font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.accentColor)
+                    .buttonStyle(.plain).font(.system(size: 12.5, weight: .medium)).foregroundStyle(Theme.accentColor)
                 Button("None", action: hideAll)
-                    .buttonStyle(.plain).font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.textTertiary)
+                    .buttonStyle(.plain).font(.system(size: 12.5, weight: .medium)).foregroundStyle(Theme.textTertiary)
             }
             if items.isEmpty {
-                Text("None available").font(.system(size: 12)).foregroundStyle(Theme.textTertiary).padding(.vertical, 6)
+                Text("None available").font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary).padding(.vertical, 6)
             } else {
                 ForEach(items) { item in
                     let isVisible = !hidden.contains(item.id)
@@ -88,18 +88,18 @@ struct CalendarFilterView: View {
                                 .overlay(Circle().strokeBorder(item.color, lineWidth: 1.5))
                                 .frame(width: 12, height: 12)
                             Text(item.title)
-                                .font(.system(size: 13, weight: .medium))
+                                .font(.system(size: 14.5, weight: .medium))
                                 .foregroundStyle(isVisible ? Theme.textPrimary : Theme.textTertiary)
                                 .lineLimit(1)
                             if !item.sourceTitle.isEmpty {
                                 Text(item.sourceTitle)
-                                    .font(.system(size: 10))
+                                    .font(.system(size: 11.5))
                                     .foregroundStyle(Theme.textTertiary)
                                     .lineLimit(1)
                             }
                             Spacer()
                             Image(systemName: isVisible ? "eye" : "eye.slash")
-                                .font(.system(size: 12))
+                                .font(.system(size: 13.5))
                                 .foregroundStyle(isVisible ? Theme.textSecondary : Theme.textTertiary)
                         }
                         .padding(.horizontal, 12).padding(.vertical, 10)

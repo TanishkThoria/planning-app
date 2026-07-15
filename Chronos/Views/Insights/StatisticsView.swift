@@ -124,7 +124,7 @@ struct StatisticsView: View {
                     .foregroundStyle(Theme.textPrimary)
                 if let first = weekDays.first, let last = weekDays.last {
                     Text("\(Fmt.monthDay.string(from: first)) – \(Fmt.monthDay.string(from: last))")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 13.5, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                 }
             }
@@ -178,23 +178,23 @@ struct StatisticsView: View {
         let pct = previous > 0 ? Int((Double(delta) / Double(previous) * 100).rounded()) : (current > 0 ? 100 : 0)
         let up = delta >= 0
         return HStack(spacing: 10) {
-            Image(systemName: icon).font(.system(size: 12)).foregroundStyle(Theme.textTertiary).frame(width: 18)
-            Text(label).font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
+            Image(systemName: icon).font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary).frame(width: 18)
+            Text(label).font(.system(size: 14)).foregroundStyle(Theme.textSecondary)
             Spacer()
             Text(isMinutes ? Fmt.duration(minutes: current) : "\(current)")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 14.5, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)
             if delta != 0 {
                 HStack(spacing: 2) {
                     Image(systemName: up ? "arrow.up.right" : "arrow.down.right")
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.system(size: 10, weight: .bold))
                     Text("\(abs(pct))%")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(.system(size: 11.5, weight: .semibold))
                 }
                 .foregroundStyle(up ? Theme.success : Theme.danger)
                 .frame(width: 52, alignment: .trailing)
             } else {
-                Text("—").font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                Text("—").font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
                     .frame(width: 52, alignment: .trailing)
             }
         }
@@ -208,7 +208,7 @@ struct StatisticsView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
             Text(label.uppercased())
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 10, weight: .semibold))
                 .tracking(1)
                 .foregroundStyle(Theme.textTertiary)
         }
@@ -231,15 +231,15 @@ struct StatisticsView: View {
             ZStack {
                 ProgressRing(fraction: fraction, size: 52, lineWidth: 5)
                 Text("\(Int((fraction * 100).rounded()))%")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: 14.5, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
             }
             VStack(spacing: 1) {
                 Text(title)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
                 Text(caption)
-                    .font(.system(size: 9))
+                    .font(.system(size: 10))
                     .foregroundStyle(Theme.textTertiary)
             }
         }
@@ -266,7 +266,7 @@ struct StatisticsView: View {
                     VStack(spacing: 5) {
                         Text(entry.plannedMinutes == busiest?.plannedMinutes && entry.plannedMinutes > 0
                              ? Fmt.duration(minutes: entry.plannedMinutes) : " ")
-                            .font(.system(size: 9, weight: .semibold))
+                            .font(.system(size: 10, weight: .semibold))
                             .foregroundStyle(Theme.textSecondary)
                             .lineLimit(1)
                         ZStack(alignment: .bottom) {
@@ -283,7 +283,7 @@ struct StatisticsView: View {
                         }
                         .frame(maxWidth: .infinity)
                         Text(Fmt.weekdayShort.string(from: entry.day).prefix(1))
-                            .font(.system(size: 9.5, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(entry.day.isToday ? Theme.accentColor : Theme.textTertiary)
                     }
                 }
@@ -292,7 +292,7 @@ struct StatisticsView: View {
             if stats.focusMinutes > 0 {
                 HStack(spacing: 6) {
                     Circle().fill(Theme.success).frame(width: 6, height: 6)
-                    Text("Focused time logged").font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
+                    Text("Focused time logged").font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
                 }
             }
         }
@@ -331,7 +331,7 @@ struct StatisticsView: View {
     private func legendDot(_ color: Color, _ label: String) -> some View {
         HStack(spacing: 5) {
             Circle().fill(color).frame(width: 7, height: 7)
-            Text(label).font(.system(size: 11)).foregroundStyle(Theme.textSecondary)
+            Text(label).font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
         }
     }
 
@@ -344,7 +344,7 @@ struct StatisticsView: View {
             SectionHeader(title: "Time by calendar")
             if data.isEmpty {
                 Text("No blocks this week yet.")
-                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
             } else {
                 VStack(spacing: 10) {
                     ForEach(data, id: \.calendar.id) { entry in
@@ -353,12 +353,12 @@ struct StatisticsView: View {
                                 HStack(spacing: 6) {
                                     Circle().fill(entry.calendar.color).frame(width: 7, height: 7)
                                     Text(entry.calendar.title)
-                                        .font(.system(size: 12, weight: .medium))
+                                        .font(.system(size: 13.5, weight: .medium))
                                         .foregroundStyle(Theme.textPrimary)
                                 }
                                 Spacer()
                                 Text(Fmt.duration(minutes: entry.minutes))
-                                    .font(.system(size: 11.5, weight: .semibold))
+                                    .font(.system(size: 13, weight: .semibold))
                                     .foregroundStyle(Theme.textSecondary)
                             }
                             GeometryReader { geo in
@@ -384,13 +384,13 @@ struct StatisticsView: View {
                 Spacer(minLength: 8)
                 Button { model.budgetsPresented = true } label: {
                     Text(budgeted.isEmpty ? "Set" : "Edit")
-                        .font(.system(size: 11, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                        .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
             }
             if budgeted.isEmpty {
                 Text("Set weekly hour targets per calendar to keep your time honest.")
-                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
             } else {
                 ForEach(budgeted, id: \.cal.id) { entry in
                     let frac = entry.target > 0 ? Double(entry.minutes) / (entry.target * 60) : 0
@@ -398,11 +398,11 @@ struct StatisticsView: View {
                         HStack {
                             HStack(spacing: 6) {
                                 Circle().fill(entry.cal.color).frame(width: 7, height: 7)
-                                Text(entry.cal.title).font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.textPrimary)
+                                Text(entry.cal.title).font(.system(size: 13.5, weight: .medium)).foregroundStyle(Theme.textPrimary)
                             }
                             Spacer()
                             Text("\(Fmt.duration(minutes: entry.minutes)) / \(String(format: "%g h", entry.target))")
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 12.5, weight: .semibold))
                                 .foregroundStyle(frac >= 1 ? Theme.success : Theme.textSecondary)
                         }
                         GeometryReader { geo in
@@ -435,16 +435,16 @@ struct StatisticsView: View {
                                 .fill(badge.unlocked ? Theme.accentColor.opacity(0.18) : Theme.fill)
                                 .frame(width: 40, height: 40)
                             Image(systemName: badge.icon)
-                                .font(.system(size: 16))
+                                .font(.system(size: 17))
                                 .foregroundStyle(badge.unlocked ? Theme.accentColor : Theme.textTertiary)
                         }
                         Text(badge.title)
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(.system(size: 11.5, weight: .semibold))
                             .foregroundStyle(badge.unlocked ? Theme.textPrimary : Theme.textTertiary)
                             .lineLimit(1)
                         if !badge.unlocked {
                             Text("\(Int(badge.progress * 100))%")
-                                .font(.system(size: 8.5))
+                                .font(.system(size: 9.5))
                                 .foregroundStyle(Theme.textTertiary)
                         }
                     }
@@ -476,11 +476,11 @@ struct StatisticsView: View {
 
     private func factRow(_ icon: String, _ label: String, _ value: String) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: icon).font(.system(size: 11)).foregroundStyle(Theme.textTertiary).frame(width: 16)
-            Text(label).font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
+            Image(systemName: icon).font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary).frame(width: 16)
+            Text(label).font(.system(size: 13.5)).foregroundStyle(Theme.textSecondary)
             Spacer()
             Text(value)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 13.5, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
         }

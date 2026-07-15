@@ -61,11 +61,11 @@ struct WeeklyReviewView: View {
     private var headerBar: some View {
         HStack {
             Button("Close") { dismiss() }
-                .buttonStyle(.plain).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+                .buttonStyle(.plain).font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
             Spacer()
-            Text("Weekly Review").font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+            Text("Weekly Review").font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
             Spacer()
-            Text("Close").font(.system(size: 13)).hidden()
+            Text("Close").font(.system(size: 14.5)).hidden()
         }
         .padding(.horizontal, 16).padding(.vertical, 12)
     }
@@ -77,7 +77,7 @@ struct WeeklyReviewView: View {
                 .font(.system(size: 22, weight: .bold)).foregroundStyle(Theme.textPrimary)
             if let first = days.first, let last = days.last {
                 Text("\(Fmt.monthDay.string(from: first)) – \(Fmt.monthDay.string(from: last))")
-                    .font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.textSecondary)
+                    .font(.system(size: 13.5, weight: .medium)).foregroundStyle(Theme.textSecondary)
             }
         }
     }
@@ -93,9 +93,9 @@ struct WeeklyReviewView: View {
 
     private func tile(_ value: String, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(value).font(.system(size: 19, weight: .bold)).foregroundStyle(Theme.textPrimary)
+            Text(value).font(.system(size: 20, weight: .bold)).foregroundStyle(Theme.textPrimary)
                 .lineLimit(1).minimumScaleFactor(0.6)
-            Text(label.uppercased()).font(.system(size: 9, weight: .semibold)).tracking(1).foregroundStyle(Theme.textTertiary)
+            Text(label.uppercased()).font(.system(size: 10, weight: .semibold)).tracking(1).foregroundStyle(Theme.textTertiary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .panel(padding: 12)
@@ -106,7 +106,7 @@ struct WeeklyReviewView: View {
             SectionHeader(title: "Goals this week")
             if life.activeGoals.isEmpty {
                 Text("No goals yet — set one to give next week direction.")
-                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
             } else {
                 ForEach(life.activeGoals) { goal in
                     let p = goalProgress(goal)
@@ -115,11 +115,11 @@ struct WeeklyReviewView: View {
                             HStack(spacing: 6) {
                                 Circle().fill(goal.color).frame(width: 7, height: 7)
                                 Text(goal.title.isEmpty ? "Untitled goal" : goal.title)
-                                    .font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.textPrimary).lineLimit(1)
+                                    .font(.system(size: 13.5, weight: .medium)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                             }
                             Spacer()
                             Text("\(Int((p * 100).rounded()))%")
-                                .font(.system(size: 11, weight: .semibold)).foregroundStyle(goal.color)
+                                .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(goal.color)
                         }
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
@@ -167,13 +167,13 @@ struct WeeklyReviewView: View {
         return VStack(alignment: .leading, spacing: 8) {
             SectionHeader(title: "Habits")
             if habits.isEmpty {
-                Text("No habits tracked yet.").font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                Text("No habits tracked yet.").font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
             } else {
                 HStack {
-                    Text("\(done) of \(due) completed").font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
+                    Text("\(done) of \(due) completed").font(.system(size: 14)).foregroundStyle(Theme.textSecondary)
                     Spacer()
                     Text("\(Int((rate * 100).rounded()))%")
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.system(size: 14.5, weight: .bold))
                         .foregroundStyle(rate >= 0.7 ? Theme.success : Theme.warning)
                 }
             }
@@ -186,7 +186,7 @@ struct WeeklyReviewView: View {
             Button {
                 model.eveningRitualPresented = true
             } label: {
-                Text("Reflect").font(.system(size: 12.5, weight: .medium)).foregroundStyle(Theme.textSecondary)
+                Text("Reflect").font(.system(size: 14, weight: .medium)).foregroundStyle(Theme.textSecondary)
             }
             .buttonStyle(.plain)
             Spacer()
@@ -196,7 +196,7 @@ struct WeeklyReviewView: View {
                 model.planWeekPresented = true
             } label: {
                 Label("Plan Next Week", systemImage: "wand.and.stars")
-                    .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.bg)
+                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.bg)
                     .padding(.horizontal, 16).padding(.vertical, 8)
                     .background(Theme.accentColor, in: Capsule())
             }

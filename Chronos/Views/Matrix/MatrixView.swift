@@ -104,7 +104,7 @@ struct MatrixView: View {
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Drag tasks between quadrants — due dates and priorities update in Reminders")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 13.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
@@ -120,22 +120,22 @@ struct MatrixView: View {
             HStack(spacing: 6) {
                 Circle().fill(quadrant.tint).frame(width: 7, height: 7)
                 Text(quadrant.rawValue.uppercased())
-                    .font(.system(size: 10.5, weight: .bold))
+                    .font(.system(size: 12, weight: .bold))
                     .tracking(1.2)
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Text("\(items.count)")
-                    .font(.system(size: 10.5, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(quadrant.tint)
             }
             Text(quadrant.subtitle)
-                .font(.system(size: 10))
+                .font(.system(size: 11.5))
                 .foregroundStyle(Theme.textTertiary)
 
             if items.isEmpty {
                 Spacer()
                 Text("Drop tasks here")
-                    .font(.system(size: 11))
+                    .font(.system(size: 12.5))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(maxWidth: .infinity)
                 Spacer()
@@ -170,19 +170,19 @@ struct MatrixView: View {
                 withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
             } label: {
                 Image(systemName: "circle")
-                    .font(.system(size: 13))
+                    .font(.system(size: 14.5))
                     .foregroundStyle(task.priority == .none ? Theme.textTertiary : task.priority.color)
             }
             .buttonStyle(.plain)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(task.title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 13.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                 if let due = task.dueLabel() {
                     Text(due)
-                        .font(.system(size: 9.5))
+                        .font(.system(size: 11))
                         .foregroundStyle(task.isOverdue ? Theme.danger : Theme.textTertiary)
                 }
             }

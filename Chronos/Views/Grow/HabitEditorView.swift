@@ -42,7 +42,7 @@ struct HabitEditorView: View {
                 FieldRow(label: "Times per week") {
                     Stepper(value: $habit.weeklyTarget, in: 1...7) {
                         Text("\(habit.weeklyTarget)")
-                            .font(.system(size: 12.5, weight: .semibold))
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                     }
                     .fixedSize()
@@ -70,7 +70,7 @@ struct HabitEditorView: View {
                 heatmap
                 Button(role: .destructive) { confirmingDelete = true } label: {
                     Text("Delete Habit")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 14.5, weight: .medium))
                         .foregroundStyle(Theme.danger)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
@@ -90,13 +90,13 @@ struct HabitEditorView: View {
 
     private var iconRow: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("ICON").font(.system(size: 10, weight: .semibold)).tracking(1.2).foregroundStyle(Theme.textTertiary)
+            Text("ICON").font(.system(size: 11.5, weight: .semibold)).tracking(1.2).foregroundStyle(Theme.textTertiary)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(icons, id: \.self) { name in
                         Button { habit.iconName = name } label: {
                             Image(systemName: name)
-                                .font(.system(size: 15))
+                                .font(.system(size: 16))
                                 .foregroundStyle(habit.iconName == name ? Theme.bg : Theme.textSecondary)
                                 .frame(width: 36, height: 36)
                                 .background(
@@ -134,7 +134,7 @@ struct HabitEditorView: View {
         let today = Date().startOfDay
         let start = today.startOfWeek.adding(days: -7 * (weeks - 1))
         return VStack(alignment: .leading, spacing: 8) {
-            Text("LAST \(weeks) WEEKS").font(.system(size: 10, weight: .semibold)).tracking(1.2)
+            Text("LAST \(weeks) WEEKS").font(.system(size: 11.5, weight: .semibold)).tracking(1.2)
                 .foregroundStyle(Theme.textTertiary)
             HStack(spacing: 3) {
                 ForEach(0..<weeks, id: \.self) { w in

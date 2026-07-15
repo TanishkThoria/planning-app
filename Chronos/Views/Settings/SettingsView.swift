@@ -60,7 +60,7 @@ struct SettingsView: View {
                             .font(.system(size: 22, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
                         Text("Tuned for how you plan")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: 13.5, weight: .medium))
                             .foregroundStyle(Theme.textSecondary)
                     }
                     Spacer()
@@ -80,11 +80,11 @@ struct SettingsView: View {
                             if profileStore.profile.isCalibrated {
                                 let profile = profileStore.profile
                                 Text("Awake \(minuteLabel(profile.wakeMinutes))–\(minuteLabel(profile.bedMinutes)) · \(profile.meals.filter(\.enabled).count) meals · \(profile.routines.count) routines · \(profile.focus.rawValue.lowercased()) focus · \(profile.flexibility.rawValue.lowercased())")
-                                    .font(.system(size: 12))
+                                    .font(.system(size: 13.5))
                                     .foregroundStyle(Theme.textSecondary)
                             } else {
                                 Text("Not calibrated yet — tell Chronos about your sleep, meals, and routines so Plan My Day can schedule around your life.")
-                                    .font(.system(size: 12))
+                                    .font(.system(size: 13.5))
                                     .foregroundStyle(Theme.textSecondary)
                             }
                             Button {
@@ -94,7 +94,7 @@ struct SettingsView: View {
                                     profileStore.profile.isCalibrated ? "Recalibrate" : "Calibrate now",
                                     systemImage: "person.crop.circle.badge.checkmark"
                                 )
-                                .font(.system(size: 12.5, weight: .semibold))
+                                .font(.system(size: 14, weight: .semibold))
                                 .foregroundStyle(Theme.accentColor)
                             }
                             .buttonStyle(.plain)
@@ -174,12 +174,12 @@ struct SettingsView: View {
                         }
                         if notifications.enabled && notifications.authorization == .denied {
                             Text("Notifications are turned off in system settings. Enable them for Chronos in Settings > Notifications.")
-                                .font(.system(size: 11))
+                                .font(.system(size: 12.5))
                                 .foregroundStyle(Theme.warning)
                                 .padding(.horizontal, 4)
                         } else {
                             Text("Heads-up before each block starts, and a check-in when a task-linked block ends so you can reschedule what slipped.")
-                                .font(.system(size: 11))
+                                .font(.system(size: 12.5))
                                 .foregroundStyle(Theme.textTertiary)
                                 .padding(.horizontal, 4)
                         }
@@ -221,7 +221,7 @@ struct SettingsView: View {
                     settingsSection("Appearance") {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Theme")
-                                .font(.system(size: 12.5))
+                                .font(.system(size: 14))
                                 .foregroundStyle(Theme.textSecondary)
                             Picker("", selection: $appearance) {
                                 Text("System").tag("system")
@@ -237,7 +237,7 @@ struct SettingsView: View {
 
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Accent")
-                                .font(.system(size: 12.5))
+                                .font(.system(size: 14))
                                 .foregroundStyle(Theme.textSecondary)
                             HStack(spacing: 10) {
                                 ForEach(Theme.accentChoices) { choice in
@@ -280,7 +280,7 @@ struct SettingsView: View {
                             Text(colorByCategory
                                  ? "Blocks are tinted by what they are — gym, class, work, and so on. Tag anything from its editor or by long-pressing it; events with a color you set by hand keep it."
                                  : "Blocks use their calendar color. Turn this on to color-code the timeline by category instead.")
-                                .font(.system(size: 11))
+                                .font(.system(size: 12.5))
                                 .foregroundStyle(Theme.textTertiary)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .padding(.horizontal, 2)
@@ -300,7 +300,7 @@ struct SettingsView: View {
                             Text(coachEnabled
                                  ? "A private, on-device AI planner that knows your schedule, momentum, focus, and friends — open it from Today's action row or the ⌘K command bar. Requires Apple Intelligence (iOS 26 on a supported device); it stays hidden otherwise."
                                  : "The Coach is off. Turn it back on to chat with your on-device planning companion from Today or the command bar.")
-                                .font(.system(size: 11))
+                                .font(.system(size: 12.5))
                                 .foregroundStyle(Theme.textTertiary)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .padding(.horizontal, 2)
@@ -315,7 +315,7 @@ struct SettingsView: View {
                                 Image(systemName: "arrow.triangle.2.circlepath")
                                     .foregroundStyle(Theme.accentColor)
                             }
-                            .font(.system(size: 12))
+                            .font(.system(size: 13.5))
                             .foregroundStyle(Theme.textSecondary)
                         }
                         .padding(.horizontal, 12)
@@ -326,7 +326,7 @@ struct SettingsView: View {
                             service.refresh()
                         } label: {
                             Label("Refresh now", systemImage: "arrow.clockwise")
-                                .font(.system(size: 12.5, weight: .medium))
+                                .font(.system(size: 14, weight: .medium))
                                 .foregroundStyle(Theme.accentColor)
                         }
                         .buttonStyle(.plain)
@@ -340,22 +340,22 @@ struct SettingsView: View {
                         } label: {
                             HStack(spacing: 10) {
                                 Image(systemName: "sparkles")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(.system(size: 15, weight: .semibold))
                                     .foregroundStyle(Theme.accentColor)
                                     .frame(width: 20)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text("iCloud sync, leaderboards & friends")
-                                        .font(.system(size: 13, weight: .semibold))
+                                        .font(.system(size: 14.5, weight: .semibold))
                                         .foregroundStyle(Theme.textPrimary)
                                     Text(PaidFeatures.shared.anyCapabilityEntitled
                                          ? "Manage your Chronos+ features"
                                          : "Built in — see how to turn it on")
-                                        .font(.system(size: 11))
+                                        .font(.system(size: 12.5))
                                         .foregroundStyle(Theme.textTertiary)
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 11, weight: .semibold))
+                                    .font(.system(size: 12.5, weight: .semibold))
                                     .foregroundStyle(Theme.textTertiary)
                             }
                             .padding(.horizontal, 12)
@@ -376,20 +376,20 @@ struct SettingsView: View {
                         } label: {
                             HStack(spacing: 10) {
                                 Image(systemName: "graduationcap.fill")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(.system(size: 15, weight: .semibold))
                                     .foregroundStyle(Theme.accentColor)
                                     .frame(width: 20)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(LMSStore.shared.isConfigured ? "Manage schools" : "Connect your school")
-                                        .font(.system(size: 13, weight: .semibold))
+                                        .font(.system(size: 14.5, weight: .semibold))
                                         .foregroundStyle(Theme.textPrimary)
                                     Text("Canvas, Schoology — assignments become reminders")
-                                        .font(.system(size: 11))
+                                        .font(.system(size: 12.5))
                                         .foregroundStyle(Theme.textTertiary)
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 11, weight: .semibold))
+                                    .font(.system(size: 12.5, weight: .semibold))
                                     .foregroundStyle(Theme.textTertiary)
                             }
                             .padding(.horizontal, 12)
@@ -406,20 +406,20 @@ struct SettingsView: View {
                         } label: {
                             HStack(spacing: 10) {
                                 Image(systemName: "map")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(.system(size: 15, weight: .semibold))
                                     .foregroundStyle(Theme.accentColor)
                                     .frame(width: 20)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text("Take the tour")
-                                        .font(.system(size: 13, weight: .semibold))
+                                        .font(.system(size: 14.5, weight: .semibold))
                                         .foregroundStyle(Theme.textPrimary)
                                     Text("A guided walkthrough of every screen")
-                                        .font(.system(size: 11))
+                                        .font(.system(size: 12.5))
                                         .foregroundStyle(Theme.textTertiary)
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 11, weight: .semibold))
+                                    .font(.system(size: 12.5, weight: .semibold))
                                     .foregroundStyle(Theme.textTertiary)
                             }
                             .padding(.horizontal, 12)
@@ -434,7 +434,7 @@ struct SettingsView: View {
                             HStack(spacing: 10) {
                                 ShareLink(item: life.exportJSON()) {
                                     Label("Back up Grow data", systemImage: "square.and.arrow.up")
-                                        .font(.system(size: 12.5, weight: .semibold))
+                                        .font(.system(size: 14, weight: .semibold))
                                         .foregroundStyle(Theme.accentColor)
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 10)
@@ -444,7 +444,7 @@ struct SettingsView: View {
                                     restoreText = ""; restoring = true
                                 } label: {
                                     Label("Restore", systemImage: "square.and.arrow.down")
-                                        .font(.system(size: 12.5, weight: .semibold))
+                                        .font(.system(size: 14, weight: .semibold))
                                         .foregroundStyle(Theme.textSecondary)
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 10)
@@ -453,7 +453,7 @@ struct SettingsView: View {
                                 .buttonStyle(.plain)
                             }
                             Text("Exports your goals, habits, journal, templates & budgets as JSON. Blocks and tasks already live in Apple Calendar & Reminders.")
-                                .font(.system(size: 11))
+                                .font(.system(size: 12.5))
                                 .foregroundStyle(Theme.textTertiary)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .padding(.horizontal, 2)
@@ -463,13 +463,13 @@ struct SettingsView: View {
                     settingsSection("About") {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Chronos")
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(.system(size: 15, weight: .semibold))
                                 .foregroundStyle(Theme.textPrimary)
                             Text("Version \(Self.appVersion)")
-                                .font(.system(size: 12))
+                                .font(.system(size: 13.5))
                                 .foregroundStyle(Theme.textSecondary)
                             Text("Time-blocking built on Apple Calendar & Reminders.")
-                                .font(.system(size: 12))
+                                .font(.system(size: 13.5))
                                 .foregroundStyle(Theme.textTertiary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)

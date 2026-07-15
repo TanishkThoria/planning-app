@@ -56,18 +56,18 @@ struct RoutineRunnerView: View {
     private var header: some View {
         HStack {
             Button { dismiss() } label: {
-                Image(systemName: "chevron.down").font(.system(size: 13, weight: .semibold))
+                Image(systemName: "chevron.down").font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
             }
             .buttonStyle(.plain)
             Spacer()
             Text("\(routine.emoji) \(routine.name)")
-                .font(.system(size: 14, weight: .bold))
+                .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
             Button { voiceEnabled.toggle(); if !voiceEnabled { speaker.stop() } } label: {
                 Image(systemName: voiceEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(voiceEnabled ? Theme.accentColor : Theme.textTertiary)
             }
             .buttonStyle(.plain)
@@ -81,7 +81,7 @@ struct RoutineRunnerView: View {
         VStack(spacing: 20) {
             Spacer()
             Text("STEP \(stepIndex + 1) OF \(steps.count)")
-                .font(.system(size: 11, weight: .bold)).tracking(2)
+                .font(.system(size: 12.5, weight: .bold)).tracking(2)
                 .foregroundStyle(Theme.textTertiary)
             Text(current?.title ?? "")
                 .font(.system(size: 24, weight: .bold))
@@ -105,11 +105,11 @@ struct RoutineRunnerView: View {
 
             if let next {
                 Text("Next: \(next.title) · \(next.minutes) min")
-                    .font(.system(size: 12.5, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             } else {
                 Text("Last step — you're almost there.")
-                    .font(.system(size: 12.5, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.success)
             }
 
@@ -151,7 +151,7 @@ struct RoutineRunnerView: View {
                     .frame(width: prominent ? 64 : 52, height: prominent ? 64 : 52)
                     .background(prominent ? tint : Theme.surface, in: Circle())
                     .overlay(Circle().strokeBorder(prominent ? Color.clear : Theme.hairline, lineWidth: 1))
-                Text(label).font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.textSecondary)
+                Text(label).font(.system(size: 12.5, weight: .medium)).foregroundStyle(Theme.textSecondary)
             }
         }
         .buttonStyle(.plain)
@@ -168,10 +168,10 @@ struct RoutineRunnerView: View {
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text("\(steps.count) steps · \(routine.totalMinutes) min. Nicely done.")
-                .font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+                .font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
             Spacer()
             Button { dismiss() } label: {
-                Text("Done").font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.bg)
+                Text("Done").font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.bg)
                     .frame(maxWidth: .infinity).padding(.vertical, 14)
                     .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             }

@@ -39,7 +39,7 @@ struct WrappedView: View {
     private var topBar: some View {
         HStack {
             Text("Year in Review")
-                .font(.system(size: 15, weight: .bold))
+                .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
             Button { dismiss() } label: {
@@ -57,10 +57,10 @@ struct WrappedView: View {
             Spacer()
             Text("📆").font(.system(size: 40))
             Text("Not much to wrap up yet")
-                .font(.system(size: 18, weight: .bold))
+                .font(.system(size: 19, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text("Keep planning, focusing, and building habits — your Year in Review fills in as the year goes on.")
-                .font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+                .font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 30)
@@ -92,13 +92,13 @@ struct WrappedView: View {
     private func heroCard(_ s: WrappedEngine.Summary) -> some View {
         VStack(spacing: 8) {
             Text("YOUR \(s.periodLabel)")
-                .font(.system(size: 13, weight: .bold)).tracking(3)
+                .font(.system(size: 14.5, weight: .bold)).tracking(3)
                 .foregroundStyle(.white.opacity(0.8))
             Text("in time")
                 .font(.system(size: 34, weight: .bold))
                 .foregroundStyle(.white)
             Text("Here's where your hours went.")
-                .font(.system(size: 13)).foregroundStyle(.white.opacity(0.75))
+                .font(.system(size: 14.5)).foregroundStyle(.white.opacity(0.75))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 34)
@@ -121,10 +121,10 @@ struct WrappedView: View {
                     .foregroundStyle(.white)
                     .lineLimit(1).minimumScaleFactor(0.5)
                 Text(label)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.9))
                 Text(caption)
-                    .font(.system(size: 11.5))
+                    .font(.system(size: 13))
                     .foregroundStyle(.white.opacity(0.7))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -140,21 +140,21 @@ struct WrappedView: View {
     private func topCalendarsCard(_ s: WrappedEngine.Summary) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("WHERE YOUR TIME WENT")
-                .font(.system(size: 10, weight: .bold)).tracking(1.4)
+                .font(.system(size: 11.5, weight: .bold)).tracking(1.4)
                 .foregroundStyle(Theme.textTertiary)
             ForEach(Array(s.topCalendars.enumerated()), id: \.element.id) { idx, entry in
                 HStack(spacing: 12) {
                     Text("\(idx + 1)")
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.system(size: 19, weight: .bold))
                         .foregroundStyle(entry.color)
                         .frame(width: 24)
                     Text(entry.title)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     Spacer()
                     Text("\(entry.minutes / 60)h")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 14.5, weight: .semibold))
                         .foregroundStyle(Theme.textSecondary)
                 }
             }
@@ -167,7 +167,7 @@ struct WrappedView: View {
     private func shareCard(_ s: WrappedEngine.Summary) -> some View {
         ShareLink(item: shareText(s)) {
             Label("Share my \(s.periodLabel)", systemImage: "square.and.arrow.up")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Theme.bg)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)

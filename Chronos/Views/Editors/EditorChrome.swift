@@ -16,12 +16,12 @@ struct EditorSheet<Content: View>: View {
             HStack {
                 Button("Cancel") { dismiss() }
                     .buttonStyle(.plain)
-                    .font(.system(size: 13))
+                    .font(.system(size: 14.5))
                     .foregroundStyle(Theme.textSecondary)
                     .keyboardShortcut(.cancelAction)
                 Spacer()
                 Text(title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Button(confirmLabel) {
@@ -29,7 +29,7 @@ struct EditorSheet<Content: View>: View {
                     dismiss()
                 }
                 .buttonStyle(.plain)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 14.5, weight: .semibold))
                 .foregroundStyle(confirmDisabled ? Theme.textTertiary : Theme.accentColor)
                 .disabled(confirmDisabled)
                 .keyboardShortcut(.defaultAction)
@@ -63,7 +63,7 @@ struct FieldRow<Content: View>: View {
     var body: some View {
         HStack {
             Text(label)
-                .font(.system(size: 12.5))
+                .font(.system(size: 14))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
             content
@@ -82,7 +82,7 @@ struct TitleField: View {
     var body: some View {
         TextField(placeholder, text: $text, axis: .vertical)
             .textFieldStyle(.plain)
-            .font(.system(size: 18, weight: .semibold))
+            .font(.system(size: 19, weight: .semibold))
             .foregroundStyle(Theme.textPrimary)
             .lineLimit(1...3)
     }
@@ -102,7 +102,7 @@ struct DurationChips: View {
                     onPick(minutes)
                 } label: {
                     Text(Fmt.duration(minutes: minutes))
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(current == minutes ? Theme.bg : Theme.textSecondary)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 4)
@@ -141,10 +141,10 @@ struct CalendarPickerRow: View {
                 HStack(spacing: 6) {
                     Circle().fill(selected?.color ?? .gray).frame(width: 8, height: 8)
                     Text(selected?.title ?? "None")
-                        .font(.system(size: 12.5, weight: .medium))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                     Image(systemName: "chevron.up.chevron.down")
-                        .font(.system(size: 9))
+                        .font(.system(size: 10))
                         .foregroundStyle(Theme.textTertiary)
                 }
             }

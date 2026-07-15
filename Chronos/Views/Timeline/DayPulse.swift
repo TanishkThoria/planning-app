@@ -145,7 +145,7 @@ struct DayPulseChip: View {
             HStack(spacing: 5) {
                 Circle().fill(result.tint).frame(width: 7, height: 7)
                 Text("\(result.score)")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: 13.5, weight: .bold))
                     .foregroundStyle(Theme.textSecondary)
             }
             .padding(.horizontal, 8)
@@ -165,15 +165,15 @@ struct DayPulseChip: View {
                             .rotationEffect(.degrees(-90))
                             .frame(width: 52, height: 52)
                         Text("\(result.score)")
-                            .font(.system(size: 15, weight: .bold))
+                            .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
                     }
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Day pulse")
-                            .font(.system(size: 17, weight: .bold))
+                            .font(.system(size: 18, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
                         Text("The shape of this day, honestly")
-                            .font(.system(size: 11.5))
+                            .font(.system(size: 13))
                             .foregroundStyle(Theme.textSecondary)
                     }
                     Spacer()
@@ -182,15 +182,15 @@ struct DayPulseChip: View {
                 ForEach(result.findings) { finding in
                     HStack(alignment: .top, spacing: 10) {
                         Image(systemName: finding.icon)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(finding.tint)
                             .frame(width: 20)
                         VStack(alignment: .leading, spacing: 3) {
                             Text(finding.title)
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.system(size: 14.5, weight: .semibold))
                                 .foregroundStyle(Theme.textPrimary)
                             Text(finding.detail)
-                                .font(.system(size: 12))
+                                .font(.system(size: 13.5))
                                 .foregroundStyle(Theme.textSecondary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -206,7 +206,7 @@ struct DayPulseChip: View {
                         model.reflowPresented = true
                     } label: {
                         Label("Reflow the day", systemImage: "arrow.triangle.2.circlepath")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: 14.5, weight: .semibold))
                             .foregroundStyle(Theme.bg)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 11)

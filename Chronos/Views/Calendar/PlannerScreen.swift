@@ -35,7 +35,7 @@ struct PlannerScreen: View {
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     Text(subtitle)
-                        .font(.system(size: 11.5, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
                 }
@@ -94,8 +94,8 @@ struct PlannerScreen: View {
     private func actionChip(_ title: String, _ icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 5) {
-                Image(systemName: icon).font(.system(size: 11, weight: .semibold))
-                Text(title).font(.system(size: 12, weight: .semibold))
+                Image(systemName: icon).font(.system(size: 12.5, weight: .semibold))
+                Text(title).font(.system(size: 13.5, weight: .semibold))
             }
             .foregroundStyle(Theme.accentColor)
             .padding(.horizontal, 11).padding(.vertical, 7)
@@ -107,13 +107,13 @@ struct PlannerScreen: View {
     private var zoomControl: some View {
         HStack(spacing: 2) {
             Button { hourHeight = max(40, hourHeight - 10) } label: {
-                Image(systemName: "minus.magnifyingglass").font(.system(size: 11, weight: .semibold))
+                Image(systemName: "minus.magnifyingglass").font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.accentColor)
                     .padding(.horizontal, 8).padding(.vertical, 7)
             }
             .buttonStyle(.plain)
             Button { hourHeight = min(160, hourHeight + 10) } label: {
-                Image(systemName: "plus.magnifyingglass").font(.system(size: 11, weight: .semibold))
+                Image(systemName: "plus.magnifyingglass").font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.accentColor)
                     .padding(.horizontal, 8).padding(.vertical, 7)
             }

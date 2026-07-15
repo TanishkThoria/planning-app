@@ -57,18 +57,18 @@ struct SearchView: View {
 
     private var searchField: some View {
         HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass").font(.system(size: 14)).foregroundStyle(Theme.textTertiary)
+            Image(systemName: "magnifyingglass").font(.system(size: 15)).foregroundStyle(Theme.textTertiary)
             TextField("Search events and tasks", text: $query)
-                .textFieldStyle(.plain).font(.system(size: 16)).foregroundStyle(Theme.textPrimary)
+                .textFieldStyle(.plain).font(.system(size: 17)).foregroundStyle(Theme.textPrimary)
                 .focused($focused)
             if !query.isEmpty {
                 Button { query = "" } label: {
-                    Image(systemName: "xmark.circle.fill").font(.system(size: 14)).foregroundStyle(Theme.textTertiary)
+                    Image(systemName: "xmark.circle.fill").font(.system(size: 15)).foregroundStyle(Theme.textTertiary)
                 }
                 .buttonStyle(.plain)
             }
             Button("Done") { dismiss() }
-                .buttonStyle(.plain).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+                .buttonStyle(.plain).font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
                 .keyboardShortcut(.cancelAction)
         }
         .padding(.horizontal, 16).padding(.vertical, 14)
@@ -111,16 +111,16 @@ struct SearchView: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 14)).foregroundStyle(task.isCompleted ? Theme.success : task.priority.color)
+                    .font(.system(size: 15)).foregroundStyle(task.isCompleted ? Theme.success : task.priority.color)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(task.title).font(.system(size: 13, weight: .medium))
+                    Text(task.title).font(.system(size: 14.5, weight: .medium))
                         .foregroundStyle(Theme.textPrimary).lineLimit(1)
                     HStack(spacing: 6) {
                         if let due = task.dueLabel() {
-                            Text(due).font(.system(size: 10))
+                            Text(due).font(.system(size: 11.5))
                                 .foregroundStyle(task.isOverdue ? Theme.danger : Theme.textTertiary)
                         }
-                        Text(task.listName).font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
+                        Text(task.listName).font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
                     }
                 }
                 Spacer()
@@ -140,12 +140,12 @@ struct SearchView: View {
             HStack(spacing: 10) {
                 RoundedRectangle(cornerRadius: 2).fill(block.color).frame(width: 3, height: 30)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(block.title).font(.system(size: 13, weight: .medium))
+                    Text(block.title).font(.system(size: 14.5, weight: .medium))
                         .foregroundStyle(Theme.textPrimary).lineLimit(1)
                     Text(block.isAllDay
                          ? "\(Fmt.relativeDay(block.start)) · all-day"
                          : "\(Fmt.relativeDay(block.start)) · \(Fmt.timeRange(block.start, block.end))")
-                        .font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
                 }
                 Spacer()
             }

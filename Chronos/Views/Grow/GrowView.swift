@@ -44,7 +44,7 @@ struct GrowView: View {
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Goals, habits & reflection")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 13.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
@@ -70,7 +70,7 @@ struct GrowView: View {
                 }
             } label: {
                 Image(systemName: "plus")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 13.5, weight: .semibold))
                     .foregroundStyle(Theme.bg)
                     .frame(width: 28, height: 26)
                     .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
@@ -88,16 +88,16 @@ struct GrowView: View {
         return VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Label("Daily rituals", systemImage: "sparkles")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 if life.journalStreak > 0 {
                     Label("\(life.journalStreak)d", systemImage: "flame.fill")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(Theme.warning)
                 }
                 Button { model.journalPresented = true } label: {
-                    Text("History").font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.accentColor)
+                    Text("History").font(.system(size: 12.5, weight: .medium)).foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
             }
@@ -115,11 +115,11 @@ struct GrowView: View {
         Button(action: action) {
             HStack(spacing: 9) {
                 Image(systemName: done ? "checkmark.circle.fill" : icon)
-                    .font(.system(size: 15))
+                    .font(.system(size: 16))
                     .foregroundStyle(done ? Theme.success : tint)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(label).font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
-                    Text(done ? "Done" : subtitle).font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
+                    Text(label).font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                    Text(done ? "Done" : subtitle).font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
                 }
                 Spacer(minLength: 0)
             }
@@ -140,7 +140,7 @@ struct GrowView: View {
                 Button {
                     model.goalEditor = GoalEditContext(goal: Goal(), isNew: true)
                 } label: {
-                    Image(systemName: "plus").font(.system(size: 11, weight: .semibold))
+                    Image(systemName: "plus").font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
@@ -167,23 +167,23 @@ struct GrowView: View {
                         .stroke(goal.color, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                         .rotationEffect(.degrees(-90))
                     Image(systemName: goal.kind.icon)
-                        .font(.system(size: 12))
+                        .font(.system(size: 13.5))
                         .foregroundStyle(goal.color)
                 }
                 .frame(width: 42, height: 42)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(goal.title.isEmpty ? "Untitled goal" : goal.title)
-                        .font(.system(size: 13.5, weight: .semibold))
+                        .font(.system(size: 14.5, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     Text(p.label)
-                        .font(.system(size: 11))
+                        .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 Spacer()
                 Text("\(Int((p.fraction * 100).rounded()))%")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: 14.5, weight: .bold))
                     .foregroundStyle(goal.color)
             }
             .panel(padding: 12)
@@ -235,7 +235,7 @@ struct GrowView: View {
                 Button {
                     model.habitEditor = HabitEditContext(habit: Habit(), isNew: true)
                 } label: {
-                    Image(systemName: "plus").font(.system(size: 11, weight: .semibold))
+                    Image(systemName: "plus").font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
@@ -262,7 +262,7 @@ struct GrowView: View {
                     Circle().fill(done ? habit.color : Theme.fill)
                         .frame(width: 34, height: 34)
                     Image(systemName: done ? "checkmark" : habit.iconName)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 14.5, weight: .semibold))
                         .foregroundStyle(done ? Theme.bg : habit.color)
                 }
             }
@@ -270,7 +270,7 @@ struct GrowView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(habit.title.isEmpty ? "Untitled habit" : habit.title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                 weekDots(habit)
@@ -278,7 +278,7 @@ struct GrowView: View {
             Spacer()
             if streak > 0 {
                 Label("\(streak)", systemImage: "flame.fill")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: 12.5, weight: .bold))
                     .foregroundStyle(Theme.warning)
             }
         }
@@ -326,12 +326,12 @@ struct GrowView: View {
     private func emptyRow(_ icon: String, _ title: String, _ message: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 18))
+                .font(.system(size: 19))
                 .foregroundStyle(Theme.textTertiary)
                 .frame(width: 28)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textSecondary)
-                Text(message).font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                Text(title).font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textSecondary)
+                Text(message).font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()

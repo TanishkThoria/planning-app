@@ -51,10 +51,10 @@ struct SidebarView: View {
     private var header: some View {
         HStack(spacing: 8) {
             Image(systemName: "hexagon.fill")
-                .font(.system(size: 14))
+                .font(.system(size: 15))
                 .foregroundStyle(.tint)
             Text("CHRONOS")
-                .font(.system(size: 13, weight: .bold))
+                .font(.system(size: 14.5, weight: .bold))
                 .tracking(3)
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
@@ -68,14 +68,14 @@ struct SidebarView: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: screen.icon)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 14.5, weight: .medium))
                     .frame(width: 20)
                 Text(screen.title)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 14.5, weight: .medium))
                 Spacer()
                 if let key = screen.shortcut {
                     Text("⌘\(String(key.character).uppercased())")
-                        .font(.system(size: 10, weight: .medium))
+                        .font(.system(size: 11.5, weight: .medium))
                         .foregroundStyle(Theme.textTertiary)
                 }
             }
@@ -98,7 +98,7 @@ struct SidebarView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title.uppercased())
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: 11.5, weight: .semibold))
                 .tracking(1.2)
                 .foregroundStyle(Theme.textTertiary)
                 .padding(.horizontal, 10)
@@ -113,7 +113,7 @@ struct SidebarView: View {
                             .overlay(Circle().strokeBorder(item.color, lineWidth: 1.5))
                             .frame(width: 9, height: 9)
                         Text(item.title)
-                            .font(.system(size: 12.5))
+                            .font(.system(size: 14))
                             .lineLimit(1)
                             .foregroundStyle(
                                 hidden.contains(item.id) ? Theme.textTertiary : Theme.textSecondary
@@ -121,7 +121,7 @@ struct SidebarView: View {
                         Spacer()
                         if !item.isEditable {
                             Image(systemName: "lock.fill")
-                                .font(.system(size: 8))
+                                .font(.system(size: 9))
                                 .foregroundStyle(Theme.textTertiary)
                         }
                     }

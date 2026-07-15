@@ -80,7 +80,7 @@ struct ReflowView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("These blocks passed without their task getting done. Here's where they'd move:")
-                            .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                            .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
                             .padding(.bottom, 4)
                         ForEach(moves) { move in
                             moveRow(move)
@@ -107,15 +107,15 @@ struct ReflowView: View {
     private var headerBar: some View {
         HStack {
             Button("Cancel") { dismiss() }
-                .buttonStyle(.plain).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+                .buttonStyle(.plain).font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
                 .keyboardShortcut(.cancelAction)
             Spacer()
             VStack(spacing: 1) {
-                Text("Reflow Day").font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
-                Text("\(slippedBlocks.count) slipped").font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary)
+                Text("Reflow Day").font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                Text("\(slippedBlocks.count) slipped").font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
             }
             Spacer()
-            Text("Cancel").font(.system(size: 13)).hidden()
+            Text("Cancel").font(.system(size: 14.5)).hidden()
         }
         .padding(.horizontal, 16).padding(.vertical, 12)
     }
@@ -125,19 +125,19 @@ struct ReflowView: View {
             RoundedRectangle(cornerRadius: 2).fill(move.block.color).frame(width: 3, height: 34)
             VStack(alignment: .leading, spacing: 2) {
                 Text(move.block.title)
-                    .font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.textPrimary).lineLimit(1)
+                    .font(.system(size: 14.5, weight: .medium)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                 HStack(spacing: 6) {
                     Text(Fmt.timeRange(move.block.start, move.block.end))
-                        .font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
                         .strikethrough(color: Theme.textTertiary)
-                    Image(systemName: "arrow.right").font(.system(size: 8)).foregroundStyle(Theme.textTertiary)
+                    Image(systemName: "arrow.right").font(.system(size: 9)).foregroundStyle(Theme.textTertiary)
                     Text(Fmt.timeRange(move.newStart, move.newEnd))
-                        .font(.system(size: 10.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                        .font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.accentColor)
                 }
             }
             Spacer()
             Text(Fmt.relativeDay(move.newStart))
-                .font(.system(size: 10, weight: .medium)).foregroundStyle(Theme.textTertiary)
+                .font(.system(size: 11.5, weight: .medium)).foregroundStyle(Theme.textTertiary)
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
@@ -146,13 +146,13 @@ struct ReflowView: View {
     private var footer: some View {
         HStack {
             Text(moves.isEmpty ? "" : "\(moves.count) block\(moves.count == 1 ? "" : "s") will move")
-                .font(.system(size: 11.5, weight: .medium)).foregroundStyle(Theme.textSecondary)
+                .font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.textSecondary)
             Spacer()
             Button {
                 apply()
             } label: {
                 Text("Reflow")
-                    .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.bg)
+                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.bg)
                     .padding(.horizontal, 18).padding(.vertical, 7)
                     .background(Theme.accentColor, in: Capsule())
             }

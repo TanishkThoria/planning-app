@@ -40,18 +40,18 @@ struct MomentumCard: View {
                 ring
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
-                        Image(systemName: "bolt.fill").font(.system(size: 11)).foregroundStyle(Theme.accentColor)
+                        Image(systemName: "bolt.fill").font(.system(size: 12.5)).foregroundStyle(Theme.accentColor)
                         Text("Lv \(store.level) · \(store.levelTitle)")
-                            .font(.system(size: 13, weight: .bold))
+                            .font(.system(size: 14.5, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
                     }
                     if store.streak() > 0 {
                         Label("\(store.streak())-day momentum streak", systemImage: "flame.fill")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(size: 12.5, weight: .medium))
                             .foregroundStyle(Theme.warning)
                     } else {
                         Text("Build a streak — keep the score up daily.")
-                            .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                            .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
                     }
                     levelBar
                 }
@@ -62,12 +62,12 @@ struct MomentumCard: View {
             if let next = MomentumEngine.nextBestAction(input) {
                 Button { model.momentumDetailPresented = true } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: next.icon).font(.system(size: 11, weight: .semibold))
+                        Image(systemName: next.icon).font(.system(size: 12.5, weight: .semibold))
                             .foregroundStyle(Theme.accentColor)
-                        Text(next.tip).font(.system(size: 11.5, weight: .medium))
+                        Text(next.tip).font(.system(size: 13, weight: .medium))
                             .foregroundStyle(Theme.textPrimary).lineLimit(1)
                         Spacer(minLength: 4)
-                        Image(systemName: "chevron.right").font(.system(size: 9, weight: .bold))
+                        Image(systemName: "chevron.right").font(.system(size: 10, weight: .bold))
                             .foregroundStyle(Theme.textTertiary)
                     }
                     .padding(.horizontal, 11).padding(.vertical, 8)
@@ -80,9 +80,9 @@ struct MomentumCard: View {
                 Button { withAnimation(.snappy) { expanded.toggle() } } label: {
                     HStack(spacing: 5) {
                         Text(expanded ? "Hide breakdown" : "How's this scored?")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 12.5, weight: .semibold))
                         Image(systemName: "chevron.down")
-                            .font(.system(size: 9, weight: .semibold))
+                            .font(.system(size: 10, weight: .semibold))
                             .rotationEffect(.degrees(expanded ? 180 : 0))
                     }
                     .foregroundStyle(Theme.accentColor)
@@ -90,7 +90,7 @@ struct MomentumCard: View {
                 .buttonStyle(.plain)
                 Spacer()
                 Button { model.momentumDetailPresented = true } label: {
-                    Text("Streaks & tips →").font(.system(size: 11, weight: .semibold))
+                    Text("Streaks & tips →").font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
@@ -101,9 +101,9 @@ struct MomentumCard: View {
                     ForEach(MomentumEngine.breakdown(input)) { part in
                         HStack(spacing: 9) {
                             Image(systemName: part.icon)
-                                .font(.system(size: 11)).foregroundStyle(Theme.textSecondary)
+                                .font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
                                 .frame(width: 16)
-                            Text(part.label).font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
+                            Text(part.label).font(.system(size: 13.5)).foregroundStyle(Theme.textSecondary)
                             Spacer()
                             GeometryReader { geo in
                                 ZStack(alignment: .leading) {
@@ -114,7 +114,7 @@ struct MomentumCard: View {
                             }
                             .frame(width: 70, height: 5)
                             Text("\(part.earned)/\(part.max)")
-                                .font(.system(size: 10, weight: .medium))
+                                .font(.system(size: 11.5, weight: .medium))
                                 .foregroundStyle(Theme.textTertiary)
                                 .frame(width: 34, alignment: .trailing)
                         }

@@ -40,11 +40,11 @@ struct QuickAddView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
                 Image(systemName: "sparkles")
-                    .font(.system(size: 15))
+                    .font(.system(size: 16))
                     .foregroundStyle(Theme.accentColor)
                 TextField("Deep work 9-11am · Standup tmr 9:15 15m · todo Ship it fri !!", text: $text)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .focused($focused)
                     .onSubmit(submit)
@@ -70,7 +70,7 @@ struct QuickAddView: View {
 
                 Button(action: submit) {
                     Text("Create")
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(Theme.bg)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 6)
@@ -87,14 +87,14 @@ struct QuickAddView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("SYNTAX")
-                    .font(.system(size: 9.5, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .tracking(1.2)
                     .foregroundStyle(Theme.textTertiary)
                 Text("Times 9-11am, 3pm · Days today, fri, in 3 days, jan 5 · Length 45m, 1.5h")
-                    .font(.system(size: 11))
+                    .font(.system(size: 12.5))
                     .foregroundStyle(Theme.textTertiary)
                 Text("todo/t · ! !! !!! · ~30m · every week · #List · at Blue Bottle")
-                    .font(.system(size: 11))
+                    .font(.system(size: 12.5))
                     .foregroundStyle(Theme.textTertiary)
             }
 
@@ -121,16 +121,16 @@ struct QuickAddView: View {
     private var previewCard: some View {
         HStack(spacing: 10) {
             Image(systemName: parsed.kind == .block ? "rectangle.stack.fill" : "checkmark.circle.fill")
-                .font(.system(size: 13))
+                .font(.system(size: 14.5))
                 .foregroundStyle(Theme.accentColor)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(parsed.title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                 Text(previewDetail)
-                    .font(.system(size: 11.5))
+                    .font(.system(size: 13))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()

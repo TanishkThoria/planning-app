@@ -167,8 +167,8 @@ struct TasksView: View {
 
     private func bulkLabel(_ label: String, _ icon: String, tint: Color = Theme.textPrimary) -> some View {
         VStack(spacing: 3) {
-            Image(systemName: icon).font(.system(size: 15))
-            Text("\(label)").font(.system(size: 9.5, weight: .medium))
+            Image(systemName: icon).font(.system(size: 16))
+            Text("\(label)").font(.system(size: 11, weight: .medium))
         }
         .foregroundStyle(tint)
         .frame(maxWidth: .infinity)
@@ -217,7 +217,7 @@ struct TasksView: View {
                     .foregroundStyle(Theme.textPrimary)
                 let open = visibleTasks.filter { !$0.isCompleted }.count
                 Text("\(open) open · synced with Apple Reminders")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 13.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
@@ -251,11 +251,11 @@ struct TasksView: View {
     private var quickEntryField: some View {
         HStack(spacing: 8) {
             Image(systemName: "plus.circle")
-                .font(.system(size: 13))
+                .font(.system(size: 14.5))
                 .foregroundStyle(Theme.textTertiary)
             TextField("Add a task — try \u{201C}Send invoice friday 5pm !! ~30m\u{201D}", text: $quickEntry)
                 .textFieldStyle(.plain)
-                .font(.system(size: 13))
+                .font(.system(size: 14.5))
                 .foregroundStyle(Theme.textPrimary)
                 .focused($entryFocused)
                 .onSubmit(submitQuickEntry)
@@ -301,7 +301,7 @@ struct TasksView: View {
                             filter = item
                         } label: {
                             Text(item.rawValue)
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.system(size: 13.5, weight: .semibold))
                                 .lineLimit(1)
                                 .fixedSize()
                                 .foregroundStyle(filter == item ? Theme.bg : Theme.textSecondary)
@@ -320,15 +320,15 @@ struct TasksView: View {
 
             HStack(spacing: 6) {
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 11))
+                    .font(.system(size: 12.5))
                     .foregroundStyle(Theme.textTertiary)
                 TextField("Search tasks", text: $searchText)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 12.5))
+                    .font(.system(size: 14))
                 if !searchText.isEmpty {
                     Button { searchText = "" } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 12))
+                            .font(.system(size: 13.5))
                             .foregroundStyle(Theme.textTertiary)
                     }
                     .buttonStyle(.plain)

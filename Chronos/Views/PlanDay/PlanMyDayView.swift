@@ -133,21 +133,21 @@ struct PlanMyDayView: View {
         HStack {
             Button("Cancel") { dismiss() }
                 .buttonStyle(.plain)
-                .font(.system(size: 13))
+                .font(.system(size: 14.5))
                 .foregroundStyle(Theme.textSecondary)
                 .keyboardShortcut(.cancelAction)
             Spacer()
             VStack(spacing: 1) {
                 Text("Plan My Day")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Text(Fmt.relativeDay(day))
-                    .font(.system(size: 10.5))
+                    .font(.system(size: 12))
                     .foregroundStyle(Theme.textTertiary)
             }
             Spacer()
             // Symmetry spacer so the title stays centered.
-            Text("Cancel").font(.system(size: 13)).hidden()
+            Text("Cancel").font(.system(size: 14.5)).hidden()
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -160,17 +160,17 @@ struct PlanMyDayView: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: isIncluded ? "checkmark.square.fill" : "square")
-                    .font(.system(size: 15))
+                    .font(.system(size: 16))
                     .foregroundStyle(isIncluded ? Theme.accentColor : Theme.textTertiary)
                 Image(systemName: "repeat")
-                    .font(.system(size: 10))
+                    .font(.system(size: 11.5))
                     .foregroundStyle(Theme.textTertiary)
                 Text(window.title)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 14.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Text(Fmt.timeRange(window.start, window.end))
-                    .font(.system(size: 11.5, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(isIncluded ? Theme.accentColor : Theme.textTertiary)
             }
             .padding(.horizontal, 12)
@@ -190,26 +190,26 @@ struct PlanMyDayView: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: isIncluded ? "checkmark.square.fill" : "square")
-                    .font(.system(size: 15))
+                    .font(.system(size: 16))
                     .foregroundStyle(isIncluded ? Theme.accentColor : Theme.textTertiary)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(task.title)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 14.5, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     HStack(spacing: 6) {
                         Text("~\(Fmt.duration(minutes: task.estimateMinutes ?? defaultBlockMinutes))")
-                            .font(.system(size: 10.5))
+                            .font(.system(size: 12))
                             .foregroundStyle(Theme.textTertiary)
                         if task.isOverdue {
                             Text("overdue")
-                                .font(.system(size: 10.5, weight: .medium))
+                                .font(.system(size: 12, weight: .medium))
                                 .foregroundStyle(Theme.danger)
                         }
                         if task.priority != .none {
                             Text(task.priority.badge)
-                                .font(.system(size: 10.5, weight: .bold))
+                                .font(.system(size: 12, weight: .bold))
                                 .foregroundStyle(task.priority.color)
                         }
                     }
@@ -220,11 +220,11 @@ struct PlanMyDayView: View {
                 if isIncluded {
                     if let proposal {
                         Text(Fmt.timeRange(proposal.start, proposal.end))
-                            .font(.system(size: 11.5, weight: .semibold))
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(Theme.accentColor)
                     } else {
                         Text("no room")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(size: 12.5, weight: .medium))
                             .foregroundStyle(Theme.warning)
                     }
                 }
@@ -244,11 +244,11 @@ struct PlanMyDayView: View {
             let unplaced = included.count - proposals.count
             VStack(alignment: .leading, spacing: 1) {
                 Text("\(totalBlocks) block\(totalBlocks == 1 ? "" : "s") will be created")
-                    .font(.system(size: 11.5, weight: .medium))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
                 if unplaced > 0 {
                     Text("\(unplaced) didn't fit — free up time or shorten estimates")
-                        .font(.system(size: 10.5))
+                        .font(.system(size: 12))
                         .foregroundStyle(Theme.warning)
                 }
             }
@@ -257,7 +257,7 @@ struct PlanMyDayView: View {
                 apply()
             } label: {
                 Text("Add to Calendar")
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.bg)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 7)

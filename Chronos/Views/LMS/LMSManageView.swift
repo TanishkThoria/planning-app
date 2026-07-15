@@ -64,7 +64,7 @@ struct LMSManageView: View {
     private var topBar: some View {
         HStack {
             Text("Schools")
-                .font(.system(size: 15, weight: .bold))
+                .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
             Button { dismiss() } label: {
@@ -90,22 +90,22 @@ struct LMSManageView: View {
                         .fill(Theme.accentColor.opacity(0.14))
                         .frame(width: 38, height: 38)
                     Image(systemName: source.provider.icon)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(source.name)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     Text(lastSyncLabel(source))
-                        .font(.system(size: 11))
+                        .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 Spacer()
                 Button { pendingRemoval = source } label: {
                     Image(systemName: "link.badge.minus")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 14.5, weight: .semibold))
                         .foregroundStyle(Theme.danger)
                         .frame(width: 30, height: 30)
                         .background(Theme.danger.opacity(0.1), in: Circle())
@@ -117,7 +117,7 @@ struct LMSManageView: View {
             HStack(spacing: 14) {
                 detailChip("calendar", calendar?.title ?? "Calendar missing", ok: calendar != nil)
                 Image(systemName: "arrow.right")
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(Theme.textTertiary)
                 detailChip("checklist", list?.title ?? "List missing", ok: list != nil)
             }
@@ -132,10 +132,10 @@ struct LMSManageView: View {
     private func detailChip(_ icon: String, _ title: String, ok: Bool) -> some View {
         HStack(spacing: 5) {
             Image(systemName: icon)
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: 11.5, weight: .semibold))
                 .foregroundStyle(ok ? Theme.textSecondary : Theme.warning)
             Text(title)
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: 12.5, weight: .medium))
                 .foregroundStyle(ok ? Theme.textSecondary : Theme.warning)
                 .lineLimit(1)
         }
@@ -148,10 +148,10 @@ struct LMSManageView: View {
     private var iCloudTip: some View {
         VStack(alignment: .leading, spacing: 6) {
             Label("Only on this device", systemImage: "exclamationmark.icloud")
-                .font(.system(size: 11.5, weight: .semibold))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Theme.warning)
             Text("This subscription doesn't sync through iCloud. To see it on every device: open icloud.com/calendar (or Calendar on a Mac), add a new calendar subscription with the same feed URL choosing iCloud as the location, then re-map this school to that calendar.")
-                .font(.system(size: 11))
+                .font(.system(size: 12.5))
                 .foregroundStyle(Theme.textTertiary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -180,10 +180,10 @@ struct LMSManageView: View {
                         ProgressView().controlSize(.small)
                     } else {
                         Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: 14.5, weight: .semibold))
                     }
                     Text(lms.isSyncing ? "Syncing…" : "Sync now")
-                        .font(.system(size: 13.5, weight: .semibold))
+                        .font(.system(size: 14.5, weight: .semibold))
                     Spacer()
                 }
                 .foregroundStyle(Theme.accentColor)
@@ -195,11 +195,11 @@ struct LMSManageView: View {
 
             if let summary = lms.lastSummary {
                 Text(summary)
-                    .font(.system(size: 11.5))
+                    .font(.system(size: 13))
                     .foregroundStyle(Theme.textSecondary)
             }
             Text("Chronos re-imports automatically at launch, when you return to the app, and whenever the calendar changes — at least daily. The feed itself is refreshed by the system on its own schedule (iCloud-hosted subscriptions refresh most reliably).")
-                .font(.system(size: 10.5))
+                .font(.system(size: 12))
                 .foregroundStyle(Theme.textTertiary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -211,7 +211,7 @@ struct LMSManageView: View {
             model.lmsSetupPresented = true
         } label: {
             Label(lms.sources.isEmpty ? "Connect a school" : "Add another school", systemImage: "plus")
-                .font(.system(size: 13.5, weight: .semibold))
+                .font(.system(size: 14.5, weight: .semibold))
                 .foregroundStyle(Theme.bg)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)

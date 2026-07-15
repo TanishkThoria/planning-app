@@ -66,11 +66,11 @@ struct CommandBarView: View {
     private var searchField: some View {
         HStack(spacing: 10) {
             Image(systemName: "command")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Theme.accentColor)
             TextField("Search actions, jump anywhere, or add…", text: $query)
                 .textFieldStyle(.plain)
-                .font(.system(size: 16, weight: .medium))
+                .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
                 .focused($focused)
                 .submitLabel(.go)
@@ -88,7 +88,7 @@ struct CommandBarView: View {
 
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(.system(size: 9.5, weight: .semibold)).tracking(1.1)
+            .font(.system(size: 11, weight: .semibold)).tracking(1.1)
             .foregroundStyle(Theme.textTertiary)
             .padding(.horizontal, 10).padding(.top, 10).padding(.bottom, 3)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -98,16 +98,16 @@ struct CommandBarView: View {
         Button { perform(command.run) } label: {
             HStack(spacing: 12) {
                 Image(systemName: command.icon)
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(Theme.accentColor)
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(command.title)
-                        .font(.system(size: 13.5, weight: .medium))
+                        .font(.system(size: 14.5, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                     if !command.subtitle.isEmpty {
                         Text(command.subtitle)
-                            .font(.system(size: 11))
+                            .font(.system(size: 12.5))
                             .foregroundStyle(Theme.textTertiary)
                             .lineLimit(1)
                     }
@@ -128,15 +128,15 @@ struct CommandBarView: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(Theme.accentColor)
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(trimmedQuery.isEmpty ? "Quick add…" : "Add \u{201C}\(trimmedQuery)\u{201D}")
-                        .font(.system(size: 13.5, weight: .semibold))
+                        .font(.system(size: 14.5, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Text("Create a block or task with natural language")
-                        .font(.system(size: 11))
+                        .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1)
                 }

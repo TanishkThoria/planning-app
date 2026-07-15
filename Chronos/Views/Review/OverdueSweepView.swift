@@ -52,14 +52,14 @@ struct OverdueSweepView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {
                         Text("\(overdue.count) overdue task\(overdue.count == 1 ? "" : "s") — here's where they'd land:")
-                            .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                            .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
                         ForEach(planByDay.keys.sorted(), id: \.self) { day in
                             dayGroup(day, planByDay[day] ?? [])
                         }
                         if total < overdue.count {
                             Label("\(overdue.count - total) didn't fit in the next 7 days — free up time or shorten estimates.",
                                   systemImage: "exclamationmark.triangle")
-                                .font(.system(size: 11)).foregroundStyle(Theme.warning)
+                                .font(.system(size: 12.5)).foregroundStyle(Theme.warning)
                         }
                     }
                     .padding(16)
@@ -82,12 +82,12 @@ struct OverdueSweepView: View {
     private var headerBar: some View {
         HStack {
             Button("Cancel") { dismiss() }
-                .buttonStyle(.plain).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+                .buttonStyle(.plain).font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
                 .keyboardShortcut(.cancelAction)
             Spacer()
-            Text("Clear Overdue").font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+            Text("Clear Overdue").font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
             Spacer()
-            Text("Cancel").font(.system(size: 13)).hidden()
+            Text("Cancel").font(.system(size: 14.5)).hidden()
         }
         .padding(.horizontal, 16).padding(.vertical, 12)
     }
@@ -95,18 +95,18 @@ struct OverdueSweepView: View {
     private func dayGroup(_ day: Date, _ proposals: [AutoScheduler.Proposal]) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(Fmt.relativeDay(day))
-                .font(.system(size: 12, weight: .bold))
+                .font(.system(size: 13.5, weight: .bold))
                 .foregroundStyle(day.isToday ? Theme.accentColor : Theme.textPrimary).padding(.leading, 2)
             ForEach(proposals) { p in
                 HStack(spacing: 10) {
                     Text(Fmt.time.string(from: p.start))
-                        .font(.system(size: 11.5, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                         .lineLimit(1).minimumScaleFactor(0.8)
                         .frame(width: 60, alignment: .leading)
-                    Text(p.task.title).font(.system(size: 12.5)).foregroundStyle(Theme.textPrimary).lineLimit(1)
+                    Text(p.task.title).font(.system(size: 14)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                     Spacer()
-                    Text(Fmt.duration(minutes: p.minutes)).font(.system(size: 10.5))
+                    Text(Fmt.duration(minutes: p.minutes)).font(.system(size: 12))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 .padding(.horizontal, 12).padding(.vertical, 8)
@@ -118,7 +118,7 @@ struct OverdueSweepView: View {
     private var footer: some View {
         HStack {
             Text(total == 0 ? "" : "\(total) block\(total == 1 ? "" : "s") will be created")
-                .font(.system(size: 11.5, weight: .medium)).foregroundStyle(Theme.textSecondary)
+                .font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.textSecondary)
             Spacer()
             Button {
                 let snapshot = planByDay
@@ -135,7 +135,7 @@ struct OverdueSweepView: View {
                 dismiss()
             } label: {
                 Text("Schedule All")
-                    .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.bg)
+                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.bg)
                     .padding(.horizontal, 18).padding(.vertical, 7)
                     .background(Theme.accentColor, in: Capsule())
             }

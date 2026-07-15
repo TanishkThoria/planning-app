@@ -65,21 +65,21 @@ struct CalibrationView: View {
                 if step != .welcome && step != .done {
                     Button("Back") { previous() }
                         .buttonStyle(.plain)
-                        .font(.system(size: 13))
+                        .font(.system(size: 14.5))
                         .foregroundStyle(Theme.textSecondary)
                 } else {
                     Button("Skip") { dismiss() }
                         .buttonStyle(.plain)
-                        .font(.system(size: 13))
+                        .font(.system(size: 14.5))
                         .foregroundStyle(step == .done ? Color.clear : Theme.textTertiary)
                         .disabled(step == .done)
                 }
                 Spacer()
                 Text(step.title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
-                Button("Skip") { dismiss() }.buttonStyle(.plain).font(.system(size: 13)).hidden()
+                Button("Skip") { dismiss() }.buttonStyle(.plain).font(.system(size: 14.5)).hidden()
             }
 
             // Progress dots
@@ -103,7 +103,7 @@ struct CalibrationView: View {
                 next()
             } label: {
                 Text(step == .done ? "Start Planning" : (step == .welcome ? "Let's go" : "Continue"))
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.bg)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
@@ -152,7 +152,7 @@ struct CalibrationView: View {
                 .font(.system(size: 20, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text("A two-minute interview about how your days actually work — when you sleep, when you eat, what's routine, and how flexible any of it is. Chronos uses this to plan around your life instead of over it.\n\nEverything stays on this device, and you can recalibrate anytime from Settings.")
-                .font(.system(size: 13))
+                .font(.system(size: 14.5))
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(3)
         }
@@ -169,7 +169,7 @@ struct CalibrationView: View {
             }
             if draft.bedMinutes <= draft.wakeMinutes {
                 Label("Bedtime should come after wake-up (Chronos doesn't plan across midnight yet).", systemImage: "exclamationmark.triangle")
-                    .font(.system(size: 11.5))
+                    .font(.system(size: 13))
                     .foregroundStyle(Theme.warning)
             }
         }
@@ -183,7 +183,7 @@ struct CalibrationView: View {
                     HStack {
                         Toggle(isOn: $meal.enabled) {
                             Text(meal.name)
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.system(size: 14.5, weight: .semibold))
                                 .foregroundStyle(Theme.textPrimary)
                         }
                         .toggleStyle(.switch)
@@ -222,14 +222,14 @@ struct CalibrationView: View {
                 )
             } label: {
                 Label("Add a routine", systemImage: "plus.circle.fill")
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.accentColor)
             }
             .buttonStyle(.plain)
 
             if draft.routines.isEmpty {
                 Text("Totally fine to skip — you can add routines later.")
-                    .font(.system(size: 11.5))
+                    .font(.system(size: 13))
                     .foregroundStyle(Theme.textTertiary)
             }
         }
@@ -241,7 +241,7 @@ struct CalibrationView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("MY BEST FOCUS IS IN THE")
-                    .font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                    .font(.system(size: 11.5, weight: .semibold)).tracking(1.2)
                     .foregroundStyle(Theme.textTertiary)
                 ForEach(FocusPeriod.allCases) { period in
                     choiceRow(
@@ -254,7 +254,7 @@ struct CalibrationView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("HOW FLEXIBLE ARE THESE ROUTINES?")
-                    .font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                    .font(.system(size: 11.5, weight: .semibold)).tracking(1.2)
                     .foregroundStyle(Theme.textTertiary)
                 ForEach(Flexibility.allCases) { level in
                     choiceRow(
@@ -286,7 +286,7 @@ struct CalibrationView: View {
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
 
             Text("Plan My Day will now protect meals and routines, aim your hardest tasks at your \(draft.focus.rawValue.lowercased()) focus window, and keep everything between wake-up and bedtime.")
-                .font(.system(size: 12.5))
+                .font(.system(size: 14))
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(3)
 
@@ -299,7 +299,7 @@ struct CalibrationView: View {
     private var whereThingsLive: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("WHERE EVERYTHING LIVES")
-                .font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                .font(.system(size: 11.5, weight: .semibold)).tracking(1.2)
                 .foregroundStyle(Theme.textTertiary)
             mapRow("sun.max.fill", "Today", "Now, next & what's left — plus a Plan/Reflow/Review/Focus/Coach action row")
             mapRow("calendar", "Calendar", "Day, Week, Month & Agenda timelines")
@@ -316,15 +316,15 @@ struct CalibrationView: View {
     private func mapRow(_ icon: String, _ title: String, _ subtitle: String) -> some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: icon)
-                .font(.system(size: 12.5, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Theme.accentColor)
                 .frame(width: 20)
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Text(subtitle)
-                    .font(.system(size: 11))
+                    .font(.system(size: 12.5))
                     .foregroundStyle(Theme.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -337,10 +337,10 @@ struct CalibrationView: View {
     private func stepIntro(_ title: String, _ subtitle: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.system(size: 18, weight: .bold))
+                .font(.system(size: 19, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text(subtitle)
-                .font(.system(size: 12.5))
+                .font(.system(size: 14))
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(2)
         }
@@ -350,14 +350,14 @@ struct CalibrationView: View {
         Button(action: action) {
             HStack(spacing: 10) {
                 Image(systemName: selected ? "largecircle.fill.circle" : "circle")
-                    .font(.system(size: 14))
+                    .font(.system(size: 15))
                     .foregroundStyle(selected ? Theme.accentColor : Theme.textTertiary)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 14.5, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Text(subtitle)
-                        .font(.system(size: 11))
+                        .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 Spacer()
@@ -375,11 +375,11 @@ struct CalibrationView: View {
     private func summaryRow(_ icon: String, _ text: String) -> some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.system(size: 12))
+                .font(.system(size: 13.5))
                 .foregroundStyle(Theme.accentColor)
                 .frame(width: 18)
             Text(text)
-                .font(.system(size: 12.5))
+                .font(.system(size: 14))
                 .foregroundStyle(Theme.textPrimary)
         }
     }
@@ -427,11 +427,11 @@ private struct RoutineEditorCard: View {
             HStack {
                 TextField("Routine name", text: $routine.name)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Button(action: onDelete) {
                     Image(systemName: "trash")
-                        .font(.system(size: 11))
+                        .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 .buttonStyle(.plain)
@@ -452,7 +452,7 @@ private struct RoutineEditorCard: View {
                         if isOn { routine.weekdays.remove(weekday) } else { routine.weekdays.insert(weekday) }
                     } label: {
                         Text(daySymbols[index])
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.system(size: 11.5, weight: .bold))
                             .foregroundStyle(isOn ? Theme.bg : Theme.textSecondary)
                             .frame(width: 24, height: 24)
                             .background(

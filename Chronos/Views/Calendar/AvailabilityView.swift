@@ -74,7 +74,7 @@ struct AvailabilityView: View {
                                 .padding(10)
                                 .background(Color.white, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                             Text("Have someone scan this to grab your free slots.")
-                                .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                                .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
                         }
                         .frame(maxWidth: .infinity)
                     }
@@ -96,10 +96,10 @@ struct AvailabilityView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Share Availability")
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Your real free slots, ready to paste")
-                    .font(.system(size: 11.5, weight: .medium))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
@@ -116,7 +116,7 @@ struct AvailabilityView: View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("NEXT")
-                    .font(.system(size: 9, weight: .semibold)).tracking(0.8)
+                    .font(.system(size: 10, weight: .semibold)).tracking(0.8)
                     .foregroundStyle(Theme.textTertiary)
                 Picker("", selection: $daysAhead) {
                     Text("3 days").tag(3)
@@ -129,7 +129,7 @@ struct AvailabilityView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("MIN SLOT")
-                        .font(.system(size: 9, weight: .semibold)).tracking(0.8)
+                        .font(.system(size: 10, weight: .semibold)).tracking(0.8)
                         .foregroundStyle(Theme.textTertiary)
                     Picker("", selection: $minSlotMinutes) {
                         Text("30m").tag(30)
@@ -140,7 +140,7 @@ struct AvailabilityView: View {
                 }
                 Toggle(isOn: $skipWeekends) {
                     Text("Skip weekends")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 13.5, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 .toggleStyle(.switch)
@@ -154,20 +154,20 @@ struct AvailabilityView: View {
             SectionHeader(title: "Preview")
             if slots.isEmpty {
                 Text("No free slots of at least \(minSlotMinutes) minutes in that window — a badge of honor or a warning sign, you decide.")
-                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(slots) { entry in
                         HStack(alignment: .top, spacing: 10) {
                             Text(Fmt.weekdayShort.string(from: entry.day))
-                                .font(.system(size: 11.5, weight: .bold))
+                                .font(.system(size: 13, weight: .bold))
                                 .foregroundStyle(entry.day.isToday ? Theme.accentColor : Theme.textSecondary)
                                 .frame(width: 34, alignment: .leading)
                             Text(entry.gaps
                                 .map { "\(Fmt.time.string(from: $0.start))–\(Fmt.time.string(from: $0.end))" }
                                 .joined(separator: "  ·  "))
-                                .font(.system(size: 12))
+                                .font(.system(size: 13.5))
                                 .foregroundStyle(Theme.textPrimary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -186,7 +186,7 @@ struct AvailabilityView: View {
                 copyText()
             } label: {
                 Label(copied ? "Copied!" : "Copy", systemImage: copied ? "checkmark" : "doc.on.doc")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(copied ? Theme.success : Theme.bg)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
@@ -198,7 +198,7 @@ struct AvailabilityView: View {
 
             Button { withAnimation(.snappy) { showQR.toggle() } } label: {
                 Image(systemName: showQR ? "qrcode.viewfinder" : "qrcode")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(showQR ? Theme.bg : Theme.accentColor)
                     .frame(width: 46, height: 44)
                     .background(showQR ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.accentColor.opacity(0.12)),
@@ -209,7 +209,7 @@ struct AvailabilityView: View {
 
             ShareLink(item: composedText) {
                 Image(systemName: "square.and.arrow.up")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Theme.accentColor)
                     .frame(width: 46, height: 44)
                     .background(Theme.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 12, style: .continuous))

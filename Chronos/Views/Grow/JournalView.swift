@@ -53,14 +53,14 @@ struct JournalView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
                                 Text(memory.label)
-                                    .font(.system(size: 11, weight: .semibold))
+                                    .font(.system(size: 12.5, weight: .semibold))
                                     .foregroundStyle(Theme.accentColor)
                                 Spacer()
-                                Image(systemName: "chevron.right").font(.system(size: 9, weight: .bold))
+                                Image(systemName: "chevron.right").font(.system(size: 10, weight: .bold))
                                     .foregroundStyle(Theme.textTertiary)
                             }
                             Text(snippet(memory.entry))
-                                .font(.system(size: 12.5))
+                                .font(.system(size: 14))
                                 .foregroundStyle(Theme.textSecondary)
                                 .lineLimit(3)
                                 .multilineTextAlignment(.leading)
@@ -120,21 +120,21 @@ struct JournalView: View {
     private var headerBar: some View {
         HStack {
             Button("Done") { persist(); dismiss() }
-                .buttonStyle(.plain).font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                .buttonStyle(.plain).font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
                 .keyboardShortcut(.defaultAction)
             Spacer()
             VStack(spacing: 1) {
-                Text("Journal").font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
-                Text(Fmt.relativeDay(day)).font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary)
+                Text("Journal").font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                Text(Fmt.relativeDay(day)).font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
             }
             Spacer()
             HStack(spacing: 4) {
                 Button { persist(); day = day.adding(days: -1) } label: {
-                    Image(systemName: "chevron.left").font(.system(size: 12, weight: .semibold))
+                    Image(systemName: "chevron.left").font(.system(size: 13.5, weight: .semibold))
                 }
                 .buttonStyle(.plain).foregroundStyle(Theme.textSecondary)
                 Button { persist(); if day < Date().startOfDay { day = day.adding(days: 1) } } label: {
-                    Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold))
+                    Image(systemName: "chevron.right").font(.system(size: 13.5, weight: .semibold))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(day < Date().startOfDay ? Theme.textSecondary : Theme.textTertiary)
@@ -147,17 +147,17 @@ struct JournalView: View {
     private var intentionsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Today's intentions", systemImage: "sunrise.fill")
-                .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
             Text("The three things that would make today a win.")
-                .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
             ForEach(0..<3, id: \.self) { i in
                 HStack(spacing: 8) {
                     Text("\(i + 1)")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.system(size: 13.5, weight: .bold))
                         .foregroundStyle(Theme.textTertiary)
                         .frame(width: 18)
                     TextField("Priority \(i + 1)", text: intentionBinding(i))
-                        .textFieldStyle(.plain).font(.system(size: 13))
+                        .textFieldStyle(.plain).font(.system(size: 14.5))
                         .onSubmit(persist)
                 }
                 .padding(.horizontal, 12).padding(.vertical, 10)
@@ -179,7 +179,7 @@ struct JournalView: View {
     private var checkInSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Label("Check-in", systemImage: "heart.text.square")
-                .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
             ratingRow("Mood", value: $entry.mood, symbols: ["😔", "😐", "🙂", "😄", "🤩"])
             ratingRow("Energy", value: $entry.energy, symbols: ["🪫", "🔋", "⚡️", "🔥", "🚀"])
         }
@@ -187,7 +187,7 @@ struct JournalView: View {
 
     private func ratingRow(_ label: String, value: Binding<Int?>, symbols: [String]) -> some View {
         HStack {
-            Text(label).font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
+            Text(label).font(.system(size: 14)).foregroundStyle(Theme.textSecondary)
             Spacer()
             HStack(spacing: 6) {
                 ForEach(1...5, id: \.self) { n in
@@ -196,7 +196,7 @@ struct JournalView: View {
                         persist()
                     } label: {
                         Text(symbols[n - 1])
-                            .font(.system(size: 18))
+                            .font(.system(size: 19))
                             .opacity(value.wrappedValue == n ? 1 : 0.35)
                             .scaleEffect(value.wrappedValue == n ? 1.15 : 1)
                     }
@@ -211,7 +211,7 @@ struct JournalView: View {
     private var reflectionSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Label("Evening reflection", systemImage: "moon.stars.fill")
-                .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
             promptField("What went well?", text: $entry.wins)
             promptField("What could be better?", text: $entry.improve)
             promptField("Grateful for…", text: $entry.gratitude)
@@ -220,10 +220,10 @@ struct JournalView: View {
 
     private func promptField(_ prompt: String, text: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(prompt.uppercased()).font(.system(size: 9.5, weight: .semibold)).tracking(1)
+            Text(prompt.uppercased()).font(.system(size: 11, weight: .semibold)).tracking(1)
                 .foregroundStyle(Theme.textTertiary)
             TextEditor(text: text)
-                .font(.system(size: 12.5)).scrollContentBackground(.hidden)
+                .font(.system(size: 14)).scrollContentBackground(.hidden)
                 .frame(minHeight: 52)
                 .padding(8)
                 .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))

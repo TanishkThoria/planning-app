@@ -116,10 +116,10 @@ struct DeadlinePlanView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Plan Deadlines")
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Work backwards from every due date")
-                    .font(.system(size: 11.5, weight: .medium))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
@@ -136,7 +136,7 @@ struct DeadlinePlanView: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("LOOK AHEAD")
-                    .font(.system(size: 9, weight: .semibold)).tracking(0.8)
+                    .font(.system(size: 10, weight: .semibold)).tracking(0.8)
                     .foregroundStyle(Theme.textTertiary)
                 Picker("", selection: $horizonDays) {
                     Text("7 days").tag(7)
@@ -146,7 +146,7 @@ struct DeadlinePlanView: View {
             }
             VStack(alignment: .leading, spacing: 6) {
                 Text("MAX STUDY / DAY")
-                    .font(.system(size: 9, weight: .semibold)).tracking(0.8)
+                    .font(.system(size: 10, weight: .semibold)).tracking(0.8)
                     .foregroundStyle(Theme.textTertiary)
                 Picker("", selection: $dailyCapMinutes) {
                     Text("2h").tag(120)
@@ -162,11 +162,11 @@ struct DeadlinePlanView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(Fmt.relativeDay(day))
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: 13.5, weight: .bold))
                     .foregroundStyle(day.isToday ? Theme.accentColor : Theme.textPrimary)
                 Spacer()
                 Text(Fmt.duration(minutes: proposals.reduce(0) { $0 + $1.minutes }))
-                    .font(.system(size: 10.5, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
             }
             .padding(.leading, 2)
@@ -174,23 +174,23 @@ struct DeadlinePlanView: View {
             ForEach(proposals) { proposal in
                 HStack(spacing: 10) {
                     Text(Fmt.time.string(from: proposal.start))
-                        .font(.system(size: 11.5, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                         .lineLimit(1).minimumScaleFactor(0.8)
                         .frame(width: 60, alignment: .leading)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(proposal.task.title)
-                            .font(.system(size: 12.5)).foregroundStyle(Theme.textPrimary)
+                            .font(.system(size: 14)).foregroundStyle(Theme.textPrimary)
                             .lineLimit(1)
                         if let due = proposal.task.dueDate {
                             Text("due \(Fmt.relativeDay(due))")
-                                .font(.system(size: 9.5))
+                                .font(.system(size: 11))
                                 .foregroundStyle(Theme.textTertiary)
                         }
                     }
                     Spacer()
                     Text(Fmt.duration(minutes: proposal.minutes))
-                        .font(.system(size: 10.5))
+                        .font(.system(size: 12))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 .padding(.horizontal, 12).padding(.vertical, 8)
@@ -202,15 +202,15 @@ struct DeadlinePlanView: View {
     private func missedCard(_ tasks: [TaskItem]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Label("Couldn't fully fit before the deadline", systemImage: "exclamationmark.triangle")
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 13.5, weight: .semibold))
                 .foregroundStyle(Theme.warning)
             ForEach(tasks.prefix(5)) { task in
                 Text("• \(task.title)")
-                    .font(.system(size: 11.5)).foregroundStyle(Theme.textSecondary)
+                    .font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)
             }
             Text("Free up time, raise the daily cap, or trim these estimates.")
-                .font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary)
+                .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -221,14 +221,14 @@ struct DeadlinePlanView: View {
         HStack {
             Text(sessionCount == 0 ? "Nothing to schedule"
                  : "\(sessionCount) session\(sessionCount == 1 ? "" : "s") · \(Fmt.duration(minutes: totalMinutes))")
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 13.5, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
             Button {
                 apply()
             } label: {
                 Text("Add to Calendar")
-                    .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.bg)
+                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.bg)
                     .padding(.horizontal, 16).padding(.vertical, 7)
                     .background(Theme.accentColor, in: Capsule())
             }

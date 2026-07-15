@@ -22,7 +22,7 @@ struct BudgetsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Set a weekly hour target for the calendars that matter. Progress reflects this week's blocks.")
-                        .font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
                         .padding(.horizontal, 2)
                     ForEach(service.calendars.filter(\.isEditable)) { cal in
                         budgetRow(cal)
@@ -44,12 +44,12 @@ struct BudgetsView: View {
     private var headerBar: some View {
         HStack {
             Button("Done") { dismiss() }
-                .buttonStyle(.plain).font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                .buttonStyle(.plain).font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
                 .keyboardShortcut(.defaultAction)
             Spacer()
-            Text("Time Budgets").font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+            Text("Time Budgets").font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
             Spacer()
-            Text("Done").font(.system(size: 13)).hidden()
+            Text("Done").font(.system(size: 14.5)).hidden()
         }
         .padding(.horizontal, 16).padding(.vertical, 12)
     }
@@ -61,14 +61,14 @@ struct BudgetsView: View {
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Circle().fill(cal.color).frame(width: 8, height: 8)
-                Text(cal.title).font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.textPrimary).lineLimit(1)
+                Text(cal.title).font(.system(size: 14.5, weight: .medium)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                 Spacer()
                 Stepper(value: Binding(
                     get: { target },
                     set: { life.setBudget(calendarID: cal.id, hours: $0) }
                 ), in: 0...80, step: 0.5) {
                     Text(target > 0 ? String(format: "%g h", target) : "Off")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 13.5, weight: .semibold))
                         .foregroundStyle(target > 0 ? Theme.textPrimary : Theme.textTertiary)
                 }
                 .fixedSize()
@@ -83,7 +83,7 @@ struct BudgetsView: View {
                 }
                 .frame(height: 6)
                 Text("\(Fmt.duration(minutes: actual)) of \(String(format: "%g h", target)) this week")
-                    .font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
             }
         }
         .panel(padding: 12)

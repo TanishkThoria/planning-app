@@ -17,23 +17,23 @@ struct ChronosFocusLiveActivity: Widget {
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     Label(context.state.phaseLabel, systemImage: "timer")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 14.5, weight: .semibold))
                         .foregroundStyle(accent)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    timerText(context, font: .system(size: 15, weight: .bold))
+                    timerText(context, font: .system(size: 16, weight: .bold))
                         .foregroundStyle(.white)
                 }
                 DynamicIslandExpandedRegion(.center) {
                     Text(context.state.title)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white.opacity(0.8))
                         .lineLimit(1)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     if context.state.completedPomodoros > 0 {
                         Text("\(context.state.completedPomodoros) pomodoro\(context.state.completedPomodoros == 1 ? "" : "s") done")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(size: 12.5, weight: .medium))
                             .foregroundStyle(.white.opacity(0.5))
                     }
                 }
@@ -41,7 +41,7 @@ struct ChronosFocusLiveActivity: Widget {
                 Image(systemName: context.state.isPaused ? "pause.fill" : "timer")
                     .foregroundStyle(accent)
             } compactTrailing: {
-                timerText(context, font: .system(size: 13, weight: .semibold))
+                timerText(context, font: .system(size: 14.5, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: 44)
             } minimal: {
@@ -67,11 +67,11 @@ struct ChronosFocusLiveActivity: Widget {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(context.state.phaseLabel.uppercased())
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.system(size: 11.5, weight: .bold))
                     .tracking(1.2)
                     .foregroundStyle(accent)
                 Text(context.state.title)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(.white)
                     .lineLimit(1)
             }

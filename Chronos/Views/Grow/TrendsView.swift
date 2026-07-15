@@ -46,7 +46,7 @@ struct TrendsView: View {
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Your last few weeks, at a glance")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 13.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
@@ -81,13 +81,13 @@ struct TrendsView: View {
                 if let avg = average(moods) {
                     Text(String(format: "mood %.1f · energy %@", avg,
                                 average(energies).map { String(format: "%.1f", $0) } ?? "—"))
-                        .font(.system(size: 10.5, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Theme.textTertiary)
                 }
             }
             if moods.isEmpty && energies.isEmpty {
                 Text("Log how the day felt in your evening reflection and the trend shows up here.")
-                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
                 valueStrip(label: "Mood", tint: Theme.accentColor, values: entries.map { $0?.mood })
@@ -97,7 +97,7 @@ struct TrendsView: View {
                     Spacer()
                     Text("Today")
                 }
-                .font(.system(size: 9, weight: .medium))
+                .font(.system(size: 10, weight: .medium))
                 .foregroundStyle(Theme.textTertiary)
             }
         }
@@ -108,7 +108,7 @@ struct TrendsView: View {
     private func valueStrip(label: String, tint: Color, values: [Int?]) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label.uppercased())
-                .font(.system(size: 9, weight: .semibold)).tracking(0.8)
+                .font(.system(size: 10, weight: .semibold)).tracking(0.8)
                 .foregroundStyle(Theme.textTertiary)
             HStack(alignment: .bottom, spacing: 2) {
                 ForEach(Array(values.enumerated()), id: \.offset) { _, value in
@@ -131,7 +131,7 @@ struct TrendsView: View {
             SectionHeader(title: "Habit consistency · \(Self.gridWeeks) weeks")
             if life.activeHabits.isEmpty {
                 Text("Add a habit in Grow and its consistency grid appears here.")
-                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
             } else {
                 ForEach(life.activeHabits) { habit in
                     habitRow(habit)
@@ -153,15 +153,15 @@ struct TrendsView: View {
             HStack {
                 HStack(spacing: 6) {
                     Image(systemName: habit.iconName)
-                        .font(.system(size: 11)).foregroundStyle(habit.color)
+                        .font(.system(size: 12.5)).foregroundStyle(habit.color)
                     Text(habit.title)
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                 }
                 Spacer()
                 Text("\(life.streak(habit))d streak · \(done)/\(due)")
-                    .font(.system(size: 10.5, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
             }
             HStack(spacing: 3) {
@@ -244,15 +244,15 @@ struct TrendsView: View {
             HStack {
                 HStack(spacing: 6) {
                     Image(systemName: goal.kind.icon)
-                        .font(.system(size: 11)).foregroundStyle(goal.color)
+                        .font(.system(size: 12.5)).foregroundStyle(goal.color)
                     Text(goal.title)
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                 }
                 Spacer()
                 Text(caption)
-                    .font(.system(size: 10.5, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(fraction >= 1 ? Theme.success : Theme.textTertiary)
                     .lineLimit(1).minimumScaleFactor(0.8)
             }
@@ -284,7 +284,7 @@ struct TrendsView: View {
             SectionHeader(title: "Reflections", trailing: entries.isEmpty ? nil : "\(entries.count) in 90 days")
             if entries.isEmpty {
                 Text("Past morning intentions and evening reflections collect here.")
-                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
             } else {
                 ForEach(entries.prefix(30), id: \.entry.id) { item in
                     reflectionRow(item.day, item.entry)
@@ -302,21 +302,21 @@ struct TrendsView: View {
             } label: {
                 HStack(spacing: 8) {
                     Text(Fmt.relativeDay(day))
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 13.5, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     if let mood = entry.mood {
                         Label("\(mood)", systemImage: "face.smiling")
-                            .font(.system(size: 10))
+                            .font(.system(size: 11.5))
                             .foregroundStyle(Theme.textTertiary)
                     }
                     if let energy = entry.energy {
                         Label("\(energy)", systemImage: "bolt")
-                            .font(.system(size: 10))
+                            .font(.system(size: 11.5))
                             .foregroundStyle(Theme.textTertiary)
                     }
                     Spacer()
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(.system(size: 11.5, weight: .semibold))
                         .foregroundStyle(Theme.textTertiary)
                         .rotationEffect(.degrees(isOpen ? 180 : 0))
                 }
@@ -345,14 +345,14 @@ struct TrendsView: View {
     private func detailLine(_ icon: String, _ label: String, _ text: String) -> some View {
         HStack(alignment: .top, spacing: 7) {
             Image(systemName: icon)
-                .font(.system(size: 10)).foregroundStyle(Theme.accentColor)
+                .font(.system(size: 11.5)).foregroundStyle(Theme.accentColor)
                 .frame(width: 14).padding(.top, 2)
             VStack(alignment: .leading, spacing: 1) {
                 Text(label.uppercased())
-                    .font(.system(size: 8.5, weight: .semibold)).tracking(0.8)
+                    .font(.system(size: 9.5, weight: .semibold)).tracking(0.8)
                     .foregroundStyle(Theme.textTertiary)
                 Text(text)
-                    .font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
+                    .font(.system(size: 13.5)).foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }

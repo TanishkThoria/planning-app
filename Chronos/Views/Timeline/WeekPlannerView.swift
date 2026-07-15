@@ -67,7 +67,14 @@ struct WeekPlannerView: View {
                     }
                     .scrollIndicators(.hidden)
                     .onAppear {
-                        proxy.scrollTo("hour-\(max(workStartMinutes / 60 - 1, 1))", anchor: .top)
+                        // Retry across a few frames — scrollTo no-ops before the
+                        // content is laid out (which parked the week at midnight).
+                        let start = min(max(workStartMinutes / 60, 1), 23)
+                        for delay in [0.0, 0.1, 0.25, 0.5, 0.9] {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                                proxy.scrollTo("hour-\(start)", anchor: .top)
+                            }
+                        }
                     }
                 }
             }
@@ -105,7 +112,7 @@ struct WeekPlannerView: View {
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text(weekRangeLabel)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 13.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
@@ -153,11 +160,11 @@ struct WeekPlannerView: View {
         } label: {
             HStack(spacing: 6) {
                 Text(Fmt.weekdayShort.string(from: day).uppercased())
-                    .font(.system(size: 10.5, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .tracking(0.5)
                     .foregroundStyle(day.isToday ? Theme.accentColor : Theme.textTertiary)
                 Text(Fmt.dayNumber.string(from: day))
-                    .font(.system(size: 15, weight: day.isToday ? .bold : .medium))
+                    .font(.system(size: 16, weight: day.isToday ? .bold : .medium))
                     .foregroundStyle(day.isToday ? Theme.accentColor : Theme.textPrimary)
                     .frame(width: 27, height: 27)
                     .background(

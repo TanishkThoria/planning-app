@@ -20,12 +20,12 @@ private struct RitualScaffold<Content: View>: View {
         VStack(spacing: 0) {
             HStack {
                 Button { onDone(); dismiss() } label: {
-                    Text("Save").font(.system(size: 13, weight: .semibold)).foregroundStyle(accent)
+                    Text("Save").font(.system(size: 14.5, weight: .semibold)).foregroundStyle(accent)
                 }
                 .buttonStyle(.plain).keyboardShortcut(.defaultAction)
                 Spacer()
                 Button { dismiss() } label: {
-                    Image(systemName: "xmark").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.textTertiary)
+                    Image(systemName: "xmark").font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Theme.textTertiary)
                 }
                 .buttonStyle(.plain)
             }
@@ -38,7 +38,7 @@ private struct RitualScaffold<Content: View>: View {
                             .font(.system(size: 30))
                             .foregroundStyle(accent)
                         Text(eyebrow.uppercased())
-                            .font(.system(size: 10.5, weight: .semibold)).tracking(1.5)
+                            .font(.system(size: 12, weight: .semibold)).tracking(1.5)
                             .foregroundStyle(accent)
                         Text(title)
                             .font(.system(size: 24, weight: .bold))
@@ -47,7 +47,7 @@ private struct RitualScaffold<Content: View>: View {
                     content
                     Button { onDone(); dismiss() } label: {
                         Text(doneLabel)
-                            .font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.bg)
+                            .font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.bg)
                             .frame(maxWidth: .infinity).padding(.vertical, 13)
                             .background(accent, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
                     }
@@ -83,15 +83,15 @@ private struct RitualSection<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+            Text(title).font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.textPrimary)
             if let subtitle {
-                Text(subtitle).font(.system(size: 12)).foregroundStyle(Theme.textSecondary).lineSpacing(2)
+                Text(subtitle).font(.system(size: 13.5)).foregroundStyle(Theme.textSecondary).lineSpacing(2)
             }
             content
             if let note {
                 HStack(alignment: .top, spacing: 5) {
-                    Image(systemName: "sparkle").font(.system(size: 8)).foregroundStyle(Theme.textTertiary).padding(.top, 2)
-                    Text(note).font(.system(size: 10.5)).italic().foregroundStyle(Theme.textTertiary).lineSpacing(1)
+                    Image(systemName: "sparkle").font(.system(size: 9)).foregroundStyle(Theme.textTertiary).padding(.top, 2)
+                    Text(note).font(.system(size: 12)).italic().foregroundStyle(Theme.textTertiary).lineSpacing(1)
                 }
             }
         }
@@ -105,12 +105,12 @@ private struct RitualField: View {
 
     var body: some View {
         TextEditor(text: $text)
-            .font(.system(size: 13.5)).scrollContentBackground(.hidden)
+            .font(.system(size: 14.5)).scrollContentBackground(.hidden)
             .frame(minHeight: minHeight).padding(10)
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
             .overlay(alignment: .topLeading) {
                 if text.isEmpty {
-                    Text(placeholder).font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
+                    Text(placeholder).font(.system(size: 14.5)).foregroundStyle(Theme.textTertiary)
                         .padding(.horizontal, 14).padding(.top, 18).allowsHitTesting(false)
                 }
             }
@@ -119,7 +119,7 @@ private struct RitualField: View {
 
 private func ratingControl(_ label: String, value: Binding<Int?>, symbols: [String]) -> some View {
     HStack {
-        Text(label).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+        Text(label).font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
         Spacer()
         HStack(spacing: 8) {
             ForEach(1...5, id: \.self) { n in
@@ -177,10 +177,10 @@ struct MorningRitualView: View {
             ) {
                 ForEach(0..<3, id: \.self) { i in
                     HStack(spacing: 8) {
-                        Text("\(i + 1)").font(.system(size: 13, weight: .bold))
+                        Text("\(i + 1)").font(.system(size: 14.5, weight: .bold))
                             .foregroundStyle(Theme.warning).frame(width: 18)
                         TextField("I will…", text: intentionBinding(i))
-                            .textFieldStyle(.plain).font(.system(size: 13.5))
+                            .textFieldStyle(.plain).font(.system(size: 14.5))
                     }
                     .padding(.horizontal, 12).padding(.vertical, 11)
                     .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
@@ -201,7 +201,7 @@ struct MorningRitualView: View {
                 model.morningPlanningPresented = true
             } label: {
                 Label("Now plan the day", systemImage: "wand.and.stars")
-                    .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.warning)
+                    .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.warning)
                     .frame(maxWidth: .infinity).padding(.vertical, 11)
                     .background(Theme.warning.opacity(0.12), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
             }
@@ -253,13 +253,13 @@ struct EveningRitualView: View {
                             } label: {
                                 HStack(spacing: 10) {
                                     Image(systemName: done ? "checkmark.circle.fill" : "circle")
-                                        .font(.system(size: 16)).foregroundStyle(done ? habit.color : Theme.textTertiary)
-                                    Text(habit.title).font(.system(size: 13, weight: .medium))
+                                        .font(.system(size: 17)).foregroundStyle(done ? habit.color : Theme.textTertiary)
+                                    Text(habit.title).font(.system(size: 14.5, weight: .medium))
                                         .foregroundStyle(done ? Theme.textPrimary : Theme.textSecondary)
                                     Spacer()
                                     if life.streak(habit) > 0 {
                                         Label("\(life.streak(habit))", systemImage: "flame.fill")
-                                            .font(.system(size: 10.5, weight: .bold)).foregroundStyle(Theme.warning)
+                                            .font(.system(size: 12, weight: .bold)).foregroundStyle(Theme.warning)
                                     }
                                 }
                                 .padding(.horizontal, 12).padding(.vertical, 10)
@@ -297,7 +297,7 @@ struct EveningRitualView: View {
                 note: "Deciding in advance beats deciding in the moment — willpower isn't needed."
             ) {
                 TextField("Tomorrow I will…", text: $tomorrow)
-                    .textFieldStyle(.plain).font(.system(size: 13.5))
+                    .textFieldStyle(.plain).font(.system(size: 14.5))
                     .padding(.horizontal, 12).padding(.vertical, 11)
                     .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
             }

@@ -101,15 +101,15 @@ struct FriendsView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     TextField("Your name", text: $displayName)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 17, weight: .bold))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                     Button { editingStatus = true } label: {
                         HStack(spacing: 5) {
                             Text(statusLine)
-                                .font(.system(size: 12.5))
+                                .font(.system(size: 14))
                                 .foregroundStyle(statusText.isEmpty ? Theme.textTertiary : Theme.textSecondary)
                                 .lineLimit(1)
-                            Image(systemName: "pencil").font(.system(size: 10, weight: .semibold))
+                            Image(systemName: "pencil").font(.system(size: 11.5, weight: .semibold))
                                 .foregroundStyle(Theme.accentColor)
                         }
                     }
@@ -123,7 +123,7 @@ struct FriendsView: View {
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("YOUR CODE")
-                        .font(.system(size: 9.5, weight: .semibold)).tracking(1.2)
+                        .font(.system(size: 11, weight: .semibold)).tracking(1.2)
                         .foregroundStyle(Theme.textTertiary)
                     Text(social.myFriendCode)
                         .font(.system(size: 20, weight: .bold, design: .monospaced))
@@ -132,7 +132,7 @@ struct FriendsView: View {
                 Spacer()
                 Button { copyCode() } label: {
                     Label(copied ? "Copied" : "Share", systemImage: copied ? "checkmark" : "square.and.arrow.up")
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                         .padding(.horizontal, 12).padding(.vertical, 8)
                         .background(Theme.accentColor.opacity(0.12), in: Capsule())
@@ -184,10 +184,10 @@ struct FriendsView: View {
 
     private var addFriendField: some View {
         HStack(spacing: 10) {
-            Image(systemName: "person.badge.plus").font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
+            Image(systemName: "person.badge.plus").font(.system(size: 14.5)).foregroundStyle(Theme.textTertiary)
             TextField("Add a friend's code", text: $newCode)
                 .textFieldStyle(.plain)
-                .font(.system(size: 14, weight: .medium, design: .monospaced))
+                .font(.system(size: 15, weight: .medium, design: .monospaced))
                 .foregroundStyle(Theme.textPrimary)
                 #if os(iOS)
                 .textInputAutocapitalization(.characters)
@@ -196,7 +196,7 @@ struct FriendsView: View {
             Button {
                 social.addFriend(code: newCode); newCode = ""
             } label: {
-                Text("Add").font(.system(size: 12.5, weight: .semibold))
+                Text("Add").font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(newCode.isEmpty ? Theme.textTertiary : Theme.accentColor)
             }
             .buttonStyle(.plain).disabled(newCode.isEmpty)
@@ -220,10 +220,10 @@ struct FriendsView: View {
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(status?.presence.displayName ?? code)
-                        .font(.system(size: 14.5, weight: .semibold))
+                        .font(.system(size: 15.5, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Text(subtitle(for: status))
-                        .font(.system(size: 11.5))
+                        .font(.system(size: 13))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
                 }
@@ -231,14 +231,14 @@ struct FriendsView: View {
                 if let status {
                     VStack(alignment: .trailing, spacing: 2) {
                         Label("\(status.presence.streakDays)", systemImage: "flame.fill")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 12.5, weight: .semibold))
                             .foregroundStyle(Theme.warning)
                         Text(Fmt.duration(minutes: status.presence.weeklyFocus))
-                            .font(.system(size: 10.5, weight: .medium))
+                            .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(Theme.textTertiary)
                     }
                 }
-                Image(systemName: "chevron.right").font(.system(size: 11, weight: .semibold))
+                Image(systemName: "chevron.right").font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.textTertiary)
             }
             .padding(.horizontal, 14).padding(.vertical, 12)
@@ -260,11 +260,11 @@ struct FriendsView: View {
                     HStack(spacing: 12) {
                         Text(cheer.emoji).font(.system(size: 22))
                         Text("\(cheer.fromName) cheered you on")
-                            .font(.system(size: 13))
+                            .font(.system(size: 14.5))
                             .foregroundStyle(Theme.textPrimary)
                         Spacer()
                         Text(Fmt.relativeShort(cheer.date))
-                            .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                            .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
                     }
                     .padding(.horizontal, 14).padding(.vertical, 11)
                     .background(Theme.accentColor.opacity(0.07), in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))
@@ -282,11 +282,11 @@ struct FriendsView: View {
                 ForEach(moments) { moment in
                     HStack(spacing: 12) {
                         Image(systemName: moment.icon)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(Color(hex: moment.tint))
                             .frame(width: 26, height: 26)
                             .background(Color(hex: moment.tint).opacity(0.15), in: Circle())
-                        (Text(moment.name).font(.system(size: 13, weight: .semibold)) + Text(" \(moment.text)").font(.system(size: 13)))
+                        (Text(moment.name).font(.system(size: 14.5, weight: .semibold)) + Text(" \(moment.text)").font(.system(size: 14.5)))
                             .foregroundStyle(Theme.textPrimary)
                         Spacer(minLength: 0)
                     }
@@ -312,7 +312,7 @@ struct FriendsView: View {
 
     private var lockedNote: some View {
         Text("Friends presence turns on with Chronos+ (uses your iCloud). Your code, name, status, and friends list are saved and ready now.")
-            .font(.system(size: 11))
+            .font(.system(size: 12.5))
             .foregroundStyle(Theme.textTertiary)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 4)
@@ -350,7 +350,7 @@ private struct StatusEditor: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("EMOJI").font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                        Text("EMOJI").font(.system(size: 11.5, weight: .semibold)).tracking(1.2)
                             .foregroundStyle(Theme.textTertiary)
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 10) {
                             ForEach(presets, id: \.self) { e in
@@ -367,11 +367,11 @@ private struct StatusEditor: View {
                         }
                     }
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("STATUS").font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                        Text("STATUS").font(.system(size: 11.5, weight: .semibold)).tracking(1.2)
                             .foregroundStyle(Theme.textTertiary)
                         TextField("Deep work till 5…", text: $text)
                             .textFieldStyle(.plain)
-                            .font(.system(size: 15))
+                            .font(.system(size: 16))
                             .foregroundStyle(Theme.textPrimary)
                             .padding(14)
                             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -379,11 +379,11 @@ private struct StatusEditor: View {
                                 .strokeBorder(Theme.hairline, lineWidth: 1))
                     }
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("REACHABLE AT (OPTIONAL)").font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                        Text("REACHABLE AT (OPTIONAL)").font(.system(size: 11.5, weight: .semibold)).tracking(1.2)
                             .foregroundStyle(Theme.textTertiary)
                         TextField("Phone or Apple ID email", text: $contactHandle)
                             .textFieldStyle(.plain)
-                            .font(.system(size: 15))
+                            .font(.system(size: 16))
                             .foregroundStyle(Theme.textPrimary)
                             #if os(iOS)
                             .textInputAutocapitalization(.never)
@@ -395,16 +395,16 @@ private struct StatusEditor: View {
                             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
                                 .strokeBorder(Theme.hairline, lineWidth: 1))
                         Text("Shared with friends so they can Message or FaceTime you to set up a study session. Leave blank to keep it private.")
-                            .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                            .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
 
                     Toggle(isOn: $sharePresence) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Share my live status").font(.system(size: 14, weight: .semibold))
+                            Text("Share my live status").font(.system(size: 15, weight: .semibold))
                                 .foregroundStyle(Theme.textPrimary)
                             Text("Let friends see what you're focusing on and your streak.")
-                                .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                                .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
                         }
                     }
                     .toggleStyle(.switch)
@@ -449,7 +449,7 @@ private struct FriendProfileSheet: View {
                             .font(.system(size: 20, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
                         Text(headline)
-                            .font(.system(size: 12.5))
+                            .font(.system(size: 14))
                             .foregroundStyle(Theme.textSecondary)
                             .multilineTextAlignment(.center)
                     }
@@ -464,7 +464,7 @@ private struct FriendProfileSheet: View {
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("SEND A CHEER").font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                        Text("SEND A CHEER").font(.system(size: 11.5, weight: .semibold)).tracking(1.2)
                             .foregroundStyle(Theme.textTertiary)
                         HStack(spacing: 10) {
                             ForEach(cheerEmojis, id: \.self) { e in
@@ -482,7 +482,7 @@ private struct FriendProfileSheet: View {
                             }
                         }
                         if cheered {
-                            Text("Cheer sent! 🎉").font(.system(size: 12, weight: .semibold))
+                            Text("Cheer sent! 🎉").font(.system(size: 13.5, weight: .semibold))
                                 .foregroundStyle(Theme.success)
                         }
                     }
@@ -495,7 +495,7 @@ private struct FriendProfileSheet: View {
                     Button(role: .destructive) {
                         social.removeFriend(code: status.presence.code); dismiss()
                     } label: {
-                        Text("Remove friend").font(.system(size: 13, weight: .semibold))
+                        Text("Remove friend").font(.system(size: 14.5, weight: .semibold))
                             .foregroundStyle(Theme.danger)
                     }
                     .buttonStyle(.plain)
@@ -521,9 +521,9 @@ private struct FriendProfileSheet: View {
 
     private func stat(_ icon: String, _ value: String, _ label: String, _ tint: Color) -> some View {
         VStack(spacing: 5) {
-            Image(systemName: icon).font(.system(size: 15, weight: .semibold)).foregroundStyle(tint)
-            Text(value).font(.system(size: 17, weight: .bold)).foregroundStyle(Theme.textPrimary)
-            Text(label).font(.system(size: 10.5)).foregroundStyle(Theme.textSecondary)
+            Image(systemName: icon).font(.system(size: 16, weight: .semibold)).foregroundStyle(tint)
+            Text(value).font(.system(size: 18, weight: .bold)).foregroundStyle(Theme.textPrimary)
+            Text(label).font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
@@ -542,9 +542,9 @@ private struct FriendProfileSheet: View {
                         if let url = link.url(for: handle) { openURL(url) }
                     } label: {
                         VStack(spacing: 5) {
-                            Image(systemName: link.icon).font(.system(size: 15, weight: .semibold))
+                            Image(systemName: link.icon).font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(Theme.accentColor)
-                            Text(link.label).font(.system(size: 10.5, weight: .medium)).foregroundStyle(Theme.textSecondary)
+                            Text(link.label).font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.textSecondary)
                         }
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
                         .background(Theme.accentColor.opacity(0.10), in: RoundedRectangle(cornerRadius: Theme.Metric.radiusSmall, style: .continuous))

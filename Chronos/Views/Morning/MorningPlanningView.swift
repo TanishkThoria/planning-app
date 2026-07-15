@@ -114,20 +114,20 @@ struct MorningPlanningView: View {
         HStack {
             Button("Cancel") { dismiss() }
                 .buttonStyle(.plain)
-                .font(.system(size: 13))
+                .font(.system(size: 14.5))
                 .foregroundStyle(Theme.textSecondary)
                 .keyboardShortcut(.cancelAction)
             Spacer()
             VStack(spacing: 1) {
                 Text("Plan Today")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Text(step == .dump ? "What's on your plate?" : "Here's your day")
-                    .font(.system(size: 10.5))
+                    .font(.system(size: 12))
                     .foregroundStyle(Theme.textTertiary)
             }
             Spacer()
-            Text("Cancel").font(.system(size: 13)).hidden()
+            Text("Cancel").font(.system(size: 14.5)).hidden()
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -143,7 +143,7 @@ struct MorningPlanningView: View {
                         .font(.system(size: 20, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                     Text("Add everything you'd like to move forward today. Tag rough effort so deep work lands in your \(profileStore.profile.focus.rawValue.lowercased()) focus window.")
-                        .font(.system(size: 12.5))
+                        .font(.system(size: 14))
                         .foregroundStyle(Theme.textSecondary)
                         .lineSpacing(2)
                 }
@@ -152,11 +152,11 @@ struct MorningPlanningView: View {
                 VStack(spacing: 8) {
                     HStack(spacing: 8) {
                         Image(systemName: "plus.circle")
-                            .font(.system(size: 13))
+                            .font(.system(size: 14.5))
                             .foregroundStyle(Theme.textTertiary)
                         TextField("Add a task for today", text: $entry)
                             .textFieldStyle(.plain)
-                            .font(.system(size: 13.5))
+                            .font(.system(size: 14.5))
                             .focused($entryFocused)
                             .onSubmit(addEntry)
                     }
@@ -177,7 +177,7 @@ struct MorningPlanningView: View {
 
                 if candidates.isEmpty {
                     Text("Nothing yet — add a few tasks above.")
-                        .font(.system(size: 12))
+                        .font(.system(size: 13.5))
                         .foregroundStyle(Theme.textTertiary)
                 } else {
                     ForEach(candidates) { task in
@@ -198,20 +198,20 @@ struct MorningPlanningView: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: isIn ? "checkmark.square.fill" : "square")
-                    .font(.system(size: 15))
+                    .font(.system(size: 16))
                     .foregroundStyle(isIn ? Theme.accentColor : Theme.textTertiary)
                 if task.energy != .none {
                     Image(systemName: task.energy.icon)
-                        .font(.system(size: 10))
+                        .font(.system(size: 11.5))
                         .foregroundStyle(task.energy.color)
                 }
                 Text(task.title)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 14.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                 Spacer()
                 Text("~\(Fmt.duration(minutes: task.estimateMinutes ?? defaultBlockMinutes))")
-                    .font(.system(size: 10.5))
+                    .font(.system(size: 12))
                     .foregroundStyle(Theme.textTertiary)
             }
             .padding(.horizontal, 12)
@@ -253,23 +253,23 @@ struct MorningPlanningView: View {
                     ForEach(proposals) { proposal in
                         HStack(spacing: 10) {
                             Text(Fmt.time.string(from: proposal.start))
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.system(size: 13.5, weight: .semibold))
                                 .foregroundStyle(Theme.accentColor)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.8)
                                 .frame(width: 62, alignment: .leading)
                             if proposal.task.energy != .none {
                                 Image(systemName: proposal.task.energy.icon)
-                                    .font(.system(size: 10))
+                                    .font(.system(size: 11.5))
                                     .foregroundStyle(proposal.task.energy.color)
                             }
                             Text(proposal.task.title)
-                                .font(.system(size: 13, weight: .medium))
+                                .font(.system(size: 14.5, weight: .medium))
                                 .foregroundStyle(Theme.textPrimary)
                                 .lineLimit(1)
                             Spacer()
                             Text(Fmt.duration(minutes: proposal.minutes))
-                                .font(.system(size: 11))
+                                .font(.system(size: 12.5))
                                 .foregroundStyle(Theme.textTertiary)
                         }
                         .padding(.horizontal, 12)
@@ -292,7 +292,7 @@ struct MorningPlanningView: View {
                     step = .dump
                 } label: {
                     Text("Back")
-                        .font(.system(size: 12.5, weight: .medium))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 .buttonStyle(.plain)
@@ -306,7 +306,7 @@ struct MorningPlanningView: View {
                 }
             } label: {
                 Text(step == .dump ? "Build My Day" : "Add \(proposals.count) to Calendar")
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.bg)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 8)

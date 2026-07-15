@@ -138,7 +138,7 @@ struct BlockEditorView: View {
                 FieldRow(label: "Location") {
                     TextField("None", text: $draft.location)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 12.5))
+                        .font(.system(size: 14))
                         .multilineTextAlignment(.trailing)
                 }
                 if !draft.isAllDay {
@@ -154,7 +154,7 @@ struct BlockEditorView: View {
                     }
                     if draft.travelMinutes > 0 {
                         Text("Adds a \(Fmt.duration(minutes: draft.travelMinutes)) travel block before this event.")
-                            .font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary)
+                            .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
@@ -162,7 +162,7 @@ struct BlockEditorView: View {
                     FieldRow(label: "URL") {
                         TextField("None", text: $draft.urlString)
                             .textFieldStyle(.plain)
-                            .font(.system(size: 12.5))
+                            .font(.system(size: 14))
                             .multilineTextAlignment(.trailing)
                     }
                 }
@@ -171,13 +171,13 @@ struct BlockEditorView: View {
             if !context.attendees.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("ATTENDEES")
-                        .font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                        .font(.system(size: 11.5, weight: .semibold)).tracking(1.2)
                         .foregroundStyle(Theme.textTertiary)
                     ForEach(context.attendees, id: \.self) { name in
                         HStack(spacing: 8) {
                             Image(systemName: "person.crop.circle")
-                                .font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
-                            Text(name).font(.system(size: 12.5)).foregroundStyle(Theme.textPrimary)
+                                .font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
+                            Text(name).font(.system(size: 14)).foregroundStyle(Theme.textPrimary)
                             Spacer()
                         }
                         .padding(.horizontal, 12).padding(.vertical, 8)
@@ -188,11 +188,11 @@ struct BlockEditorView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("NOTES")
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.system(size: 11.5, weight: .semibold))
                     .tracking(1.2)
                     .foregroundStyle(Theme.textTertiary)
                 TextEditor(text: $draft.notes)
-                    .font(.system(size: 12.5))
+                    .font(.system(size: 14))
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 70)
                     .padding(8)
@@ -204,7 +204,7 @@ struct BlockEditorView: View {
                     confirmingDelete = true
                 } label: {
                     Text("Delete Block")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 14.5, weight: .medium))
                         .foregroundStyle(Theme.danger)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
@@ -243,7 +243,7 @@ struct BlockEditorView: View {
                             .fill(service.calendarInfo(withID: draft.calendarID)?.color ?? Theme.textTertiary)
                             .frame(width: 14, height: 14)
                         if draft.colorHex == nil {
-                            Image(systemName: "checkmark").font(.system(size: 8, weight: .bold))
+                            Image(systemName: "checkmark").font(.system(size: 9, weight: .bold))
                                 .foregroundStyle(Theme.textPrimary)
                         }
                     }
@@ -271,21 +271,21 @@ struct BlockEditorView: View {
     private func linkedTaskBanner(_ task: TaskItem) -> some View {
         HStack(spacing: 8) {
             Image(systemName: "link")
-                .font(.system(size: 11))
+                .font(.system(size: 12.5))
                 .foregroundStyle(Theme.accentColor)
             VStack(alignment: .leading, spacing: 1) {
                 Text("Linked to reminder")
-                    .font(.system(size: 10))
+                    .font(.system(size: 11.5))
                     .foregroundStyle(Theme.textTertiary)
                 Text(task.title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 13.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
             }
             Spacer()
             Button("Unlink") { draft.linkedTaskID = nil }
                 .buttonStyle(.plain)
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: 12.5, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
         }
         .padding(10)

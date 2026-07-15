@@ -19,7 +19,7 @@ struct RoutinesView: View {
                     }
                     Button { editing = Routine(name: "New routine", emoji: "✨", steps: [RoutineStep(title: "First step", seconds: 300)]) } label: {
                         Label("New routine", systemImage: "plus")
-                            .font(.system(size: 13.5, weight: .semibold))
+                            .font(.system(size: 14.5, weight: .semibold))
                             .foregroundStyle(Theme.accentColor)
                             .frame(maxWidth: .infinity).padding(.vertical, 13)
                             .background(Theme.accentColor.opacity(0.10), in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous))
@@ -50,9 +50,9 @@ struct RoutinesView: View {
     private var intro: some View {
         HStack(spacing: 8) {
             Image(systemName: voiceEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
-                .font(.system(size: 12)).foregroundStyle(Theme.accentColor)
+                .font(.system(size: 13.5)).foregroundStyle(Theme.accentColor)
             Text("Guided, hands-free. Each step counts down and is announced aloud — great for mornings and beating time-blindness.")
-                .font(.system(size: 11.5)).foregroundStyle(Theme.textSecondary)
+                .font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, 4)
@@ -62,20 +62,20 @@ struct RoutinesView: View {
         HStack(spacing: 12) {
             Text(routine.emoji).font(.system(size: 26))
             VStack(alignment: .leading, spacing: 2) {
-                Text(routine.name).font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                Text(routine.name).font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                 Text("\(routine.steps.count) steps · \(routine.totalMinutes) min")
-                    .font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
             }
             Spacer()
             Button { editing = routine } label: {
-                Image(systemName: "slider.horizontal.3").font(.system(size: 13, weight: .semibold))
+                Image(systemName: "slider.horizontal.3").font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary).frame(width: 34, height: 34)
                     .background(Theme.fill, in: Circle())
             }
             .buttonStyle(.plain)
             Button { running = routine } label: {
                 Label("Start", systemImage: "play.fill")
-                    .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.bg)
+                    .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.bg)
                     .padding(.horizontal, 16).padding(.vertical, 9)
                     .background(Theme.accentColor, in: Capsule())
             }
@@ -109,9 +109,9 @@ private struct RoutineEditorSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("NAME").font(.system(size: 10, weight: .semibold)).tracking(1.2).foregroundStyle(Theme.textTertiary)
+                        Text("NAME").font(.system(size: 11.5, weight: .semibold)).tracking(1.2).foregroundStyle(Theme.textTertiary)
                         TextField("Routine name", text: $routine.name)
-                            .textFieldStyle(.plain).font(.system(size: 16, weight: .semibold))
+                            .textFieldStyle(.plain).font(.system(size: 17, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                             .padding(12).background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
@@ -128,22 +128,22 @@ private struct RoutineEditorSheet: View {
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("STEPS").font(.system(size: 10, weight: .semibold)).tracking(1.2).foregroundStyle(Theme.textTertiary)
+                        Text("STEPS").font(.system(size: 11.5, weight: .semibold)).tracking(1.2).foregroundStyle(Theme.textTertiary)
                         ForEach($routine.steps) { $step in
                             HStack(spacing: 10) {
                                 TextField("Step", text: $step.title)
-                                    .textFieldStyle(.plain).font(.system(size: 14)).foregroundStyle(Theme.textPrimary)
+                                    .textFieldStyle(.plain).font(.system(size: 15)).foregroundStyle(Theme.textPrimary)
                                 Stepper(value: Binding(
                                     get: { max(1, step.seconds / 60) },
                                     set: { $step.wrappedValue.seconds = $0 * 60 }
                                 ), in: 1...120) {
                                     Text("\(max(1, step.seconds / 60))m")
-                                        .font(.system(size: 12, weight: .medium))
+                                        .font(.system(size: 13.5, weight: .medium))
                                         .foregroundStyle(Theme.textSecondary).monospacedDigit()
                                 }
                                 .labelsHidden()
                                 Button { routine.steps.removeAll { $0.id == step.id } } label: {
-                                    Image(systemName: "minus.circle.fill").font(.system(size: 15)).foregroundStyle(Theme.textTertiary)
+                                    Image(systemName: "minus.circle.fill").font(.system(size: 16)).foregroundStyle(Theme.textTertiary)
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -152,13 +152,13 @@ private struct RoutineEditorSheet: View {
                             .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
                         }
                         Button { routine.steps.append(RoutineStep(title: "New step", seconds: 300)) } label: {
-                            Label("Add step", systemImage: "plus").font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                            Label("Add step", systemImage: "plus").font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.accentColor)
                         }
                         .buttonStyle(.plain)
                     }
 
                     Button(role: .destructive) { onDelete(routine); dismiss() } label: {
-                        Text("Delete routine").font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.danger)
+                        Text("Delete routine").font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.danger)
                     }
                     .buttonStyle(.plain)
                 }

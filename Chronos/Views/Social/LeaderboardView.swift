@@ -79,11 +79,11 @@ struct LeaderboardView: View {
             Avatar(name: row.presence.displayName, emoji: row.presence.statusEmoji,
                    size: medal == "1" ? 56 : 46, ring: row.isYou)
             Text(row.isYou ? "You" : row.presence.displayName)
-                .font(.system(size: 12.5, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
             Text(board.display(row.value))
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: 12.5, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
             ZStack(alignment: .top) {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -113,21 +113,21 @@ struct LeaderboardView: View {
             ForEach(rows) { row in
                 HStack(spacing: 12) {
                     Text("\(row.rank)")
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.system(size: 14.5, weight: .bold))
                         .foregroundStyle(Theme.textTertiary)
                         .frame(width: 22)
                     Avatar(name: row.presence.displayName, emoji: row.presence.statusEmoji, size: 34, ring: row.isYou)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(row.isYou ? "You" : row.presence.displayName)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                         Text(row.presence.levelTitle)
-                            .font(.system(size: 11))
+                            .font(.system(size: 12.5))
                             .foregroundStyle(Theme.textTertiary)
                     }
                     Spacer()
                     Text(board.display(row.value))
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.system(size: 15, weight: .bold))
                         .foregroundStyle(row.isYou ? Theme.accentColor : Theme.textPrimary)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 11)
@@ -148,7 +148,7 @@ struct LeaderboardView: View {
                 .font(.system(size: 30, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text("Add friends to see how you stack up. Your \(board.title.lowercased()) is ready to race.")
-                .font(.system(size: 12.5))
+                .font(.system(size: 14))
                 .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
         }
@@ -164,20 +164,20 @@ struct LeaderboardView: View {
                 Image(systemName: social.gameCenterAuthenticated ? "checkmark.seal.fill" : "gamecontroller")
                     .foregroundStyle(social.gameCenterAuthenticated ? Theme.success : Theme.accentColor)
                 Text(social.gameCenterAuthenticated ? "Also ranking on Game Center" : "Add Game Center ranking")
-                    .font(.system(size: 13.5, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
             }
             Text(social.gameCenterAuthenticated
                  ? "Your focus and momentum are submitted to Apple's global leaderboards too."
                  : "Sign in to also rank on Apple's Game Center leaderboards.")
-                .font(.system(size: 11.5))
+                .font(.system(size: 13))
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             if !social.gameCenterAuthenticated {
                 Button { social.authenticateGameCenter() } label: {
                     Text("Sign in to Game Center")
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)

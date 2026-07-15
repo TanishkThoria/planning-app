@@ -49,12 +49,12 @@ struct NowView: View {
     private var topBar: some View {
         HStack {
             Text("NOW")
-                .font(.system(size: 12, weight: .bold)).tracking(3)
+                .font(.system(size: 13.5, weight: .bold)).tracking(3)
                 .foregroundStyle(Theme.textTertiary)
             Spacer()
             Button { dismiss() } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
                     .frame(width: 34, height: 34)
                     .background(Theme.fill, in: Circle())
@@ -68,7 +68,7 @@ struct NowView: View {
         if let block = current {
             VStack(spacing: 20) {
                 Text("RIGHT NOW")
-                    .font(.system(size: 11, weight: .bold)).tracking(2)
+                    .font(.system(size: 12.5, weight: .bold)).tracking(2)
                     .foregroundStyle(Theme.accentColor)
                 Text(block.title)
                     .font(.system(size: 34, weight: .bold))
@@ -78,7 +78,7 @@ struct NowView: View {
                     .minimumScaleFactor(0.6)
 
                 Text(countdown(to: block.end) + " left")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
                     .monospacedDigit()
 
@@ -111,7 +111,7 @@ struct NowView: View {
         } else if let block = next {
             VStack(spacing: 18) {
                 Text("UP NEXT IN \(countdown(to: block.start))")
-                    .font(.system(size: 12, weight: .bold)).tracking(1.5)
+                    .font(.system(size: 13.5, weight: .bold)).tracking(1.5)
                     .foregroundStyle(Theme.textTertiary)
                     .monospacedDigit()
                 Text(block.title)
@@ -120,10 +120,10 @@ struct NowView: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(3).minimumScaleFactor(0.6)
                 Text("at \(Fmt.time.string(from: block.start))")
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
                 Text("You've got a moment. Breathe, or get a head start.")
-                    .font(.system(size: 13))
+                    .font(.system(size: 14.5))
                     .foregroundStyle(Theme.textTertiary)
                     .multilineTextAlignment(.center)
             }
@@ -142,9 +142,9 @@ struct NowView: View {
             if let frog = model.frogTaskID.flatMap({ service.task(withID: $0) }), !frog.isCompleted {
                 VStack(spacing: 10) {
                     Text("Your one important thing:")
-                        .font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 13.5, weight: .medium)).foregroundStyle(Theme.textTertiary)
                     Text("🐸 \(frog.title)")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: 19, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .multilineTextAlignment(.center)
                     Button {
@@ -170,15 +170,15 @@ struct NowView: View {
         if current != nil, let block = next {
             HStack(spacing: 8) {
                 Text("NEXT")
-                    .font(.system(size: 9, weight: .bold)).tracking(1)
+                    .font(.system(size: 10, weight: .bold)).tracking(1)
                     .foregroundStyle(Theme.textTertiary)
                 Text(block.title)
-                    .font(.system(size: 12.5, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)
                 Spacer()
                 Text(Fmt.time.string(from: block.start))
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 12.5, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
             }
             .padding(.horizontal, 14).padding(.vertical, 10)
@@ -190,11 +190,11 @@ struct NowView: View {
     private var parkField: some View {
         HStack(spacing: 8) {
             Image(systemName: parkedOK ? "checkmark.circle.fill" : "tray.and.arrow.down")
-                .font(.system(size: 13))
+                .font(.system(size: 14.5))
                 .foregroundStyle(parkedOK ? Theme.success : Theme.textTertiary)
             TextField("Park a thought…", text: $parked)
                 .textFieldStyle(.plain)
-                .font(.system(size: 13))
+                .font(.system(size: 14.5))
                 .foregroundStyle(Theme.textPrimary)
                 .submitLabel(.done)
                 .onSubmit(park)
@@ -209,7 +209,7 @@ struct NowView: View {
 
     private func actionPill(_ title: String, _ icon: String, filled: Bool) -> some View {
         Label(title, systemImage: icon)
-            .font(.system(size: 14, weight: .semibold))
+            .font(.system(size: 15, weight: .semibold))
             .foregroundStyle(filled ? Theme.bg : Theme.accentColor)
             .padding(.horizontal, 18).padding(.vertical, 11)
             .background(filled ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.accentColor.opacity(0.14)),

@@ -46,7 +46,7 @@ struct InsightsView: View {
                     .font(.system(size: 25, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Your momentum & progress")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 13.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
@@ -72,13 +72,13 @@ struct InsightsView: View {
     private func statTile(_ icon: String, _ label: String, _ value: String, _ tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Image(systemName: icon)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 14.5, weight: .semibold))
                 .foregroundStyle(tint)
             Text(value)
-                .font(.system(size: 17, weight: .bold))
+                .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text(label)
-                .font(.system(size: 10.5, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -132,12 +132,12 @@ struct InsightsView: View {
                     }
                     VStack(alignment: .leading, spacing: 2) {
                         Text("\(focusingFriends.count) focusing now")
-                            .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                            .font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                         Text("Study alongside them — start a session too")
-                            .font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
+                            .font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
                     }
                     Spacer()
-                    Image(systemName: "timer").font(.system(size: 16, weight: .semibold))
+                    Image(systemName: "timer").font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 13)
@@ -173,31 +173,31 @@ struct InsightsView: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Theme.accentColor)
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(title)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                         if let tag {
                             Text(tag)
-                                .font(.system(size: 9, weight: .bold))
+                                .font(.system(size: 10, weight: .bold))
                                 .foregroundStyle(Theme.accentColor)
                                 .padding(.horizontal, 6).padding(.vertical, 2)
                                 .background(Theme.accentColor.opacity(0.14), in: Capsule())
                         }
                     }
                     Text(subtitle)
-                        .font(.system(size: 11.5))
+                        .font(.system(size: 13))
                         .foregroundStyle(Theme.textTertiary)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(.leading)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.textTertiary)
             }
             .padding(.horizontal, 14)

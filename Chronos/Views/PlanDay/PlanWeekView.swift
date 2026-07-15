@@ -110,13 +110,13 @@ struct PlanWeekView: View {
     private var headerBar: some View {
         HStack {
             Button("Cancel") { dismiss() }
-                .buttonStyle(.plain).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+                .buttonStyle(.plain).font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
                 .keyboardShortcut(.cancelAction)
             Spacer()
             Text("Plan My Week")
-                .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
             Spacer()
-            Text("Cancel").font(.system(size: 13)).hidden()
+            Text("Cancel").font(.system(size: 14.5)).hidden()
         }
         .padding(.horizontal, 16).padding(.vertical, 12)
     }
@@ -128,20 +128,20 @@ struct PlanWeekView: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: isIn ? "checkmark.square.fill" : "square")
-                    .font(.system(size: 15))
+                    .font(.system(size: 16))
                     .foregroundStyle(isIn ? Theme.accentColor : Theme.textTertiary)
                 if task.energy != .none {
-                    Image(systemName: task.energy.icon).font(.system(size: 10)).foregroundStyle(task.energy.color)
+                    Image(systemName: task.energy.icon).font(.system(size: 11.5)).foregroundStyle(task.energy.color)
                 }
                 Text(task.title)
-                    .font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.textPrimary).lineLimit(1)
+                    .font(.system(size: 14.5, weight: .medium)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                 Spacer()
                 if task.effectiveSessionMinutes != nil {
                     Image(systemName: "square.stack.3d.up")
-                        .font(.system(size: 9)).foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
                 }
                 Text("~\(Fmt.duration(minutes: task.estimateMinutes ?? defaultBlockMinutes))")
-                    .font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
             }
             .padding(.horizontal, 12).padding(.vertical, 9)
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
@@ -153,22 +153,22 @@ struct PlanWeekView: View {
     private func dayGroup(_ day: Date, proposals: [AutoScheduler.Proposal]) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(Fmt.relativeDay(day))
-                .font(.system(size: 12, weight: .bold))
+                .font(.system(size: 13.5, weight: .bold))
                 .foregroundStyle(day.isToday ? Theme.accentColor : Theme.textPrimary)
                 .padding(.leading, 2)
             ForEach(proposals) { proposal in
                 HStack(spacing: 10) {
                     Text(Fmt.time.string(from: proposal.start))
-                        .font(.system(size: 11.5, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                         .frame(width: 60, alignment: .leading)
                     Text(proposal.task.title)
-                        .font(.system(size: 12.5)).foregroundStyle(Theme.textPrimary).lineLimit(1)
+                        .font(.system(size: 14)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                     Spacer()
                     Text(Fmt.duration(minutes: proposal.minutes))
-                        .font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
                 }
                 .padding(.horizontal, 12).padding(.vertical, 8)
                 .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
@@ -179,13 +179,13 @@ struct PlanWeekView: View {
     private var footer: some View {
         HStack {
             Text("\(totalPlanned) block\(totalPlanned == 1 ? "" : "s") across \(planByDay.keys.count) day\(planByDay.keys.count == 1 ? "" : "s")")
-                .font(.system(size: 11.5, weight: .medium)).foregroundStyle(Theme.textSecondary)
+                .font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.textSecondary)
             Spacer()
             Button {
                 apply()
             } label: {
                 Text("Add to Calendar")
-                    .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.bg)
+                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.bg)
                     .padding(.horizontal, 16).padding(.vertical, 7)
                     .background(Theme.accentColor, in: Capsule())
             }

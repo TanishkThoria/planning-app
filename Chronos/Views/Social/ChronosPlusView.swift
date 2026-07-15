@@ -64,7 +64,7 @@ struct ChronosPlusView: View {
                     .foregroundStyle(Theme.textPrimary)
             }
             Text("Sync every device, race friends on the leaderboard, and see what the people you plan with are focusing on — all powered by your own iCloud, still zero-server and private.")
-                .font(.system(size: 13))
+                .font(.system(size: 14.5))
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -90,12 +90,12 @@ struct ChronosPlusView: View {
             Toggle(isOn: $masterEnabled) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Turn on Chronos+")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Text(paid.iCloud == .available
                          ? "iCloud is signed in on this device."
                          : "Signed out of iCloud — sync features wait until you sign in.")
-                        .font(.system(size: 11.5))
+                        .font(.system(size: 13))
                         .foregroundStyle(paid.iCloud == .available ? Theme.textTertiary : Theme.warning)
                 }
             }
@@ -118,10 +118,10 @@ struct ChronosPlusView: View {
     private var turnOnGuide: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Ready when you are", systemImage: "lock.open")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Theme.accentColor)
             Text("Every Chronos+ feature is already built in. They switch on the moment your app is signed with a paid Apple Developer account, which adds the iCloud, App Group and Game Center capabilities. No new code — just capabilities.")
-                .font(.system(size: 12.5))
+                .font(.system(size: 14))
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -135,13 +135,13 @@ struct ChronosPlusView: View {
             .background(Theme.elevated, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
 
             Text("Full walkthrough: docs/CHRONOS_PLUS_SETUP.md")
-                .font(.system(size: 11, design: .monospaced))
+                .font(.system(size: 12.5, design: .monospaced))
                 .foregroundStyle(Theme.textTertiary)
 
             // Let the user pre-arm the switch now so it's already on at upgrade.
             Toggle(isOn: $masterEnabled) {
                 Text("Pre-enable Chronos+ (activates automatically once entitled)")
-                    .font(.system(size: 12.5, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             .toggleStyle(.switch)
@@ -157,12 +157,12 @@ struct ChronosPlusView: View {
     private func guideStep(_ n: Int, _ text: String) -> some View {
         HStack(alignment: .top, spacing: 10) {
             Text("\(n)")
-                .font(.system(size: 11, weight: .bold))
+                .font(.system(size: 12.5, weight: .bold))
                 .foregroundStyle(Theme.accentColor)
                 .frame(width: 20, height: 20)
                 .background(Theme.accentColor.opacity(0.15), in: Circle())
             Text(text)
-                .font(.system(size: 12))
+                .font(.system(size: 13.5))
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -199,15 +199,15 @@ struct ChronosPlusView: View {
         let ready = paid.isReady(capability)
         return HStack(spacing: 12) {
             Image(systemName: capability.icon)
-                .font(.system(size: 15, weight: .medium))
+                .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(ready ? Theme.accentColor : Theme.textTertiary)
                 .frame(width: 22)
             VStack(alignment: .leading, spacing: 2) {
                 Text(capability.title)
-                    .font(.system(size: 13.5, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Text(ready ? capability.subtitle : paid.status(for: capability))
-                    .font(.system(size: 11))
+                    .font(.system(size: 12.5))
                     .foregroundStyle(ready ? Theme.textTertiary : Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -219,7 +219,7 @@ struct ChronosPlusView: View {
                     .disabled(!masterEnabled)
             } else {
                 Image(systemName: "lock.fill")
-                    .font(.system(size: 12))
+                    .font(.system(size: 13.5))
                     .foregroundStyle(Theme.textTertiary)
             }
         }
@@ -250,20 +250,20 @@ struct ChronosPlusView: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Theme.accentColor)
                     .frame(width: 22)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
-                        .font(.system(size: 13.5, weight: .semibold))
+                        .font(.system(size: 14.5, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Text(subtitle)
-                        .font(.system(size: 11))
+                        .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.textTertiary)
             }
             .padding(.horizontal, 12)

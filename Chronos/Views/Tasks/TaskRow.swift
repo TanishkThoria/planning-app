@@ -33,7 +33,7 @@ struct TaskRow: View {
         HStack(alignment: .top, spacing: 10) {
             if selectionMode {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 16))
+                    .font(.system(size: 17))
                     .foregroundStyle(isSelected ? Theme.accentColor : Theme.textTertiary)
                     .padding(.top, 1)
             } else {
@@ -42,7 +42,7 @@ struct TaskRow: View {
                     withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
                 } label: {
                     Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 18, weight: .regular))
+                        .font(.system(size: 19, weight: .regular))
                         .foregroundStyle(
                             task.isCompleted
                                 ? Theme.success
@@ -56,25 +56,25 @@ struct TaskRow: View {
             VStack(alignment: .leading, spacing: 7) {
                 HStack(spacing: 6) {
                     Text(task.title)
-                        .font(.system(size: 14.5, weight: .medium))
+                        .font(.system(size: 15.5, weight: .medium))
                         .foregroundStyle(task.isCompleted ? Theme.textTertiary : Theme.textPrimary)
                         .strikethrough(task.isCompleted, color: Theme.textTertiary)
                         .lineLimit(2)
                     if task.priority != .none {
                         Text(task.priority.badge)
-                            .font(.system(size: 11.5, weight: .bold))
+                            .font(.system(size: 13, weight: .bold))
                             .foregroundStyle(task.priority.color)
                     }
                     if task.energy != .none {
                         Image(systemName: task.energy.icon)
-                            .font(.system(size: 11))
+                            .font(.system(size: 12.5))
                             .foregroundStyle(task.energy.color)
                     }
                 }
 
                 if let notes = task.notes, !notes.isEmpty {
                     Text(notes)
-                        .font(.system(size: 12))
+                        .font(.system(size: 13.5))
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1)
                 }
@@ -89,14 +89,14 @@ struct TaskRow: View {
                     }
                     if task.daysOverdue >= 2 {
                         Text("\(task.daysOverdue)d late")
-                            .font(.system(size: 10.5, weight: .bold))
+                            .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(Theme.danger)
                             .padding(.horizontal, 7).padding(.vertical, 3)
                             .background(Theme.danger.opacity(task.daysOverdue >= 7 ? 0.22 : 0.12), in: Capsule())
                     }
                     if task.puntCount >= 2 && !task.isCompleted {
                         Label("moved \(task.puntCount)×", systemImage: "arrow.uturn.forward")
-                            .font(.system(size: 10.5, weight: .semibold))
+                            .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(task.puntCount >= 4 ? Theme.danger : Theme.warning)
                             .padding(.horizontal, 7).padding(.vertical, 3)
                             .background((task.puntCount >= 4 ? Theme.danger : Theme.warning).opacity(0.12), in: Capsule())
@@ -124,7 +124,7 @@ struct TaskRow: View {
                     scheduleNextFree(dayOffset: 0)
                 } label: {
                     Image(systemName: "bolt.fill")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 13.5, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                         .frame(width: 28, height: 28)
                         .background(Theme.fill, in: Circle())
@@ -199,9 +199,9 @@ struct TaskRow: View {
     private func metaChip(_ text: String, icon: String? = nil, dot: Color? = nil, tint: Color) -> some View {
         HStack(spacing: 4) {
             if let dot { Circle().fill(dot).frame(width: 6, height: 6) }
-            if let icon { Image(systemName: icon).font(.system(size: 10, weight: .medium)) }
+            if let icon { Image(systemName: icon).font(.system(size: 11.5, weight: .medium)) }
             Text(text)
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: 12.5, weight: .medium))
                 .lineLimit(1)
         }
         .foregroundStyle(tint)
@@ -273,33 +273,33 @@ struct SubtaskRow: View {
     var body: some View {
         HStack(spacing: 9) {
             Image(systemName: "arrow.turn.down.right")
-                .font(.system(size: 9))
+                .font(.system(size: 10))
                 .foregroundStyle(Theme.textTertiary)
 
             Button {
                 withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
             } label: {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 13))
+                    .font(.system(size: 14.5))
                     .foregroundStyle(task.isCompleted ? Theme.success : Theme.textTertiary)
             }
             .buttonStyle(.plain)
 
             Text(task.title)
-                .font(.system(size: 12.5))
+                .font(.system(size: 14))
                 .foregroundStyle(task.isCompleted ? Theme.textTertiary : Theme.textPrimary)
                 .strikethrough(task.isCompleted, color: Theme.textTertiary)
                 .lineLimit(1)
 
             if let est = task.estimateMinutes {
                 Text("~\(Fmt.duration(minutes: est))")
-                    .font(.system(size: 10))
+                    .font(.system(size: 11.5))
                     .foregroundStyle(Theme.textTertiary)
             }
 
             if let first = service.blocksLinked(to: task.id).first {
                 Label(Fmt.relativeDay(first.start), systemImage: "rectangle.stack")
-                    .font(.system(size: 10))
+                    .font(.system(size: 11.5))
                     .foregroundStyle(Theme.accentColor)
             }
 

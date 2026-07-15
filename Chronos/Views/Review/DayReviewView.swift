@@ -89,19 +89,19 @@ struct DayReviewView: View {
         HStack {
             Button("Close") { dismiss() }
                 .buttonStyle(.plain)
-                .font(.system(size: 13))
+                .font(.system(size: 14.5))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
             VStack(spacing: 1) {
                 Text("Review")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Text(Fmt.relativeDay(day))
-                    .font(.system(size: 10.5))
+                    .font(.system(size: 12))
                     .foregroundStyle(Theme.textTertiary)
             }
             Spacer()
-            Text("Close").font(.system(size: 13)).hidden()
+            Text("Close").font(.system(size: 14.5)).hidden()
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -130,10 +130,10 @@ struct DayReviewView: View {
     private func summaryMetric(_ value: String, _ label: String) -> some View {
         VStack(spacing: 3) {
             Text(value)
-                .font(.system(size: 19, weight: .bold))
+                .font(.system(size: 20, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Text(label.uppercased())
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 10, weight: .semibold))
                 .tracking(1)
                 .foregroundStyle(Theme.textTertiary)
         }
@@ -146,11 +146,11 @@ struct DayReviewView: View {
                 RoundedRectangle(cornerRadius: 2).fill(item.block.color).frame(width: 3, height: 30)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.task.title)
-                        .font(.system(size: 13.5, weight: .semibold))
+                        .font(.system(size: 14.5, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(2)
                     Text(Fmt.timeRange(item.block.start, item.block.end))
-                        .font(.system(size: 11))
+                        .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 Spacer()
@@ -181,9 +181,9 @@ struct DayReviewView: View {
         Button(action: action) {
             VStack(spacing: 3) {
                 Image(systemName: icon)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                 Text(label)
-                    .font(.system(size: 9.5, weight: .medium))
+                    .font(.system(size: 11, weight: .medium))
             }
             .foregroundStyle(tint)
             .frame(maxWidth: .infinity)
@@ -196,14 +196,14 @@ struct DayReviewView: View {
     private var footer: some View {
         HStack {
             Text(pending.isEmpty ? "Review complete" : "\(pending.count) left to review")
-                .font(.system(size: 11.5, weight: .medium))
+                .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
             Button {
                 dismiss()
             } label: {
                 Text("Done")
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.bg)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 7)

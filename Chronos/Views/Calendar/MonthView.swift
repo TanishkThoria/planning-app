@@ -43,7 +43,7 @@ struct MonthView: View {
         HStack(spacing: 0) {
             ForEach(weekdaySymbols(), id: \.self) { symbol in
                 Text(symbol)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.system(size: 11.5, weight: .semibold))
                     .foregroundStyle(Theme.textTertiary)
                     .frame(maxWidth: .infinity)
             }
@@ -82,7 +82,7 @@ struct MonthView: View {
                         Circle().fill(Theme.accentColor.opacity(0.16)).frame(width: 26, height: 26)
                     }
                     Text(Fmt.dayNumber.string(from: day))
-                        .font(.system(size: 13, weight: isToday || isSelected ? .bold : .medium))
+                        .font(.system(size: 14.5, weight: isToday || isSelected ? .bold : .medium))
                         .foregroundStyle(isSelected ? Theme.bg : (isToday ? Theme.accentColor : Theme.textPrimary))
                 }
                 .frame(height: 26)
@@ -140,20 +140,20 @@ struct MonthView: View {
         return VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(Fmt.relativeDay(day))
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Button {
                     model.newBlock(at: day.at(minutes: 9 * 60), defaultMinutes: defaultBlockMinutes,
                                    calendarID: defaultCalendarID.isEmpty ? nil : defaultCalendarID)
                 } label: {
-                    Image(systemName: "plus").font(.system(size: 12, weight: .semibold))
+                    Image(systemName: "plus").font(.system(size: 13.5, weight: .semibold))
                         .foregroundStyle(Theme.bg).frame(width: 26, height: 24)
                         .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                 }
                 .buttonStyle(.plain)
                 Button { model.openDay(day) } label: {
-                    Image(systemName: "arrow.up.right.square").font(.system(size: 13))
+                    Image(systemName: "arrow.up.right.square").font(.system(size: 14.5))
                         .foregroundStyle(Theme.textSecondary).frame(width: 26, height: 24)
                         .background(Theme.fill, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                 }
@@ -162,7 +162,7 @@ struct MonthView: View {
 
             if blocks.isEmpty && due.isEmpty {
                 Text("Nothing planned — tap + to add something.")
-                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
                     .padding(.vertical, 6)
             } else {
                 ForEach(blocks) { block in
@@ -170,9 +170,9 @@ struct MonthView: View {
                         HStack(spacing: 10) {
                             RoundedRectangle(cornerRadius: 2).fill(block.color).frame(width: 3, height: 26)
                             Text(block.isAllDay ? "all-day" : Fmt.time.string(from: block.start))
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 12.5, weight: .semibold))
                                 .foregroundStyle(Theme.textSecondary).frame(width: 56, alignment: .leading)
-                            Text(block.title).font(.system(size: 13)).foregroundStyle(Theme.textPrimary).lineLimit(1)
+                            Text(block.title).font(.system(size: 14.5)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                             Spacer()
                         }
                         .padding(.vertical, 4)
@@ -184,9 +184,9 @@ struct MonthView: View {
                     Button { model.taskEditor = service.editorContext(for: task) } label: {
                         HStack(spacing: 10) {
                             Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                                .font(.system(size: 13))
+                                .font(.system(size: 14.5))
                                 .foregroundStyle(task.isCompleted ? Theme.success : task.priority.color)
-                            Text(task.title).font(.system(size: 13))
+                            Text(task.title).font(.system(size: 14.5))
                                 .foregroundStyle(task.isCompleted ? Theme.textTertiary : Theme.textPrimary).lineLimit(1)
                                 .strikethrough(task.isCompleted, color: Theme.textTertiary)
                             Spacer()

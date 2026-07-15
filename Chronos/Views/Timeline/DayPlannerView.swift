@@ -49,14 +49,14 @@ struct DayPlannerView: View {
         } label: {
             HStack(spacing: 9) {
                 Image(systemName: "questionmark.circle.fill")
-                    .font(.system(size: 13))
+                    .font(.system(size: 14.5))
                     .foregroundStyle(Theme.warning)
                 Text("\(pendingReviewCount) finished block\(pendingReviewCount == 1 ? "" : "s") to review")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 13.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Text("Review")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.bg)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
@@ -160,13 +160,13 @@ struct DayPlannerView: View {
                     .foregroundStyle(Theme.textPrimary)
                 HStack(spacing: 6) {
                     Text(Fmt.monthDayYear.string(from: model.selectedDate))
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 13.5, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                     if !dayBlocks.isEmpty {
                         Text("·")
                             .foregroundStyle(Theme.textTertiary)
                         Text("\(timedBlocks.count) blocks · \(Fmt.duration(minutes: plannedMinutes)) planned")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: 13.5, weight: .medium))
                             .foregroundStyle(Theme.textTertiary)
                     }
                 }
@@ -211,7 +211,7 @@ struct DayPlannerView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 6) {
                 Text("ALL DAY")
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 10, weight: .semibold))
                     .tracking(1)
                     .foregroundStyle(Theme.textTertiary)
                 ForEach(allDayBlocks) { block in
@@ -221,7 +221,7 @@ struct DayPlannerView: View {
                         HStack(spacing: 5) {
                             Circle().fill(block.color).frame(width: 6, height: 6)
                             Text(block.title)
-                                .font(.system(size: 11, weight: .medium))
+                                .font(.system(size: 12.5, weight: .medium))
                                 .foregroundStyle(Theme.textPrimary)
                                 .lineLimit(1)
                         }
@@ -259,16 +259,21 @@ struct DayPlannerView: View {
                     }
                     .onEnded { _ in pinchBaseHeight = nil }
             )
-            .onAppear {
-                // Defer past the first layout pass — scrollTo in onAppear
-                // no-ops before the content has been measured, which is what
-                // left the timeline parked at midnight.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                    recenterTimeline(proxy, animated: false)
-                }
-            }
+            .onAppear { centerRepeatedly(proxy) }
             .onChange(of: model.selectedDate) { _, _ in
                 recenterTimeline(proxy, animated: true)
+            }
+        }
+    }
+
+    /// scrollTo silently no-ops until the ScrollView content has been laid out,
+    /// and in an embedded planner the first layout pass can lag a few frames —
+    /// which is what left the timeline parked at midnight. Fire the recenter
+    /// across several frames so at least one attempt lands after layout.
+    private func centerRepeatedly(_ proxy: ScrollViewProxy) {
+        for delay in [0.0, 0.1, 0.25, 0.5, 0.9] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                recenterTimeline(proxy, animated: false)
             }
         }
     }
@@ -277,21 +282,25 @@ struct DayPlannerView: View {
     /// current time for today, at the start of the workday otherwise. The full
     /// 24 hours stays scrollable in both directions.
     private func recenterTimeline(_ proxy: ScrollViewProxy, animated: Bool) {
-        let hour: Int
         let anchor: UnitPoint
+        let target: String
         if model.selectedDate.isToday {
-            hour = min(max(Date().minutesSinceMidnight / 60, 1), 23)
+            // Center on the current time. Aim at the half-hour tick nearest now
+            // so the now-line sits mid-screen rather than a whole hour off.
+            let hour = min(max(Date().minutesSinceMidnight / 60, 1), 23)
+            target = "hour-\(hour)"
             anchor = .center
         } else {
-            hour = min(max(workStartMinutes / 60, 1), 23)
+            let hour = min(max(workStartMinutes / 60, 1), 23)
+            target = "hour-\(hour)"
             anchor = .top
         }
         if animated {
             withAnimation(.easeInOut(duration: 0.3)) {
-                proxy.scrollTo("hour-\(hour)", anchor: anchor)
+                proxy.scrollTo(target, anchor: anchor)
             }
         } else {
-            proxy.scrollTo("hour-\(hour)", anchor: anchor)
+            proxy.scrollTo(target, anchor: anchor)
         }
     }
 
@@ -375,7 +384,7 @@ struct BacklogRail: View {
                     model.planDayPresented = true
                 } label: {
                     Image(systemName: "wand.and.stars")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
@@ -444,25 +453,25 @@ private struct BacklogTaskRow: View {
                 service.toggleTaskCompletion(id: task.id)
             } label: {
                 Image(systemName: "circle")
-                    .font(.system(size: 13))
+                    .font(.system(size: 14.5))
                     .foregroundStyle(task.priority == .none ? Theme.textTertiary : task.priority.color)
             }
             .buttonStyle(.plain)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(task.title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 13.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(2)
                 HStack(spacing: 6) {
                     if let due = task.dueLabel() {
                         Text(due)
-                            .font(.system(size: 10))
+                            .font(.system(size: 11.5))
                             .foregroundStyle(task.isOverdue ? Theme.danger : Theme.textTertiary)
                     }
                     if let est = task.estimateMinutes {
                         Text("~\(Fmt.duration(minutes: est))")
-                            .font(.system(size: 10))
+                            .font(.system(size: 11.5))
                             .foregroundStyle(Theme.textTertiary)
                     }
                     Circle().fill(task.color).frame(width: 5, height: 5)
@@ -473,7 +482,7 @@ private struct BacklogTaskRow: View {
 
             Button(action: onSchedule) {
                 Image(systemName: "bolt.fill")
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.system(size: 11.5, weight: .semibold))
                     .foregroundStyle(Theme.accentColor)
                     .frame(width: 22, height: 22)
                     .background(Theme.fill, in: Circle())

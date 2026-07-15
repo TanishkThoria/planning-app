@@ -128,7 +128,7 @@ struct DayColumn: View {
                         .strokeBorder(Theme.textTertiary.opacity(0.18), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
                     if height >= 22 && !compact {
                         Label(window.title, systemImage: "moon.stars")
-                            .font(.system(size: 9, weight: .medium))
+                            .font(.system(size: 10, weight: .medium))
                             .foregroundStyle(Theme.textTertiary)
                             .padding(.horizontal, 5)
                             .padding(.top, 3)
@@ -200,7 +200,7 @@ struct DayColumn: View {
             )
             .overlay(alignment: .topLeading) {
                 Text(Fmt.timeRange(date.at(minutes: range.start), date.at(minutes: range.end)))
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.system(size: 11.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                     .padding(.horizontal, 6).padding(.top, 3)
             }

@@ -68,7 +68,7 @@ struct OnboardingView: View {
             Spacer()
             if step < lastStep {
                 Button("Skip") { finish() }
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 14.5, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
                     .buttonStyle(.plain)
             }
@@ -97,7 +97,7 @@ struct OnboardingView: View {
                     .foregroundStyle(Theme.textPrimary)
                     .multilineTextAlignment(.center)
                 Text(page.subtitle)
-                    .font(.system(size: 15))
+                    .font(.system(size: 16))
                     .foregroundStyle(Theme.textSecondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
@@ -109,11 +109,11 @@ struct OnboardingView: View {
                     ForEach(page.bullets, id: \.text) { bullet in
                         HStack(spacing: 12) {
                             Image(systemName: bullet.icon)
-                                .font(.system(size: 15, weight: .semibold))
+                                .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(Theme.accentColor)
                                 .frame(width: 24)
                             Text(bullet.text)
-                                .font(.system(size: 13.5))
+                                .font(.system(size: 14.5))
                                 .foregroundStyle(Theme.textSecondary)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer(minLength: 0)
@@ -151,7 +151,7 @@ struct OnboardingView: View {
                     .foregroundStyle(Theme.textPrimary)
                     .multilineTextAlignment(.center)
                 Text("Chronos stores everything in your own Apple Calendar and Reminders — nothing lives on a server.")
-                    .font(.system(size: 15))
+                    .font(.system(size: 16))
                     .foregroundStyle(Theme.textSecondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
@@ -178,15 +178,15 @@ struct OnboardingView: View {
                 Button { wantsLMS.toggle() } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "graduationcap.fill")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundStyle(Theme.accentColor)
                             .frame(width: 26)
                         VStack(alignment: .leading, spacing: 2) {
                             Text("I'm a student")
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(.system(size: 15, weight: .semibold))
                                 .foregroundStyle(Theme.textPrimary)
                             Text("Connect Canvas or Schoology after setup — assignments become reminders automatically.")
-                                .font(.system(size: 11.5))
+                                .font(.system(size: 13))
                                 .foregroundStyle(Theme.textTertiary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -211,15 +211,15 @@ struct OnboardingView: View {
     private func permissionRow(icon: String, title: String, subtitle: String, granted: Bool, busy: Bool, action: @escaping () -> Void) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(Theme.accentColor)
                 .frame(width: 26)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Text(subtitle)
-                    .font(.system(size: 11.5))
+                    .font(.system(size: 13))
                     .foregroundStyle(Theme.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -232,7 +232,7 @@ struct OnboardingView: View {
                 ProgressView().controlSize(.small)
             } else {
                 Button("Enable", action: action)
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.accentColor)
                     .buttonStyle(.plain)
             }
@@ -250,7 +250,7 @@ struct OnboardingView: View {
                 advance()
             } label: {
                 Text(step < lastStep ? "Continue" : "Start planning")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Theme.bg)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
@@ -262,7 +262,7 @@ struct OnboardingView: View {
                 Button("Back") {
                     withAnimation(.snappy) { step -= 1 }
                 }
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: 14.5, weight: .medium))
                 .foregroundStyle(Theme.textTertiary)
                 .buttonStyle(.plain)
             }

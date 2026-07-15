@@ -85,14 +85,14 @@ struct FocusTimerView: View {
     private var grabber: some View {
         HStack {
             Text(timer.isActive ? "Focus Session" : "Start Focusing")
-                .font(.system(size: 15, weight: .bold))
+                .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
             Button {
                 dismiss()
             } label: {
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
             }
             .buttonStyle(.plain)
@@ -106,14 +106,14 @@ struct FocusTimerView: View {
             Spacer()
 
             Text(timer.taskTitle)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
 
             if timer.mode == .pomodoro {
                 Text(timer.phase == .focus ? "FOCUS" : "BREAK")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: 12.5, weight: .bold))
                     .tracking(2)
                     .foregroundStyle(timer.phase == .focus ? Theme.accentColor : Theme.success)
             }
@@ -143,7 +143,7 @@ struct FocusTimerView: View {
                         .monospacedDigit()
                     if timer.completedPomodoros > 0 {
                         Text("\(timer.completedPomodoros) 🍅")
-                            .font(.system(size: 13))
+                            .font(.system(size: 14.5))
                             .foregroundStyle(Theme.textSecondary)
                     }
                 }
@@ -161,7 +161,7 @@ struct FocusTimerView: View {
                             .fixedSize(horizontal: false, vertical: true)
                             .multilineTextAlignment(.center)
                     }
-                    .font(.system(size: 11.5, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Theme.warning)
                     .padding(.horizontal, 12).padding(.vertical, 8)
                     .background(Theme.warning.opacity(0.12), in: Capsule())
@@ -200,11 +200,11 @@ struct FocusTimerView: View {
     private var parkAThought: some View {
         HStack(spacing: 8) {
             Image(systemName: showParkedConfirmation ? "checkmark.circle.fill" : "tray.and.arrow.down")
-                .font(.system(size: 13))
+                .font(.system(size: 14.5))
                 .foregroundStyle(showParkedConfirmation ? Theme.success : Theme.textTertiary)
             TextField("Park a thought — it becomes a task", text: $parkedThought)
                 .textFieldStyle(.plain)
-                .font(.system(size: 12.5))
+                .font(.system(size: 14))
                 .foregroundStyle(Theme.textPrimary)
                 .submitLabel(.done)
                 .onSubmit { parkThought() }
@@ -262,7 +262,7 @@ struct FocusTimerView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "target").foregroundStyle(Theme.accentColor)
                     Text(title)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 14.5, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     Spacer()
@@ -284,7 +284,7 @@ struct FocusTimerView: View {
                 }
             } else {
                 Text("An open stopwatch — run it as long as you're heads-down. Time logs to your stats when you stop.")
-                    .font(.system(size: 12))
+                    .font(.system(size: 13.5))
                     .foregroundStyle(Theme.textTertiary)
                     .multilineTextAlignment(.center)
             }
@@ -297,7 +297,7 @@ struct FocusTimerView: View {
                 timer.start(taskID: presetTaskID, title: presetTitle ?? "Focus", mode: selectedMode)
             } label: {
                 Text("Start")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Theme.bg)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
@@ -319,10 +319,10 @@ struct FocusTimerView: View {
         } label: {
             VStack(spacing: 2) {
                 Text(label)
-                    .font(.system(size: 10.5, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .lineLimit(1).minimumScaleFactor(0.7)
                 Text("\(focus)/\(rest)")
-                    .font(.system(size: 9.5, weight: .medium))
+                    .font(.system(size: 11, weight: .medium))
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
@@ -338,12 +338,12 @@ struct FocusTimerView: View {
     private func stepperRow(_ label: String, value: Binding<Int>, range: ClosedRange<Int>, step: Int) -> some View {
         HStack {
             Text(label)
-                .font(.system(size: 13))
+                .font(.system(size: 14.5))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
             Stepper(value: value, in: range, step: step) {
                 Text("\(value.wrappedValue) min")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
             }
             .fixedSize()
@@ -357,7 +357,7 @@ struct FocusTimerView: View {
         Button(action: action) {
             VStack(spacing: 5) {
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(prominent ? Theme.bg : tint)
                     .frame(width: 54, height: 54)
                     .background(
@@ -365,7 +365,7 @@ struct FocusTimerView: View {
                         in: Circle()
                     )
                 Text(label)
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.system(size: 11.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
         }
@@ -388,14 +388,14 @@ struct FocusTimerPill: View {
             } label: {
                 HStack(spacing: 9) {
                     Image(systemName: timer.phase == .focus ? "timer" : "cup.and.saucer.fill")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 13.5, weight: .semibold))
                         .foregroundStyle(timer.phase == .focus ? Theme.accentColor : Theme.success)
                     Text(timeText)
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.system(size: 14.5, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                         .monospacedDigit()
                     Text(timer.taskTitle)
-                        .font(.system(size: 12))
+                        .font(.system(size: 13.5))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
                         .frame(maxWidth: 120)
@@ -403,7 +403,7 @@ struct FocusTimerPill: View {
                         timer.toggle()
                     } label: {
                         Image(systemName: timer.isRunning ? "pause.fill" : "play.fill")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.system(size: 12.5, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
                     }
                     .buttonStyle(.plain)

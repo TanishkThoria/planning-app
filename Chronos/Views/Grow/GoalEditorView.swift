@@ -41,10 +41,10 @@ struct GoalEditorView: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("NOTE").font(.system(size: 10, weight: .semibold)).tracking(1.2)
+                Text("NOTE").font(.system(size: 11.5, weight: .semibold)).tracking(1.2)
                     .foregroundStyle(Theme.textTertiary)
                 TextEditor(text: $goal.detail)
-                    .font(.system(size: 12.5))
+                    .font(.system(size: 14))
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 60)
                     .padding(8)
@@ -54,7 +54,7 @@ struct GoalEditorView: View {
             if !context.isNew {
                 Button(role: .destructive) { confirmingDelete = true } label: {
                     Text("Delete Goal")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 14.5, weight: .medium))
                         .foregroundStyle(Theme.danger)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
@@ -74,7 +74,7 @@ struct GoalEditorView: View {
 
     private var colorRow: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("COLOR").font(.system(size: 10, weight: .semibold)).tracking(1.2)
+            Text("COLOR").font(.system(size: 11.5, weight: .semibold)).tracking(1.2)
                 .foregroundStyle(Theme.textTertiary)
             HStack(spacing: 10) {
                 ForEach(Palette.options, id: \.self) { hex in
@@ -96,7 +96,7 @@ struct GoalEditorView: View {
             FieldRow(label: "Hours per week") {
                 Stepper(value: $goal.weeklyHoursTarget, in: 0.5...80, step: 0.5) {
                     Text(String(format: "%g h", goal.weeklyHoursTarget))
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                 }
                 .fixedSize()
@@ -114,14 +114,14 @@ struct GoalEditorView: View {
                 } label: {
                     HStack(spacing: 6) {
                         Text(service.calendarInfo(withID: goal.linkedCalendarID)?.title ?? "Any calendar")
-                            .font(.system(size: 12.5, weight: .medium)).foregroundStyle(Theme.textPrimary)
-                        Image(systemName: "chevron.up.chevron.down").font(.system(size: 9)).foregroundStyle(Theme.textTertiary)
+                            .font(.system(size: 14, weight: .medium)).foregroundStyle(Theme.textPrimary)
+                        Image(systemName: "chevron.up.chevron.down").font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
                     }
                 }
                 .fixedSize()
             }
             Text("Progress tracks the hours you timeblock on this calendar each week.")
-                .font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary)
+                .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
@@ -137,10 +137,10 @@ struct GoalEditorView: View {
             }
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
-                    Text("Progress").font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
+                    Text("Progress").font(.system(size: 14)).foregroundStyle(Theme.textSecondary)
                     Spacer()
                     Text("\(Int((goal.milestoneProgress * 100).rounded()))%")
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                 }
                 Slider(value: $goal.milestoneProgress, in: 0...1)
@@ -162,8 +162,8 @@ struct GoalEditorView: View {
             } label: {
                 HStack(spacing: 6) {
                     Text(life.habits.first(where: { $0.id == goal.linkedHabitID })?.title ?? "Choose…")
-                        .font(.system(size: 12.5, weight: .medium)).foregroundStyle(Theme.textPrimary)
-                    Image(systemName: "chevron.up.chevron.down").font(.system(size: 9)).foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 14, weight: .medium)).foregroundStyle(Theme.textPrimary)
+                    Image(systemName: "chevron.up.chevron.down").font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
                 }
             }
             .fixedSize()

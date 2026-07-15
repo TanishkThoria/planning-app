@@ -13,16 +13,16 @@ struct MiniMonthView: View {
         VStack(spacing: 8) {
             HStack {
                 Text(Fmt.monthTitle.string(from: visibleMonth))
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 13.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Button { shiftMonth(-1) } label: {
-                    Image(systemName: "chevron.left").font(.system(size: 10, weight: .semibold))
+                    Image(systemName: "chevron.left").font(.system(size: 11.5, weight: .semibold))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(Theme.textSecondary)
                 Button { shiftMonth(1) } label: {
-                    Image(systemName: "chevron.right").font(.system(size: 10, weight: .semibold))
+                    Image(systemName: "chevron.right").font(.system(size: 11.5, weight: .semibold))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(Theme.textSecondary)
@@ -34,7 +34,7 @@ struct MiniMonthView: View {
                 // Symbols repeat ("S", "T"), so identify columns by index.
                 ForEach(Array(weekdaySymbols().enumerated()), id: \.offset) { _, symbol in
                     Text(symbol)
-                        .font(.system(size: 9, weight: .semibold))
+                        .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 ForEach(Array(monthDays().enumerated()), id: \.offset) { _, day in
@@ -63,7 +63,7 @@ struct MiniMonthView: View {
             onSelect()
         } label: {
             Text(Fmt.dayNumber.string(from: day))
-                .font(.system(size: 11, weight: isSelected || isToday ? .bold : .regular))
+                .font(.system(size: 12.5, weight: isSelected || isToday ? .bold : .regular))
                 .frame(maxWidth: .infinity)
                 .frame(height: 22)
                 .foregroundStyle(

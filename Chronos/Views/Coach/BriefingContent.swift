@@ -41,7 +41,7 @@ struct BriefingContent: View {
 
     private var greetingCard: some View {
         Text(PlannerBrief.greeting(context))
-            .font(.system(size: 17, weight: .semibold))
+            .font(.system(size: 18, weight: .semibold))
             .foregroundStyle(Theme.textPrimary)
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -63,21 +63,21 @@ struct BriefingContent: View {
                     .fill(item.tint.opacity(0.15))
                     .frame(width: 38, height: 38)
                 Image(systemName: item.icon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(item.tint)
             }
             VStack(alignment: .leading, spacing: 5) {
                 Text(item.title)
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: 14.5, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text(item.message)
-                    .font(.system(size: 12.5))
+                    .font(.system(size: 14))
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 if let action = item.action, let label = item.actionLabel {
                     Button { performCoachAction(action, on: model) } label: {
                         Text(label)
-                            .font(.system(size: 11.5, weight: .semibold))
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(item.tint)
                             .padding(.horizontal, 11).padding(.vertical, 5)
                             .background(item.tint.opacity(0.14), in: Capsule())
@@ -96,30 +96,30 @@ struct BriefingContent: View {
     private var suggestionsCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
-                Image(systemName: "lightbulb").font(.system(size: 12)).foregroundStyle(Theme.accentColor)
+                Image(systemName: "lightbulb").font(.system(size: 13.5)).foregroundStyle(Theme.accentColor)
                 Text("SUGGESTIONS")
-                    .font(.system(size: 10.5, weight: .semibold)).tracking(1.2)
+                    .font(.system(size: 12, weight: .semibold)).tracking(1.2)
                     .foregroundStyle(Theme.textTertiary)
                 Spacer()
             }
             ForEach(suggestions.prefix(4)) { suggestion in
                 HStack(alignment: .top, spacing: 10) {
                     Image(systemName: suggestion.tone.icon)
-                        .font(.system(size: 13))
+                        .font(.system(size: 14.5))
                         .foregroundStyle(suggestion.tone.color)
                         .frame(width: 18)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(suggestion.title)
-                            .font(.system(size: 12.5, weight: .semibold))
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                         Text(suggestion.detail)
-                            .font(.system(size: 11.5))
+                            .font(.system(size: 13))
                             .foregroundStyle(Theme.textSecondary)
                             .fixedSize(horizontal: false, vertical: true)
                         if let action = suggestion.action, let label = suggestion.actionLabel {
                             Button { perform(action) } label: {
                                 Text(label)
-                                    .font(.system(size: 11, weight: .semibold))
+                                    .font(.system(size: 12.5, weight: .semibold))
                                     .foregroundStyle(Theme.accentColor)
                                     .padding(.horizontal, 10).padding(.vertical, 4)
                                     .background(Theme.accentColor.opacity(0.12), in: Capsule())
@@ -159,11 +159,11 @@ struct BriefingContent: View {
         Button { performCoachAction(action, on: model) } label: {
             HStack(spacing: 9) {
                 Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Theme.accentColor)
                     .frame(width: 20)
                 Text(title)
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1).minimumScaleFactor(0.8)
                 Spacer(minLength: 0)
@@ -182,21 +182,21 @@ struct BriefingContent: View {
         Button { model.statsPresented = true } label: {
             HStack(spacing: 12) {
                 Image(systemName: "chart.bar.xaxis")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(Theme.accentColor)
                     .frame(width: 22)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("This week")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 14.5, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Text("\(Fmt.duration(minutes: stats.focusMinutes)) focused · \(stats.tasksCompleted) done · \(stats.streakDays)d streak")
-                        .font(.system(size: 11))
+                        .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1).minimumScaleFactor(0.8)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .semibold))
                     .foregroundStyle(Theme.textTertiary)
             }
             .panel()

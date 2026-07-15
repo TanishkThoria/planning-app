@@ -105,10 +105,10 @@ struct TimeReportView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Time Report")
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Where your hours actually went")
-                    .font(.system(size: 11.5, weight: .medium))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
@@ -141,15 +141,15 @@ struct TimeReportView: View {
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1).minimumScaleFactor(0.6)
             Text(label.uppercased())
-                .font(.system(size: 9, weight: .semibold)).tracking(1)
+                .font(.system(size: 10, weight: .semibold)).tracking(1)
                 .foregroundStyle(Theme.textTertiary)
             if delta != 0 {
                 Label("\(delta > 0 ? "+" : "")\(Fmt.duration(minutes: abs(delta)))",
                       systemImage: delta > 0 ? "arrow.up.right" : "arrow.down.right")
-                    .font(.system(size: 9.5, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(delta > 0 ? Theme.success : Theme.textTertiary)
             } else {
-                Text("—").font(.system(size: 9.5)).foregroundStyle(Theme.textTertiary)
+                Text("—").font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
             }
         }
         .frame(maxWidth: .infinity)
@@ -172,21 +172,21 @@ struct TimeReportView: View {
             SectionHeader(title: "By category")
             if data.isEmpty {
                 Text("No time blocked in this period.")
-                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
             } else {
                 ForEach(data, id: \.category.id) { entry in
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
                             HStack(spacing: 6) {
                                 Image(systemName: entry.category.icon)
-                                    .font(.system(size: 10, weight: .semibold))
+                                    .font(.system(size: 11.5, weight: .semibold))
                                     .foregroundStyle(entry.category.color).frame(width: 14)
-                                Text(entry.category.title).font(.system(size: 12, weight: .medium))
+                                Text(entry.category.title).font(.system(size: 13.5, weight: .medium))
                                     .foregroundStyle(Theme.textPrimary).lineLimit(1)
                             }
                             Spacer()
                             Text(Fmt.duration(minutes: entry.minutes))
-                                .font(.system(size: 11.5, weight: .semibold))
+                                .font(.system(size: 13, weight: .semibold))
                                 .foregroundStyle(Theme.textSecondary)
                         }
                         GeometryReader { geo in
@@ -209,19 +209,19 @@ struct TimeReportView: View {
             SectionHeader(title: "By calendar")
             if data.isEmpty {
                 Text("No time blocked in this period.")
-                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
             } else {
                 ForEach(data, id: \.cal.id) { entry in
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
                             HStack(spacing: 6) {
                                 Circle().fill(entry.cal.color).frame(width: 7, height: 7)
-                                Text(entry.cal.title).font(.system(size: 12, weight: .medium))
+                                Text(entry.cal.title).font(.system(size: 13.5, weight: .medium))
                                     .foregroundStyle(Theme.textPrimary).lineLimit(1)
                             }
                             Spacer()
                             Text(Fmt.duration(minutes: entry.minutes))
-                                .font(.system(size: 11.5, weight: .semibold))
+                                .font(.system(size: 13, weight: .semibold))
                                 .foregroundStyle(Theme.textSecondary)
                         }
                         GeometryReader { geo in
@@ -268,7 +268,7 @@ struct TimeReportView: View {
         HStack(spacing: 5) {
             Circle().fill(color).frame(width: 7, height: 7)
             Text("\(label) · \(Fmt.duration(minutes: minutes))")
-                .font(.system(size: 10.5))
+                .font(.system(size: 12))
                 .foregroundStyle(Theme.textSecondary)
         }
     }

@@ -49,7 +49,7 @@ struct TourOverlay: View {
             }
             .frame(height: 5)
             Button("Skip tour") { withAnimation(.snappy) { tour.finish() } }
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 13.5, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
                 .buttonStyle(.plain)
         }
@@ -70,22 +70,22 @@ struct TourOverlay: View {
                         .fill(Theme.accentColor.opacity(0.16))
                         .frame(width: 42, height: 42)
                     Image(systemName: step.icon)
-                        .font(.system(size: 19, weight: .semibold))
+                        .font(.system(size: 20, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(tour.index + 1) of \(tour.steps.count)")
-                        .font(.system(size: 10, weight: .bold)).tracking(0.8)
+                        .font(.system(size: 11.5, weight: .bold)).tracking(0.8)
                         .foregroundStyle(Theme.textTertiary)
                     Text(step.title)
-                        .font(.system(size: 17, weight: .bold))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                 }
                 Spacer()
             }
 
             Text(step.message)
-                .font(.system(size: 13.5))
+                .font(.system(size: 14.5))
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -94,10 +94,10 @@ struct TourOverlay: View {
                     runDemo(demo)
                 } label: {
                     HStack(spacing: 7) {
-                        Image(systemName: "hand.tap.fill").font(.system(size: 12, weight: .semibold))
-                        Text(demoLabel).font(.system(size: 13, weight: .semibold))
+                        Image(systemName: "hand.tap.fill").font(.system(size: 13.5, weight: .semibold))
+                        Text(demoLabel).font(.system(size: 14.5, weight: .semibold))
                         Spacer(minLength: 0)
-                        Image(systemName: "arrow.right").font(.system(size: 11, weight: .bold))
+                        Image(systemName: "arrow.right").font(.system(size: 12.5, weight: .bold))
                     }
                     .foregroundStyle(Theme.accentColor)
                     .padding(.horizontal, 13).padding(.vertical, 10)
@@ -111,7 +111,7 @@ struct TourOverlay: View {
                 if tour.index > 0 {
                     Button { withAnimation(.snappy) { tour.back() } } label: {
                         Text("Back")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(Theme.textSecondary)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
@@ -121,7 +121,7 @@ struct TourOverlay: View {
                 }
                 Button { withAnimation(.snappy) { tour.next() } } label: {
                     Text(tour.isLast ? "Done" : "Next")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Theme.bg)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)

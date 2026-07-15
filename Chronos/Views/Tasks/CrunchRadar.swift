@@ -33,13 +33,13 @@ struct CrunchRadar: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Label("CRUNCH RADAR", systemImage: "gauge.with.needle")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: 11.5, weight: .bold))
                         .labelStyle(.titleAndIcon)
                         .foregroundStyle(Theme.textTertiary)
                     Spacer()
                     if let peakDay = load.max(by: { $0.value < $1.value })?.key {
                         Text("peak \(Fmt.relativeDay(peakDay)) · \(Fmt.duration(minutes: peak))")
-                            .font(.system(size: 10, weight: .medium))
+                            .font(.system(size: 11.5, weight: .medium))
                             .foregroundStyle(Theme.textTertiary)
                     }
                 }
@@ -51,7 +51,7 @@ struct CrunchRadar: View {
                                 .fill(color(for: minutes, peak: peak))
                                 .frame(height: 20)
                             Text(Fmt.weekdayShort.string(from: day).prefix(1))
-                                .font(.system(size: 8, weight: .semibold))
+                                .font(.system(size: 9, weight: .semibold))
                                 .foregroundStyle(day.isToday ? Theme.accentColor : Theme.textTertiary)
                         }
                         .frame(maxWidth: .infinity)
@@ -61,7 +61,7 @@ struct CrunchRadar: View {
                     model.deadlinePlanPresented = true
                 } label: {
                     Label("Spread the work out", systemImage: "calendar.badge.clock")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)

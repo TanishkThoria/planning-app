@@ -57,14 +57,14 @@ struct TodayView: View {
     private var carryOverBanner: some View {
         HStack(spacing: 10) {
             Image(systemName: "arrow.turn.down.right")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 14.5, weight: .semibold))
                 .foregroundStyle(Theme.warning)
             VStack(alignment: .leading, spacing: 1) {
                 Text("\(overdue.count) unfinished from before")
-                    .font(.system(size: 12.5, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Bring them to today, or schedule them into open time.")
-                    .font(.system(size: 10.5))
+                    .font(.system(size: 12))
                     .foregroundStyle(Theme.textTertiary)
                     .lineLimit(1).minimumScaleFactor(0.85)
             }
@@ -74,7 +74,7 @@ struct TodayView: View {
                 withAnimation(.snappy) { _ = service.rollOverdueToToday() }
             } label: {
                 Text("Roll over")
-                    .font(.system(size: 11.5, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Theme.bg)
                     .padding(.horizontal, 11).padding(.vertical, 6)
                     .background(Theme.warning, in: Capsule())
@@ -84,7 +84,7 @@ struct TodayView: View {
                 model.overdueSweepPresented = true
             } label: {
                 Image(systemName: "calendar.badge.clock")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.warning)
             }
             .buttonStyle(.plain)
@@ -107,9 +107,9 @@ struct TodayView: View {
         if let id = model.frogTaskID, let task = service.task(withID: id) {
             if task.isCompleted {
                 HStack(spacing: 8) {
-                    Text("🐸").font(.system(size: 14))
+                    Text("🐸").font(.system(size: 15))
                     Text("Frog eaten — the hardest thing is behind you.")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 13.5, weight: .semibold))
                         .foregroundStyle(Theme.success)
                     Spacer()
                 }
@@ -118,9 +118,9 @@ struct TodayView: View {
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 6) {
-                        Text("🐸").font(.system(size: 13))
+                        Text("🐸").font(.system(size: 14.5))
                         Text("EAT THE FROG")
-                            .font(.system(size: 10, weight: .bold)).tracking(1.2)
+                            .font(.system(size: 11.5, weight: .bold)).tracking(1.2)
                             .foregroundStyle(Theme.accentColor)
                         Spacer()
                         Menu {
@@ -131,14 +131,14 @@ struct TodayView: View {
                             }
                         } label: {
                             Image(systemName: "ellipsis")
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 12.5, weight: .semibold))
                                 .foregroundStyle(Theme.textTertiary)
                         }
                         .menuIndicator(.hidden)
                         .buttonStyle(.plain)
                     }
                     Text(task.title)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(2)
                     HStack(spacing: 8) {
@@ -149,7 +149,7 @@ struct TodayView: View {
                             Haptics.medium()
                         } label: {
                             Label("Just start · 5 min", systemImage: "bolt.fill")
-                                .font(.system(size: 11.5, weight: .semibold))
+                                .font(.system(size: 13, weight: .semibold))
                                 .foregroundStyle(Theme.bg)
                                 .padding(.horizontal, 11).padding(.vertical, 6)
                                 .background(Theme.accentColor, in: Capsule())
@@ -160,7 +160,7 @@ struct TodayView: View {
                             withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
                         } label: {
                             Label("Done", systemImage: "checkmark")
-                                .font(.system(size: 11.5, weight: .semibold))
+                                .font(.system(size: 13, weight: .semibold))
                                 .foregroundStyle(Theme.accentColor)
                                 .padding(.horizontal, 11).padding(.vertical, 6)
                                 .background(Theme.accentColor.opacity(0.12), in: Capsule())
@@ -183,13 +183,13 @@ struct TodayView: View {
                 frogPickerItems
             } label: {
                 HStack(spacing: 8) {
-                    Text("🐸").font(.system(size: 13))
+                    Text("🐸").font(.system(size: 14.5))
                     Text("Pick today's frog — the task you're most tempted to avoid")
-                        .font(.system(size: 11.5, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                     Spacer()
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 9, weight: .semibold))
+                        .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 .padding(.horizontal, 12).padding(.vertical, 9)
@@ -223,20 +223,20 @@ struct TodayView: View {
             VStack(alignment: .leading, spacing: intentions.isEmpty ? 0 : 8) {
                 HStack {
                     Label("Today's intentions", systemImage: "sunrise.fill")
-                        .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                        .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                     Spacer()
-                    Image(systemName: "chevron.right").font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
+                    Image(systemName: "chevron.right").font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
                 }
                 if intentions.isEmpty {
                     Text("Set your top three for the day →")
-                        .font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
                         .padding(.top, 4)
                 } else {
                     ForEach(Array(intentions.enumerated()), id: \.offset) { idx, text in
                         HStack(spacing: 8) {
-                            Text("\(idx + 1)").font(.system(size: 11, weight: .bold))
+                            Text("\(idx + 1)").font(.system(size: 12.5, weight: .bold))
                                 .foregroundStyle(Theme.accentColor).frame(width: 14)
-                            Text(text).font(.system(size: 12.5)).foregroundStyle(Theme.textPrimary).lineLimit(1)
+                            Text(text).font(.system(size: 14)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                             Spacer(minLength: 0)
                         }
                     }
@@ -253,11 +253,11 @@ struct TodayView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Label("Habits", systemImage: "leaf.fill")
-                    .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                 Spacer()
                 let done = dueHabits.filter { life.doneToday($0) }.count
                 Text("\(done)/\(dueHabits.count)")
-                    .font(.system(size: 11, weight: .semibold)).foregroundStyle(Theme.textSecondary)
+                    .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.textSecondary)
             }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
@@ -269,10 +269,10 @@ struct TodayView: View {
                         } label: {
                             HStack(spacing: 6) {
                                 Image(systemName: isDone ? "checkmark.circle.fill" : habit.iconName)
-                                    .font(.system(size: 12))
+                                    .font(.system(size: 13.5))
                                     .foregroundStyle(isDone ? habit.color : Theme.textSecondary)
                                 Text(habit.title)
-                                    .font(.system(size: 11.5, weight: .medium))
+                                    .font(.system(size: 13, weight: .medium))
                                     .foregroundStyle(isDone ? Theme.textPrimary : Theme.textSecondary)
                                     .lineLimit(1)
                             }
@@ -359,7 +359,7 @@ struct TodayView: View {
                 Text(remainingCount == 0
                      ? "All tasks handled · \(Fmt.monthDay.string(from: today))"
                      : "\(remainingCount) to finish · \(Fmt.monthDay.string(from: today))")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 13.5, weight: .medium))
                     .foregroundStyle(remainingCount == 0 ? Theme.success : Theme.textSecondary)
             }
             Spacer()
@@ -403,8 +403,8 @@ struct TodayView: View {
     private func actionChip(_ title: String, _ icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 5) {
-                Image(systemName: icon).font(.system(size: 11.5, weight: .semibold))
-                Text(title).font(.system(size: 12.5, weight: .semibold))
+                Image(systemName: icon).font(.system(size: 13, weight: .semibold))
+                Text(title).font(.system(size: 14, weight: .semibold))
             }
             .foregroundStyle(Theme.accentColor)
             .padding(.horizontal, 12).padding(.vertical, 8)
@@ -434,12 +434,12 @@ struct TodayView: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
                     Image(systemName: over ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
-                        .font(.system(size: 12, weight: .semibold)).foregroundStyle(tint)
+                        .font(.system(size: 13.5, weight: .semibold)).foregroundStyle(tint)
                     Text(over ? "Today looks overloaded" : "Today fits")
-                        .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                        .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Text("\(Fmt.duration(minutes: load.committedMinutes)) / \(Fmt.duration(minutes: load.freeMinutes)) free")
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 12.5, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 GeometryReader { geo in
@@ -453,12 +453,12 @@ struct TodayView: View {
                 Text(over
                      ? "Your \(load.taskCount) due task\(load.taskCount == 1 ? "" : "s") need about \(Fmt.duration(minutes: load.overBy)) more than you have free. Trim, defer, or auto-fit what's left."
                      : "Your due tasks should fit the free time left today. Nice and realistic.")
-                    .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                    .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
                 if over {
                     Button { model.planDayPresented = true } label: {
                         Label("Auto-fit my day", systemImage: "wand.and.stars")
-                            .font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                            .font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
                     }
                     .buttonStyle(.plain)
                 }
@@ -473,12 +473,12 @@ struct TodayView: View {
         HStack(spacing: 6) {
             Circle().fill(color).frame(width: 6, height: 6)
             Text(title.uppercased())
-                .font(.system(size: 10.5, weight: .semibold))
+                .font(.system(size: 12, weight: .semibold))
                 .tracking(1.2)
                 .foregroundStyle(color)
             Spacer()
             Text("\(count)")
-                .font(.system(size: 10.5, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(Theme.textTertiary)
         }
         .padding(.top, 8)
@@ -493,13 +493,13 @@ struct TodayView: View {
             HStack(spacing: 10) {
                 VStack(alignment: .trailing, spacing: 1) {
                     Text(Fmt.time.string(from: block.start))
-                        .font(.system(size: 11.5, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(block.isNow ? Theme.accentColor : Theme.textSecondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     if block.isNow {
                         Text("now")
-                            .font(.system(size: 8.5, weight: .bold))
+                            .font(.system(size: 9.5, weight: .bold))
                             .foregroundStyle(Theme.accentColor)
                     }
                 }
@@ -508,7 +508,7 @@ struct TodayView: View {
                 RoundedRectangle(cornerRadius: 2).fill(block.color).frame(width: 3, height: 26)
 
                 Text(block.title)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 14.5, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
 
@@ -517,7 +517,7 @@ struct TodayView: View {
                 if let url = block.meetingURL, block.end > now {
                     Link(destination: url) {
                         Label("Join", systemImage: "video.fill")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 12.5, weight: .semibold))
                             .foregroundStyle(block.isNow ? Theme.bg : Theme.accentColor)
                             .padding(.horizontal, 9).padding(.vertical, 5)
                             .background(block.isNow ? AnyShapeStyle(Theme.accentColor)
@@ -532,7 +532,7 @@ struct TodayView: View {
                     model.focusTimerPresented = true
                 } label: {
                     Image(systemName: "timer")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 13.5, weight: .semibold))
                         .foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)
@@ -559,7 +559,7 @@ private struct TodayTaskRow: View {
                 withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
             } label: {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 16))
+                    .font(.system(size: 17))
                     .foregroundStyle(
                         task.isCompleted ? Theme.success
                             : (task.priority == .none ? Theme.textTertiary : task.priority.color)
@@ -569,24 +569,24 @@ private struct TodayTaskRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(task.title)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 14.5, weight: .medium))
                     .foregroundStyle(task.isCompleted ? Theme.textTertiary : Theme.textPrimary)
                     .strikethrough(task.isCompleted, color: Theme.textTertiary)
                     .lineLimit(1)
                 HStack(spacing: 6) {
                     if task.dueHasTime, let due = task.dueDate {
                         Text(Fmt.time.string(from: due))
-                            .font(.system(size: 10))
+                            .font(.system(size: 11.5))
                             .foregroundStyle(task.isOverdue ? Theme.danger : Theme.textTertiary)
                     }
                     if task.energy != .none {
                         Label(task.energy.label, systemImage: task.energy.icon)
-                            .font(.system(size: 10))
+                            .font(.system(size: 11.5))
                             .foregroundStyle(task.energy.color)
                     }
                     if let blocks = linkedFirst {
                         Label(Fmt.time.string(from: blocks.start), systemImage: "rectangle.stack")
-                            .font(.system(size: 10))
+                            .font(.system(size: 11.5))
                             .foregroundStyle(Theme.accentColor)
                     }
                 }

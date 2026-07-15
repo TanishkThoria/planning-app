@@ -62,7 +62,7 @@ struct AgendaView: View {
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Next \(daysShown) days from \(Fmt.relativeDay(model.selectedDate).lowercased())")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 13.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
@@ -105,15 +105,15 @@ struct AgendaView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 10))
+                    .font(.system(size: 11.5))
                     .foregroundStyle(Theme.danger)
                 Text("OVERDUE")
-                    .font(.system(size: 10.5, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .tracking(1.2)
                     .foregroundStyle(Theme.danger)
                 Spacer()
                 Text("\(overdueTasks.count)")
-                    .font(.system(size: 10.5, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Theme.danger)
             }
             .padding(.top, 16)
@@ -137,22 +137,22 @@ struct AgendaView: View {
             // Day header
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(Fmt.relativeDay(day))
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(day.isToday ? Theme.accentColor : Theme.textPrimary)
                 Text(Fmt.monthDay.string(from: day))
-                    .font(.system(size: 11.5, weight: .medium))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
                 Spacer()
                 if plannedMinutes > 0 {
                     Text(Fmt.duration(minutes: plannedMinutes))
-                        .font(.system(size: 10.5, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 Button {
                     model.openDay(day)
                 } label: {
                     Image(systemName: "arrow.up.right.square")
-                        .font(.system(size: 11))
+                        .font(.system(size: 12.5))
                         .foregroundStyle(Theme.textTertiary)
                 }
                 .buttonStyle(.plain)
@@ -164,7 +164,7 @@ struct AgendaView: View {
 
             if allDay.isEmpty && timed.isEmpty && due.isEmpty {
                 Text("Nothing planned")
-                    .font(.system(size: 11.5))
+                    .font(.system(size: 13))
                     .foregroundStyle(Theme.textTertiary)
                     .padding(.vertical, 4)
             } else {
@@ -177,7 +177,7 @@ struct AgendaView: View {
                                 HStack(spacing: 5) {
                                     Circle().fill(block.color).frame(width: 5, height: 5)
                                     Text(block.title)
-                                        .font(.system(size: 10.5, weight: .medium))
+                                        .font(.system(size: 12, weight: .medium))
                                         .foregroundStyle(Theme.textPrimary)
                                         .lineLimit(1)
                                 }
@@ -248,12 +248,12 @@ private struct AgendaBlockRow: View {
             HStack(spacing: 10) {
                 VStack(alignment: .trailing, spacing: 1) {
                     Text(Fmt.time.string(from: block.start))
-                        .font(.system(size: 11.5, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     Text(Fmt.time.string(from: block.end))
-                        .font(.system(size: 10))
+                        .font(.system(size: 11.5))
                         .foregroundStyle(Theme.textTertiary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -267,22 +267,22 @@ private struct AgendaBlockRow: View {
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 5) {
                         Text(block.title)
-                            .font(.system(size: 13, weight: .medium))
+                            .font(.system(size: 14.5, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
                             .lineLimit(1)
                         if block.hasRecurrence {
                             Image(systemName: "repeat")
-                                .font(.system(size: 8))
+                                .font(.system(size: 9))
                                 .foregroundStyle(Theme.textTertiary)
                         }
                     }
                     HStack(spacing: 5) {
                         Text(block.calendarTitle)
-                            .font(.system(size: 10.5))
+                            .font(.system(size: 12))
                             .foregroundStyle(Theme.textTertiary)
                         if let location = block.location, !location.isEmpty {
                             Text("· \(location)")
-                                .font(.system(size: 10.5))
+                                .font(.system(size: 12))
                                 .foregroundStyle(Theme.textTertiary)
                                 .lineLimit(1)
                         }
@@ -296,7 +296,7 @@ private struct AgendaBlockRow: View {
                         service.toggleTaskCompletion(id: taskID)
                     } label: {
                         Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                            .font(.system(size: 14))
+                            .font(.system(size: 15))
                             .foregroundStyle(task.isCompleted ? Theme.success : Theme.textTertiary)
                     }
                     .buttonStyle(.plain)
@@ -321,7 +321,7 @@ private struct AgendaTaskRow: View {
     var body: some View {
         HStack(spacing: 10) {
             Text(task.dueHasTime ? Fmt.time.string(from: task.dueDate ?? Date()) : "to do")
-                .font(.system(size: 10.5, weight: task.dueHasTime ? .semibold : .regular))
+                .font(.system(size: 12, weight: task.dueHasTime ? .semibold : .regular))
                 .foregroundStyle(task.isOverdue ? Theme.danger : Theme.textTertiary)
                 .frame(width: 58, alignment: .trailing)
 
@@ -329,7 +329,7 @@ private struct AgendaTaskRow: View {
                 withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
             } label: {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 14))
+                    .font(.system(size: 15))
                     .foregroundStyle(
                         task.isCompleted
                             ? Theme.success
@@ -339,14 +339,14 @@ private struct AgendaTaskRow: View {
             .buttonStyle(.plain)
 
             Text(task.title)
-                .font(.system(size: 13))
+                .font(.system(size: 14.5))
                 .foregroundStyle(task.isCompleted ? Theme.textTertiary : Theme.textPrimary)
                 .strikethrough(task.isCompleted, color: Theme.textTertiary)
                 .lineLimit(1)
 
             if task.isSubtask {
                 Image(systemName: "arrow.turn.down.right")
-                    .font(.system(size: 8))
+                    .font(.system(size: 9))
                     .foregroundStyle(Theme.textTertiary)
             }
 

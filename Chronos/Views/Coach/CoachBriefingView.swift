@@ -30,7 +30,7 @@ struct CoachBriefingView: View {
             ZStack {
                 Circle().fill(Theme.accentColor.opacity(0.16)).frame(width: 34, height: 34)
                 Image(systemName: "sun.horizon.fill")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Theme.accentColor)
             }
             VStack(alignment: .leading, spacing: 1) {
@@ -38,7 +38,7 @@ struct CoachBriefingView: View {
                     .font(.system(size: 20, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Your daily briefing")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 12.5, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()

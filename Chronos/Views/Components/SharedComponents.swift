@@ -20,7 +20,7 @@ struct PermissionGateView: View {
                     .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Your time blocks live in Apple Calendar and your tasks in Apple Reminders — nothing is duplicated, everything stays in sync.")
-                    .font(.system(size: 13))
+                    .font(.system(size: 14.5))
                     .foregroundStyle(Theme.textSecondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 380)
@@ -35,7 +35,7 @@ struct PermissionGateView: View {
             if service.wasDenied {
                 VStack(spacing: 12) {
                     Text("Access was denied. Enable Calendars and Reminders for Chronos in system settings, then come back.")
-                        .font(.system(size: 12))
+                        .font(.system(size: 13.5))
                         .foregroundStyle(Theme.textSecondary)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: 360)
@@ -47,7 +47,7 @@ struct PermissionGateView: View {
                     Task { await service.requestAccess() }
                 } label: {
                     Text("Grant Access")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 15, weight: .semibold))
                         .padding(.horizontal, 22)
                         .padding(.vertical, 6)
                 }
@@ -66,11 +66,11 @@ struct PermissionGateView: View {
             Image(systemName: granted ? "checkmark.circle.fill" : "circle.dashed")
                 .foregroundStyle(granted ? Theme.success : Theme.textTertiary)
             Text(name)
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: 14.5, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
             Text(granted ? "Connected" : "Not connected")
-                .font(.system(size: 11))
+                .font(.system(size: 12.5))
                 .foregroundStyle(granted ? Theme.success : Theme.textTertiary)
         }
         .padding(.horizontal, 14)
@@ -100,13 +100,13 @@ struct SectionHeader: View {
     var body: some View {
         HStack {
             Text(title.uppercased())
-                .font(.system(size: 11.5, weight: .semibold))
+                .font(.system(size: 13, weight: .semibold))
                 .tracking(1.3)
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
             if let trailing {
                 Text(trailing)
-                    .font(.system(size: 10.5, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Theme.textTertiary)
             }
         }
@@ -124,10 +124,10 @@ struct EmptyStateView: View {
                 .font(.system(size: 28))
                 .foregroundStyle(Theme.textTertiary)
             Text(title)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
             Text(message)
-                .font(.system(size: 12))
+                .font(.system(size: 13.5))
                 .foregroundStyle(Theme.textTertiary)
                 .multilineTextAlignment(.center)
         }
@@ -148,7 +148,7 @@ struct DateNavigator: View {
                 model.goToToday()
             } label: {
                 Text("Today")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 13.5, weight: .semibold))
                     .foregroundStyle(model.selectedDate.isToday ? Theme.textTertiary : Theme.textPrimary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
@@ -163,7 +163,7 @@ struct DateNavigator: View {
     private func navButton(_ icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 13.5, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
                 .frame(width: 28, height: 26)
                 .background(Theme.fill, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
@@ -183,10 +183,10 @@ struct HeaderIconButton: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                 if let label {
                     Text(label)
-                        .font(.system(size: 13.5, weight: .semibold))
+                        .font(.system(size: 14.5, weight: .semibold))
                 }
             }
             .foregroundStyle(prominent ? Theme.bg : Theme.textSecondary)
