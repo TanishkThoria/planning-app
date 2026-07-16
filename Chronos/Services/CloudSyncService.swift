@@ -46,7 +46,6 @@ final class CloudSyncService: ObservableObject {
         "chronos.focusSessions",    // focus log
         "chronos.tags.v1",          // category overrides
         "chronos.routines.v1",      // guided routines
-        "chronos.personalization.v1", // setup survey + modular layout
     ]
 
     private static let recordType = "ChronosBlob"

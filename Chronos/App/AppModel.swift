@@ -16,8 +16,6 @@ final class AppModel: ObservableObject {
         case insights
         case coach
         case settings
-        /// iPhone-only overflow tab: a launcher for whatever isn't a primary tab.
-        case more
 
         var id: String { rawValue }
 
@@ -30,7 +28,6 @@ final class AppModel: ObservableObject {
             case .insights: return "Insights"
             case .coach: return "Coach"
             case .settings: return "Settings"
-            case .more: return "More"
             }
         }
 
@@ -43,7 +40,6 @@ final class AppModel: ObservableObject {
             case .insights: return "chart.bar"
             case .coach: return "lightbulb"
             case .settings: return "gearshape"
-            case .more: return "ellipsis.circle"
             }
         }
 
@@ -57,7 +53,6 @@ final class AppModel: ObservableObject {
             case .insights: return "chart.bar.fill"
             case .coach: return "lightbulb.fill"
             case .settings: return "gearshape.fill"
-            case .more: return "ellipsis.circle.fill"
             }
         }
 
@@ -69,7 +64,7 @@ final class AppModel: ObservableObject {
             case .grow: return "4"
             case .insights: return "5"
             case .coach: return "6"
-            case .settings, .more: return nil
+            case .settings: return nil
             }
         }
 
@@ -121,8 +116,6 @@ final class AppModel: ObservableObject {
     @Published var reflowPresented = false
     /// iOS presents Settings as a sheet (macOS uses the sidebar + ⌘,).
     @Published var settingsPresented = false
-    /// The personalization questionnaire (first run + re-run from Settings).
-    @Published var personalizePresented = false
     @Published var focusTimerPresented = false
     @Published var focusTimerContext: FocusStartContext?
     @Published var blockEditor: BlockEditorContext?
