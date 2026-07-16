@@ -7,6 +7,9 @@ struct SettingsView: View {
     @EnvironmentObject private var notifications: NotificationService
     @EnvironmentObject private var life: LifeStore
 
+    @ObservedObject private var personalization = PersonalizationStore.shared
+    @State private var showingPersonalize = false
+
     @State private var restoring = false
     @State private var restoreText = ""
     @State private var restoreFailed = false
@@ -96,6 +99,66 @@ struct SettingsView: View {
                                 )
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundStyle(Theme.accentColor)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    }
+
+                    settingsSection("Layout") {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Choose which features live on your tab bar. The rest stay a tap away in the More tab. On iPhone the first \(PersonalizationStore.maxPrimaryOnPhone) are shown as tabs.")
+                                .font(.system(size: 12.5))
+                                .foregroundStyle(Theme.textTertiary)
+                                .fixedSize(horizontal: false, vertical: true)
+
+                            HStack(spacing: 6) {
+                                ForEach(["Today", "Calendar", "Tasks"], id: \.self) { core in
+                                    Text(core)
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundStyle(Theme.textSecondary)
+                                        .padding(.horizontal, 9).padding(.vertical, 5)
+                                        .background(Theme.fill, in: Capsule())
+                                }
+                                Text("core")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(Theme.textTertiary)
+                            }
+
+                            ForEach(PersonalModule.allCases) { module in
+                                Divider()
+                                Toggle(isOn: Binding(
+                                    get: { personalization.isPrimary(module) },
+                                    set: { _ in personalization.togglePrimary(module) }
+                                )) {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: module.icon)
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundStyle(Theme.accentColor)
+                                            .frame(width: 22)
+                                        VStack(alignment: .leading, spacing: 1) {
+                                            Text(module.title)
+                                                .font(.system(size: 14.5, weight: .medium))
+                                                .foregroundStyle(Theme.textPrimary)
+                                            Text(module.blurb)
+                                                .font(.system(size: 12))
+                                                .foregroundStyle(Theme.textTertiary)
+                                                .lineLimit(1)
+                                        }
+                                    }
+                                }
+                                .toggleStyle(.switch)
+                            }
+
+                            Divider()
+                            Button {
+                                showingPersonalize = true
+                            } label: {
+                                Label("Re-run setup questionnaire", systemImage: "slider.horizontal.3")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(Theme.accentColor)
                             }
                             .buttonStyle(.plain)
                         }
@@ -486,6 +549,9 @@ struct SettingsView: View {
         .background(Theme.bg)
         .sheet(isPresented: $showingCalibration) {
             CalibrationView()
+        }
+        .sheet(isPresented: $showingPersonalize) {
+            PersonalizeView(isFirstRun: false)
         }
         .alert("Restore from backup", isPresented: $restoring) {
             TextField("Paste backup JSON", text: $restoreText)

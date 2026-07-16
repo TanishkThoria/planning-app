@@ -11,6 +11,7 @@ struct RootView: View {
     @ObservedObject private var intentLauncher = IntentLauncher.shared
     @ObservedObject private var tour = TourController.shared
     @ObservedObject private var lms = LMSStore.shared
+    @ObservedObject private var personalization = PersonalizationStore.shared
     @AppStorage(Prefs.accentName) private var accentName = "Blue"
     @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
     @AppStorage("chronos.onboardingComplete") private var onboardingComplete = false
@@ -21,6 +22,8 @@ struct RootView: View {
     @AppStorage(Prefs.startAlertsEnabled) private var startAlertsEnabled = true
     @AppStorage(Prefs.blockLiveActivities) private var blockLiveActivities = true
     @Environment(\.scenePhase) private var scenePhase
+    /// After the first-run survey, roll into the interactive tour.
+    @State private var chainTourAfterSurvey = false
     private let minuteTick = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -48,6 +51,17 @@ struct RootView: View {
                     model.screen = .today
                 }
             }
+            .sheet(isPresented: $model.personalizePresented) {
+                PersonalizeView(isFirstRun: !personalization.hasCompletedSurvey) {
+                    if chainTourAfterSurvey {
+                        chainTourAfterSurvey = false
+                        if service.hasFullAccess { withAnimation(.snappy) { tour.start() } }
+                    }
+                }
+                #if os(macOS)
+                .frame(minWidth: 520, minHeight: 680)
+                #endif
+            }
     }
 
     private var onboardingBinding: Binding<Bool> {
@@ -60,8 +74,9 @@ struct RootView: View {
             // Students opted in — take them straight to the school connect flow.
             model.lmsSetupPresented = true
         } else if service.hasFullAccess {
-            // Otherwise hand them into the interactive tour of the live app.
-            withAnimation(.snappy) { tour.start() }
+            // Personalize first (it shapes the tabs), then roll into the tour.
+            chainTourAfterSurvey = true
+            model.personalizePresented = true
         }
     }
 
@@ -122,6 +137,10 @@ struct RootView: View {
                 await service.requestAccess()
                 if service.hasFullAccess && !profileStore.profile.isCalibrated {
                     model.calibrationPresented = true
+                } else if service.hasFullAccess && !personalization.hasCompletedSurvey && !tour.isActive {
+                    // Existing users who predate the setup questionnaire get it
+                    // once, so their layout can adapt to them too.
+                    model.personalizePresented = true
                 }
             }
             await notifications.refreshAuthorization()
@@ -459,21 +478,50 @@ struct RootView: View {
         .background(Theme.bg)
     }
 
-    /// The primary tabs, minus the Coach when the user has turned it off.
-    private var visibleTabs: [AppModel.Screen] {
-        AppModel.Screen.compactTabs.filter { coachEnabled || $0 != .coach }
+    private var coachAvailable: Bool { coachEnabled && AssistantService.shared.isReady }
+
+    /// The primary iPhone tabs: the three core screens plus up to two optional
+    /// modules the person promoted in setup. Everything else lives in "More".
+    private var primaryTabs: [AppModel.Screen] {
+        let optional = personalization.primaryModules
+            .filter { $0 != .coach || coachAvailable }
+            .prefix(PersonalizationStore.maxPrimaryOnPhone)
+            .map(\.screen)
+        return [.today, .calendar, .tasks] + optional
+    }
+
+    /// Optional modules not promoted to tabs — reached from the More tab.
+    private var secondaryScreens: [AppModel.Screen] {
+        PersonalModule.allCases
+            .filter { !primaryTabs.contains($0.screen) }
+            .filter { $0 != .coach || coachAvailable }
+            .map(\.screen)
     }
 
     #if os(iOS)
+    /// TabView selection routes any non-primary screen (e.g. one opened from
+    /// the command bar) to the More tab, which then pushes it.
+    private var tabSelection: Binding<AppModel.Screen> {
+        Binding(
+            get: { primaryTabs.contains(model.screen) ? model.screen : .more },
+            set: { model.screen = $0 }
+        )
+    }
+
     private var compactLayout: some View {
-        TabView(selection: $model.screen) {
-            ForEach(visibleTabs) { screen in
+        TabView(selection: tabSelection) {
+            ForEach(primaryTabs) { screen in
                 screenView(screen)
                     .tabItem {
                         Label(screen.title, systemImage: model.screen == screen ? screen.iconFilled : screen.icon)
                     }
                     .tag(screen)
             }
+            MoreHubView(secondary: secondaryScreens)
+                .tabItem {
+                    Label("More", systemImage: model.screen == .more ? "ellipsis.circle.fill" : "ellipsis.circle")
+                }
+                .tag(AppModel.Screen.more)
         }
         .sheet(isPresented: $model.settingsPresented) {
             NavigationStack {
@@ -507,6 +555,7 @@ struct RootView: View {
         case .insights: InsightsView()
         case .coach: CoachView()
         case .settings: SettingsView()
+        case .more: MoreHubView(secondary: secondaryScreens)
         }
     }
 
