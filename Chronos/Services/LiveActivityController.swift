@@ -25,20 +25,28 @@ final class LiveActivityController: ObservableObject {
         guard areActivitiesEnabled else { return }
         // Only one focus activity at a time — reuse if present.
         if let activity {
-            Task { await activity.update(ActivityContent(state: state, staleDate: nil)) }
+            Task { await activity.update(content(for: state)) }
             return
         }
         let attributes = FocusActivityAttributes(accentHex: accentHex)
         activity = try? Activity.request(
             attributes: attributes,
-            content: ActivityContent(state: state, staleDate: nil),
+            content: content(for: state),
             pushType: nil
         )
     }
 
     func update(_ state: FocusActivityAttributes.ContentState) {
         guard let activity else { return }
-        Task { await activity.update(ActivityContent(state: state, staleDate: nil)) }
+        Task { await activity.update(content(for: state)) }
+    }
+
+    /// A running countdown goes stale exactly when the phase ends, so the widget
+    /// can flip to a calm "Done" state instead of a frozen 0:00 if the app isn't
+    /// around to push the next phase.
+    private func content(for state: FocusActivityAttributes.ContentState) -> ActivityContent<FocusActivityAttributes.ContentState> {
+        let staleDate: Date? = (state.isCountdown && !state.isPaused) ? state.phaseEnd : nil
+        return ActivityContent(state: state, staleDate: staleDate)
     }
 
     func end() {
@@ -56,15 +64,23 @@ final class LiveActivityController: ObservableObject {
     /// always takes priority.
     private var blockActivity: Activity<FocusActivityAttributes>?
     private var blockActivityID: String?
+    private var blockActivityEnd: Date?
 
     func syncBlock(_ block: TimeBlock?, focusActive: Bool) {
         guard areActivitiesEnabled else { return }
 
-        // Focus session running, or no current block → tear down.
-        guard let block, !focusActive else {
+        // Focus session running, no current block, or the block already
+        // finished → tear down.
+        guard let block, !focusActive, block.end > Date() else {
             endBlockActivity()
             return
         }
+
+        // Already showing exactly this block (same occurrence + end time) —
+        // nothing to do; it's scheduled to remove itself when the block ends.
+        if blockActivityID == block.id, blockActivityEnd == block.end { return }
+
+        endBlockActivity()
 
         let state = FocusActivityAttributes.ContentState(
             title: block.title,
@@ -76,19 +92,23 @@ final class LiveActivityController: ObservableObject {
             frozenSeconds: 0,
             completedPomodoros: 0
         )
-        let content = ActivityContent(state: state, staleDate: block.end)
-
-        if let blockActivity, blockActivityID == block.id {
-            Task { await blockActivity.update(content) }
-            return
-        }
-        endBlockActivity()
-        blockActivity = try? Activity.request(
+        let requested = try? Activity.request(
             attributes: FocusActivityAttributes(accentHex: accentHex),
-            content: content,
+            content: ActivityContent(state: state, staleDate: block.end),
             pushType: nil
         )
-        blockActivityID = block.id
+        blockActivity = requested
+        blockActivityID = requested != nil ? block.id : nil
+        blockActivityEnd = requested != nil ? block.end : nil
+
+        // Chronos has no push server to end this remotely, so ask the system to
+        // remove it exactly when the block ends — even if the app never runs
+        // again before then (locked phone, backgrounded). The countdown keeps
+        // ticking until that moment because it's rendered from the time
+        // interval, not pushed updates. This is what stops it lingering at 0:00.
+        if let requested {
+            Task { await requested.end(nil, dismissalPolicy: .after(block.end)) }
+        }
     }
 
     private func endBlockActivity() {
@@ -96,6 +116,7 @@ final class LiveActivityController: ObservableObject {
         let ending = blockActivity
         self.blockActivity = nil
         blockActivityID = nil
+        blockActivityEnd = nil
         Task { await ending.end(nil, dismissalPolicy: .immediate) }
     }
     #else
