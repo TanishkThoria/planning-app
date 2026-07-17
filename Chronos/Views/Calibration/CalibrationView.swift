@@ -27,6 +27,16 @@ struct CalibrationView: View {
     @State private var step: Step = .welcome
     @State private var draft: PlannerProfile = PlannerProfile()
     @State private var loaded = false
+    /// So first-run calibration isn't re-offered every launch once seen.
+    @AppStorage("chronos.calibrationOffered") private var calibrationOffered = false
+
+    /// The sleep step needs a valid window before you can move on.
+    private var canAdvance: Bool {
+        switch step {
+        case .sleep: return draft.bedMinutes > draft.wakeMinutes
+        default: return true
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -68,7 +78,7 @@ struct CalibrationView: View {
                         .font(.system(size: 14.5))
                         .foregroundStyle(Theme.textSecondary)
                 } else {
-                    Button("Skip") { dismiss() }
+                    Button("Skip") { calibrationOffered = true; dismiss() }
                         .buttonStyle(.plain)
                         .font(.system(size: 14.5))
                         .foregroundStyle(step == .done ? Color.clear : Theme.textTertiary)
@@ -107,9 +117,10 @@ struct CalibrationView: View {
                     .foregroundStyle(Theme.bg)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
-                    .background(Theme.accentColor, in: Capsule())
+                    .background(canAdvance ? Theme.accentColor : Theme.textTertiary, in: Capsule())
             }
             .buttonStyle(.plain)
+            .disabled(!canAdvance)
             .keyboardShortcut(.defaultAction)
         }
         .padding(14)
@@ -123,6 +134,7 @@ struct CalibrationView: View {
         if step == .done {
             draft.isCalibrated = true
             profileStore.profile = draft
+            calibrationOffered = true
             dismiss()
         } else if let nextStep = Step(rawValue: step.rawValue + 1) {
             step = nextStep

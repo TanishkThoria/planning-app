@@ -14,6 +14,11 @@ struct RootView: View {
     @AppStorage(Prefs.accentName) private var accentName = "Blue"
     @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
     @AppStorage("chronos.onboardingComplete") private var onboardingComplete = false
+    /// The interactive tour has run (or been skipped) at least once.
+    @AppStorage("chronos.tourSeen") private var tourSeen = false
+    /// Calibration has been offered once — completed or skipped — so we stop
+    /// re-presenting it on every launch.
+    @AppStorage("chronos.calibrationOffered") private var calibrationOffered = false
     @AppStorage(Prefs.morningReminderEnabled) private var morningReminderEnabled = false
     @AppStorage(Prefs.morningReminderMinutes) private var morningReminderMinutes = 8 * 60
     @AppStorage(Prefs.eveningReminderEnabled) private var eveningReminderEnabled = false
@@ -21,6 +26,12 @@ struct RootView: View {
     @AppStorage(Prefs.startAlertsEnabled) private var startAlertsEnabled = true
     @AppStorage(Prefs.blockLiveActivities) private var blockLiveActivities = true
     @Environment(\.scenePhase) private var scenePhase
+    /// A student opted into school setup; continue into the tour once it closes.
+    @State private var chainGuidanceAfterLMS = false
+    /// The user finished onboarding this session without granting access yet;
+    /// route them into the tour the moment they grant at the permission gate.
+    /// Session-scoped so existing users never get a surprise tour on relaunch.
+    @State private var awaitingFirstRunAccess = false
     private let minuteTick = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -37,9 +48,30 @@ struct RootView: View {
                 }
             }
             .onChange(of: tour.isActive) { _, active in
-                // After the tour wraps up, nudge new users into calibration.
-                if !active, service.hasFullAccess, !profileStore.profile.isCalibrated {
-                    model.calibrationPresented = true
+                // Tour finished (or was skipped) — remember it, then hand new
+                // users into calibration once any demo sheet has closed.
+                if !active {
+                    tourSeen = true
+                    if service.hasFullAccess, !profileStore.profile.isCalibrated, !calibrationOffered {
+                        model.commandBarPresented = false
+                        DispatchQueue.main.async { model.calibrationPresented = true }
+                    }
+                }
+            }
+            .onChange(of: service.hasFullAccess) { _, granted in
+                // Granting from the permission gate (rather than during
+                // onboarding) — route into first-run guidance, but only for a
+                // user who just onboarded this session, never existing users.
+                if granted, awaitingFirstRunAccess {
+                    awaitingFirstRunAccess = false
+                    startFirstRunGuidanceIfNeeded()
+                }
+            }
+            .onChange(of: model.lmsSetupPresented) { _, presented in
+                // School setup closed on first run → continue into the tour.
+                if !presented, chainGuidanceAfterLMS {
+                    chainGuidanceAfterLMS = false
+                    startFirstRunGuidanceIfNeeded()
                 }
             }
             .onChange(of: coachEnabled) { _, enabled in
@@ -50,6 +82,19 @@ struct RootView: View {
             }
     }
 
+    /// The single entry point into first-run guidance, safe to call from every
+    /// path (onboarding finished, school setup closed, access granted at the
+    /// gate). Runs the tour first (once), then calibration — and no-ops when
+    /// neither is needed, so it never loops or double-presents.
+    private func startFirstRunGuidanceIfNeeded() {
+        guard onboardingComplete, service.hasFullAccess, !tour.isActive else { return }
+        if !tourSeen {
+            withAnimation(.snappy) { tour.start() }
+        } else if !calibrationOffered, !profileStore.profile.isCalibrated {
+            DispatchQueue.main.async { model.calibrationPresented = true }
+        }
+    }
+
     private var onboardingBinding: Binding<Bool> {
         Binding(get: { !onboardingComplete }, set: { if !$0 { onboardingComplete = true } })
     }
@@ -57,11 +102,17 @@ struct RootView: View {
     private func finishOnboarding(connectLMS: Bool) {
         onboardingComplete = true
         if connectLMS {
-            // Students opted in — take them straight to the school connect flow.
-            model.lmsSetupPresented = true
+            // Students opted in — school setup first, then the tour rejoins the
+            // same guidance when it closes. Defer the sheet so it doesn't race
+            // the onboarding cover's dismissal (which drops it silently).
+            chainGuidanceAfterLMS = true
+            DispatchQueue.main.async { model.lmsSetupPresented = true }
         } else if service.hasFullAccess {
-            // Otherwise hand them into the interactive tour of the live app.
-            withAnimation(.snappy) { tour.start() }
+            startFirstRunGuidanceIfNeeded()
+        } else {
+            // They skipped granting during onboarding — pick up the tour when
+            // they grant at the permission gate.
+            awaitingFirstRunAccess = true
         }
     }
 
@@ -120,7 +171,7 @@ struct RootView: View {
             // here once it's been completed, so we never double-prompt.
             if onboardingComplete {
                 await service.requestAccess()
-                if service.hasFullAccess && !profileStore.profile.isCalibrated {
+                if service.hasFullAccess && !profileStore.profile.isCalibrated && !calibrationOffered {
                     model.calibrationPresented = true
                 }
             }

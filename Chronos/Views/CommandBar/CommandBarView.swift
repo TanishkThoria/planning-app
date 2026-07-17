@@ -255,10 +255,14 @@ struct CommandBarView: View {
         })
         add("tour", "Take the Tour", "Guided walkthrough", "map", "Tools", "tour help walkthrough", { TourController.shared.start() })
 
-        // Chronos+ (paid layer — discoverable here even before it's turned on)
-        add("chronos-plus", "Chronos+", "iCloud sync, leaderboards & friends", "sparkles", "Chronos+", "plus premium icloud sync social", { model.chronosPlusPresented = true })
-        add("leaderboard", "Leaderboard", "Weekly focus & momentum, ranked", "trophy", "Chronos+", "leaderboard rank compete game center", { model.leaderboardPresented = true })
-        add("friends", "Friends", "See what friends are focusing on", "person.2", "Chronos+", "friends presence social", { model.friendsPresented = true })
+        // Chronos+ (paid layer) — only surfaced once the build actually ships
+        // the capabilities, so a plain App Store build never advertises or
+        // exposes features it can't turn on.
+        if PaidFeatures.shared.anyCapabilityEntitled {
+            add("chronos-plus", "Chronos+", "iCloud sync, leaderboards & friends", "sparkles", "Chronos+", "plus premium icloud sync social", { model.chronosPlusPresented = true })
+            add("leaderboard", "Leaderboard", "Weekly focus & momentum, ranked", "trophy", "Chronos+", "leaderboard rank compete game center", { model.leaderboardPresented = true })
+            add("friends", "Friends", "See what friends are focusing on", "person.2", "Chronos+", "friends presence social", { model.friendsPresented = true })
+        }
 
         // Navigate
         add("go-today", "Go to Today", "", "sun.max", "Go to", "today home", { model.screen = .today })

@@ -333,6 +333,10 @@ struct SettingsView: View {
                         .padding(.horizontal, 4)
                     }
 
+                    // Only shown once the build actually ships the paid
+                    // capabilities — a plain App Store build has nothing here to
+                    // turn on, so we don't surface it (or its setup guide).
+                    if PaidFeatures.shared.anyCapabilityEntitled {
                     settingsSection("Chronos+") {
                         Button {
                             model.settingsPresented = false
@@ -363,6 +367,7 @@ struct SettingsView: View {
                             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                         }
                         .buttonStyle(.plain)
+                    }
                     }
 
                     settingsSection("School") {

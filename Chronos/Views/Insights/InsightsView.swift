@@ -25,7 +25,11 @@ struct InsightsView: View {
                     MomentumCard()
                     weekStrip
                     reportsSection
-                    socialSection
+                    // Only shown once the paid capabilities actually ship, so a
+                    // plain build never advertises features it can't enable.
+                    if paid.anyCapabilityEntitled {
+                        socialSection
+                    }
                 }
                 .padding(Theme.Metric.screen)
                 .frame(maxWidth: 620, alignment: .leading)

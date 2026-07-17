@@ -106,7 +106,7 @@ struct TourStep: Identifiable {
             screen: .insights,
             icon: "chart.bar.fill",
             title: "Insights — your progress",
-            message: "Everything you build shows up here: momentum, this week at a glance, full statistics, where your time went, long-term trends, your Year in Review, and the friends leaderboard.",
+            message: "Everything you build shows up here: momentum, this week at a glance, full statistics, where your time went, long-term trends, and your Year in Review.",
             demoLabel: "Open Statistics",
             demo: .stats
         ),
@@ -130,7 +130,7 @@ struct TourStep: Identifiable {
             screen: .today,
             icon: "command",
             title: "Anything, one keystroke away",
-            message: "Press ⌘K (or tap the ⌘ button) to jump to any screen or run any action — including Chronos+ for iCloud sync, leaderboards, and friends. That's the whole tour!",
+            message: "Press ⌘K (or tap the ⌘ button) to jump to any screen, run any action, or search everything in a keystroke. That's the whole tour — enjoy Chronos!",
             demoLabel: "Open the command bar",
             demo: .commandBar
         )
