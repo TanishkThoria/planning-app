@@ -1,0 +1,32 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3597FF"/>
+      <stop offset="0.55" stop-color="#0A84FF"/>
+      <stop offset="1" stop-color="#5E5CE6"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.7">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Full-bleed background (Apple applies the rounded-corner mask) -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+
+  <!-- Faint full clock ring -->
+  <circle cx="512" cy="512" r="300" fill="none"
+          stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="46"/>
+
+  <!-- The "time block": a bold arc from 12 to ~4 o'clock -->
+  <path d="M 512 212 A 300 300 0 0 1 772 662"
+        fill="none" stroke="#FFFFFF" stroke-width="46" stroke-linecap="round"/>
+
+  <!-- Clock hand pointing to the start of the block (12 o'clock) -->
+  <line x1="512" y1="512" x2="512" y2="322"
+        stroke="#FFFFFF" stroke-width="30" stroke-linecap="round"/>
+
+  <!-- Center hub -->
+  <circle cx="512" cy="512" r="34" fill="#FFFFFF"/>
+</svg>
