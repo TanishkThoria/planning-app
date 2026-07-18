@@ -25,9 +25,10 @@ struct InsightsView: View {
                     MomentumCard()
                     weekStrip
                     reportsSection
-                    // Only shown once the paid capabilities actually ship, so a
-                    // plain build never advertises features it can't enable.
-                    if paid.anyCapabilityEntitled {
+                    // Shown per-capability, so a build with Game Center (but not
+                    // CloudKit yet) surfaces the leaderboard without advertising
+                    // friends it can't run.
+                    if paid.isEntitled(.leaderboards) || paid.isEntitled(.friends) {
                         socialSection
                     }
                 }
@@ -158,16 +159,22 @@ struct InsightsView: View {
             SectionHeader(title: "Compete")
                 .padding(.horizontal, 2)
             VStack(spacing: 10) {
-                focusTogetherCard
-                reportCard("trophy", "Leaderboard", paid.isReady(.leaderboards)
-                           ? "Weekly focus & momentum, ranked with friends"
-                           : "Rank your focus with friends — a Chronos+ feature", tag: "Chronos+") {
-                    model.leaderboardPresented = true
+                if paid.isEntitled(.friends) {
+                    focusTogetherCard
                 }
-                reportCard("person.2", "Friends", paid.isReady(.friends)
-                           ? "See what your friends are focusing on"
-                           : "Follow friends' focus — a Chronos+ feature", tag: "Chronos+") {
-                    model.friendsPresented = true
+                if paid.isEntitled(.leaderboards) {
+                    reportCard("trophy", "Leaderboard", paid.isEntitled(.friends)
+                               ? "Weekly focus & momentum, ranked with friends"
+                               : "Rank your focus on Apple's Game Center", tag: "Chronos+") {
+                        model.leaderboardPresented = true
+                    }
+                }
+                if paid.isEntitled(.friends) {
+                    reportCard("person.2", "Friends", paid.isReady(.friends)
+                               ? "See what your friends are focusing on"
+                               : "Follow friends' focus — a Chronos+ feature", tag: "Chronos+") {
+                        model.friendsPresented = true
+                    }
                 }
             }
         }

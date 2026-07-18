@@ -85,6 +85,18 @@ struct ChronosPlusView: View {
 
     // MARK: Master toggle (entitled builds)
 
+    /// Only mention iCloud sign-in when the cloud features are actually part of
+    /// this build; otherwise keep it about the switch itself.
+    private var masterSubtitle: String {
+        guard paid.isEntitled(.cloudSync) else { return "Enable your Chronos+ features." }
+        return paid.iCloud == .available
+            ? "iCloud is signed in on this device."
+            : "Signed out of iCloud — sync features wait until you sign in."
+    }
+    private var masterSubtitleWarns: Bool {
+        paid.isEntitled(.cloudSync) && paid.iCloud != .available
+    }
+
     private var masterCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             Toggle(isOn: $masterEnabled) {
@@ -92,11 +104,9 @@ struct ChronosPlusView: View {
                     Text("Turn on Chronos+")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
-                    Text(paid.iCloud == .available
-                         ? "iCloud is signed in on this device."
-                         : "Signed out of iCloud — sync features wait until you sign in.")
+                    Text(masterSubtitle)
                         .font(.system(size: 13))
-                        .foregroundStyle(paid.iCloud == .available ? Theme.textTertiary : Theme.warning)
+                        .foregroundStyle(masterSubtitleWarns ? Theme.warning : Theme.textTertiary)
                 }
             }
             .toggleStyle(.switch)
@@ -170,18 +180,29 @@ struct ChronosPlusView: View {
 
     // MARK: Per-capability list
 
+    /// Only the capabilities this build actually ships — so a pre-transfer
+    /// build (Game Center + widgets) doesn't list iCloud/Friends it can't run.
+    private var entitledCapabilities: [PaidCapability] {
+        PaidCapability.allCases.filter { paid.isEntitled($0) }
+    }
+
+    private func toggleBinding(for capability: PaidCapability) -> Binding<Bool> {
+        switch capability {
+        case .cloudSync: return $cloudSyncEnabled
+        case .leaderboards, .friends: return $socialEnabled
+        case .liveWidgets: return $liveWidgetsEnabled
+        }
+    }
+
     private var capabilitiesSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             SectionHeader(title: "Features")
                 .padding(.horizontal, 4)
             VStack(spacing: 0) {
-                capabilityRow(.cloudSync, toggle: $cloudSyncEnabled)
-                divider
-                capabilityRow(.leaderboards, toggle: $socialEnabled)
-                divider
-                capabilityRow(.friends, toggle: $socialEnabled)
-                divider
-                capabilityRow(.liveWidgets, toggle: $liveWidgetsEnabled)
+                ForEach(Array(entitledCapabilities.enumerated()), id: \.element.id) { index, capability in
+                    if index > 0 { divider }
+                    capabilityRow(capability, toggle: toggleBinding(for: capability))
+                }
             }
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(

@@ -77,6 +77,31 @@ enum PaidCapability: String, CaseIterable, Identifiable {
 /// or GameKit call (which would crash without the matching entitlement), while
 /// the code itself still compiles everywhere so CI keeps validating it.
 enum AppEntitlements {
+    /// CloudKit-backed features (iCloud sync + friends/presence). Deliberately a
+    /// separate gate so the initial launch can ship *without* CloudKit — which
+    /// keeps the app easy to transfer between developer accounts. Enable by
+    /// adding `CHRONOS_CLOUD` (or the umbrella `CHRONOS_PLUS`) once you're on your
+    /// own account and add the iCloud capability.
+    static var cloudBuild: Bool {
+        #if CHRONOS_PLUS || CHRONOS_CLOUD
+        return true
+        #else
+        return false
+        #endif
+    }
+
+    /// Game Center global leaderboards. Transfer-safe, so this can ship before a
+    /// transfer. Enable with `CHRONOS_GAMECENTER` (or `CHRONOS_PLUS`) plus the
+    /// Game Center capability.
+    static var gameCenterBuild: Bool {
+        #if CHRONOS_PLUS || CHRONOS_GAMECENTER
+        return true
+        #else
+        return false
+        #endif
+    }
+
+    /// The umbrella flag turns everything on at once (used post-transfer).
     static var chronosPlusBuild: Bool {
         #if CHRONOS_PLUS
         return true
@@ -84,6 +109,15 @@ enum AppEntitlements {
         return false
         #endif
     }
+
+    /// Live widgets ride on the App Group — detected at runtime, so no compile
+    /// flag is needed, just the App Group capability added in Xcode. Also
+    /// transfer-safe.
+    static let appGroupConfigured: Bool = {
+        FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: ChronosShared.appGroupID
+        ) != nil
+    }()
 }
 
 @MainActor
@@ -115,10 +149,15 @@ final class PaidFeatures: ObservableObject {
     // MARK: Entitlement presence (compile-time capability actually shipped)
 
     func isEntitled(_ capability: PaidCapability) -> Bool {
-        // The upgrade adds all paid capabilities together with the CHRONOS_PLUS
-        // flag, so one gate covers them. On the free build this is always false
-        // and no paid framework is ever touched.
-        AppEntitlements.chronosPlusBuild
+        // Per-capability so the CloudKit-free features (Game Center leaderboards,
+        // live widgets) can ship independently of iCloud/CloudKit — see
+        // AppEntitlements. On the free build these are all false and no paid
+        // framework is ever touched.
+        switch capability {
+        case .cloudSync, .friends: return AppEntitlements.cloudBuild
+        case .leaderboards:        return AppEntitlements.gameCenterBuild
+        case .liveWidgets:         return AppEntitlements.appGroupConfigured
+        }
     }
 
     /// Any paid capability shipped in this build? (false on the free account)

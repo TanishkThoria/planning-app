@@ -19,12 +19,19 @@ struct LeaderboardView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    boardPicker
-                    if rows.count <= 1 {
-                        soloState
-                    } else {
-                        podium
-                        standings
+                    // The friends leaderboard needs CloudKit; only show it when
+                    // that capability ships. Game Center global ranking is
+                    // independent and shown whenever it's entitled.
+                    if paid.isEntitled(.friends) {
+                        boardPicker
+                        if rows.count <= 1 {
+                            soloState
+                        } else {
+                            podium
+                            standings
+                        }
+                    } else if paid.isEntitled(.leaderboards) {
+                        gameCenterIntro
                     }
                     if paid.isEntitled(.leaderboards) { gameCenterCard }
                 }
@@ -46,6 +53,22 @@ struct LeaderboardView: View {
         .task {
             await social.refreshFriends()
             if paid.isReady(.leaderboards) { social.authenticateGameCenter() }
+        }
+    }
+
+    /// Header for the Game-Center-only presentation (friends not in this build).
+    private var gameCenterIntro: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Image(systemName: "trophy.fill")
+                .font(.system(size: 30))
+                .foregroundStyle(Theme.accentColor)
+            Text("Global leaderboards")
+                .font(.system(size: 20, weight: .bold))
+                .foregroundStyle(Theme.textPrimary)
+            Text("Your weekly focus minutes and momentum are ranked against everyone on Apple's Game Center. Sign in below to join.")
+                .font(.system(size: 14.5))
+                .foregroundStyle(Theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

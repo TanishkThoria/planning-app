@@ -255,12 +255,16 @@ struct CommandBarView: View {
         })
         add("tour", "Take the Tour", "Guided walkthrough", "map", "Tools", "tour help walkthrough", { TourController.shared.start() })
 
-        // Chronos+ (paid layer) — only surfaced once the build actually ships
-        // the capabilities, so a plain App Store build never advertises or
-        // exposes features it can't turn on.
+        // Chronos+ (paid layer) — surfaced per-capability, so a plain build
+        // never advertises features it can't run, and a pre-transfer build shows
+        // only what actually ships (e.g. Game Center leaderboards + widgets).
         if PaidFeatures.shared.anyCapabilityEntitled {
-            add("chronos-plus", "Chronos+", "iCloud sync, leaderboards & friends", "sparkles", "Chronos+", "plus premium icloud sync social", { model.chronosPlusPresented = true })
+            add("chronos-plus", "Chronos+", "Manage your Chronos+ features", "sparkles", "Chronos+", "plus premium settings", { model.chronosPlusPresented = true })
+        }
+        if PaidFeatures.shared.isEntitled(.leaderboards) {
             add("leaderboard", "Leaderboard", "Weekly focus & momentum, ranked", "trophy", "Chronos+", "leaderboard rank compete game center", { model.leaderboardPresented = true })
+        }
+        if PaidFeatures.shared.isEntitled(.friends) {
             add("friends", "Friends", "See what friends are focusing on", "person.2", "Chronos+", "friends presence social", { model.friendsPresented = true })
         }
 
