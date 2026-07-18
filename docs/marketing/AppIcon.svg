@@ -41,8 +41,9 @@
     <rect x="416" y="407" width="121" height="12" rx="6"/>
   </g>
 
-  <!-- The "now" line: a coral rule across the column, anchored by a node -->
-  <line x1="154" y1="573" x2="870" y2="573" stroke="#FF605C" stroke-width="14" stroke-linecap="round"/>
-  <circle cx="154" cy="573" r="27" fill="#FF605C"/>
-  <circle cx="154" cy="573" r="9" fill="#FFFFFF" fill-opacity="0.82"/>
+  <!-- The "now" line: a bold coral rule across the column, anchored by a node.
+       Kept thick so it still reads at Dock / small-icon sizes. -->
+  <line x1="154" y1="573" x2="870" y2="573" stroke="#FF605C" stroke-width="19" stroke-linecap="round"/>
+  <circle cx="154" cy="573" r="31" fill="#FF605C"/>
+  <circle cx="154" cy="573" r="10" fill="#FFFFFF" fill-opacity="0.82"/>
 </svg>

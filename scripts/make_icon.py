@@ -120,13 +120,14 @@ def render(size, style="light", rounded_bg=False):
     d.rounded_rectangle([cx0, cy1, cx0 + cw_long, cy1 + ch], radius=ch // 2, fill=content_col)
     d.rounded_rectangle([cx0, cy2, cx0 + cw_short, cy2 + ch], radius=ch // 2, fill=content_col)
 
-    # The "now" line — a thin coral rule crossing the whole column, anchored by a
-    # filled node on the left. The signature detail.
+    # The "now" line — a bold coral rule crossing the whole column, anchored by a
+    # filled node on the left. The signature detail; kept thick so it still reads
+    # at Dock / small-icon sizes.
     ny = s * 0.560
-    lw = max(2, int(s * 0.014))
+    lw = max(3, int(s * 0.019))
     nx0, nx1 = s * 0.15, s * 0.85
     d.line([(nx0, ny), (nx1, ny)], fill=now_col, width=lw)
-    dot_r = int(s * 0.026)
+    dot_r = int(s * 0.030)
     d.ellipse([nx0 - dot_r, ny - dot_r, nx0 + dot_r, ny + dot_r], fill=now_col)
     # A faint white core in the node for a little depth.
     core = int(dot_r * 0.34)
