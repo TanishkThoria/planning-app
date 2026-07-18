@@ -1,10 +1,22 @@
 # Chronos — App Store listing (copy-paste ready)
 
-Everything you paste into App Store Connect for the **1.0 free build**. It
-deliberately does **not** mention Chronos+ (iCloud sync / friends / leaderboards)
-because that layer is hidden in this build — advertising it would risk a 2.3.1
-rejection. When you enable Chronos+ later, add those lines back (a "Chronos+"
-variant is at the bottom).
+Everything you paste into App Store Connect for the **1.0 build**.
+
+The **base copy below** is for the safest possible launch — it describes only
+what ships in the plain build and never mentions anything that isn't there, so
+there's no 2.3.1 ("advertising features not in the app") risk.
+
+Two optional add-on blocks are at the bottom, matched to how far along you are:
+
+- **Option C (pre-transfer, transfer-safe):** if you turn on **Game Center**
+  in the build you submit, paste the *"Compete on Game Center"* block so the
+  global leaderboards are advertised. Game Center transfers cleanly with the
+  app, so this is safe to ship before moving the app to your own account.
+- **Full Chronos+ (post-transfer):** once the app is on your own paid account
+  and you add the iCloud capability, paste the *iCloud sync + friends* block.
+
+**Golden rule:** only paste an add-on block if that capability is actually
+enabled in the binary you upload. When in doubt, ship the base copy.
 
 Character limits are noted so nothing gets truncated.
 
@@ -142,8 +154,12 @@ Welcome to Chronos — the calm, powerful way to plan your day on your own Apple
 - Collection: **"Data is not collected."** (No servers, no analytics, no ads;
   calendar/reminders never leave Apple's frameworks to a server you control.)
 - Tracking: **No.**
-- (When you ship Chronos+ later, update this to disclose friend presence shared
-  via CloudKit — see the note in PUBLISHING_GUIDE.md.)
+- **If you enable Game Center (Option C):** it stays **"Data is not
+  collected"** for *your* privacy label — Game Center is Apple's own service, so
+  the score you submit is handled under Apple's privacy policy, not yours. You
+  are not running a server or collecting the data. (Tracking is still **No**.)
+- (When you ship the full Chronos+ later, update this to disclose friend
+  presence shared via CloudKit — see the note in PUBLISHING_GUIDE.md.)
 
 Export compliance: uses only standard/exempt encryption (HTTPS/Apple frameworks).
 Set `ITSAppUsesNonExemptEncryption = NO` in Info.plist to skip the per-upload
@@ -157,21 +173,49 @@ Chronos requires no account or login.
 
 On first launch the app requests access to Apple Calendar and Reminders — these are required for core functionality (time blocks are calendar events; tasks are reminders). Please grant both when prompted so the app is fully testable. If a prompt is missed, it can be re-enabled in Settings → Privacy, and the app shows an in-app screen to do so.
 
-There is no server backend; all data stays in the user's Apple Calendar/Reminders and on device. No paid or subscription features are active in this build.
+There is no server backend; all data stays in the user's Apple Calendar/Reminders and on device. There are no in-app purchases or subscriptions.
 
 The on-device AI "Coach" uses Apple Intelligence and only appears on supported devices/OS; it is optional and not required to review the app.
 ```
 
+**If Game Center is enabled in the build (Option C),** add this line to the notes:
+```
+Game Center is optional: the app shows global focus/momentum leaderboards via Apple's Game Center. It is free, requires no account of ours, and the app is fully functional without signing in to Game Center.
+```
+
 ---
 
-## Chronos+ variant (use ONLY after you enable the paid capabilities post-transfer)
-When Chronos+ ships, append this block to the Description and update the App
-Privacy label:
+## Add-on block A — "Compete on Game Center" (Option C, pre-transfer)
+
+Use this **only if you turn on the Game Center capability** in the build you
+upload (see `docs/CHRONOS_PLUS_SETUP.md` → the `CHRONOS_GAMECENTER` flag). Game
+Center is transfer-safe, so this ships before you move the app to your own
+account. Append to the Description:
+```
+COMPETE ON GAME CENTER (optional)
+• Rank your weekly focus minutes and all-time momentum on Apple's global Game Center leaderboards
+• Totally optional and free — the whole app works without ever signing in
+• Nothing new to sign up for; it's the Game Center you already have
+```
+Optional keyword swap-in (only if enabled): replace a lower-value keyword with
+`leaderboard`. Keep the keyword field at/under 100 chars.
+
+Everything else — the App Privacy label ("Data is not collected"), the 4+
+rating, and the free price — is unchanged. Game Center does **not** require an
+in-app purchase and adds no server of yours.
+
+---
+
+## Add-on block B — full Chronos+ (use ONLY post-transfer, once iCloud is enabled)
+
+When the app is on your own paid account and you've added the iCloud capability
+(`CHRONOS_CLOUD` / `CHRONOS_PLUS`), append this block to the Description **and**
+update the App Privacy label to disclose friend presence shared via CloudKit:
 ```
 CHRONOS+ (optional)
 • Sync your Chronos data across your Apple devices via your own private iCloud
 • Add friends with a shareable code, see what they're focusing on, and cheer each other on
-• Climb weekly focus and momentum leaderboards
+• Climb weekly focus and momentum leaderboards with friends
 Everything stays in your private iCloud; you choose what your friends can see.
 ```
-And add keywords like: `icloud sync,leaderboard,friends,body doubling`.
+And add keywords like: `icloud sync,friends,body doubling`.

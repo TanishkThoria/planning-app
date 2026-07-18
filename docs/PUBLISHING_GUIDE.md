@@ -30,14 +30,19 @@ Three things make this smooth:
    this is the normal, Apple-sanctioned path: a parent/guardian enrolls now, you
    enroll and receive the transfer once you have your own account.)
 
-2. **Ship the FREE build first. Add "Chronos+" only AFTER the transfer.**
-   Chronos has an optional paid-feature layer (iCloud sync, friends,
-   leaderboards) that uses **CloudKit**. Apps that use CloudKit are **harder to
-   transfer** between accounts. The app is built so the entire Chronos+ layer is
-   **hidden and inert unless you deliberately turn on those capabilities** — so
-   your first release can ship **without CloudKit at all**, which keeps the app
-   **transfer-eligible**. After you transfer it to your own account, follow
-   `docs/CHRONOS_PLUS_SETUP.md` to light up Chronos+ in an update. **Don't enable
+2. **The one thing that must wait for the transfer is iCloud/CloudKit — nothing
+   else.** Chronos' paid layer splits into three independent switches, and two of
+   them are **transfer-safe**, so you can ship them in v1:
+   - ✅ **Live Widgets** (App Group) — transfer-safe. **Ship now.**
+   - ✅ **Game Center leaderboards** — transfer-safe. **Ship now (Option C).**
+   - ⚠️ **iCloud Sync + Friends** (CloudKit) — CloudKit containers make an app
+     **harder to transfer**, so these are the *only* features you hold back.
+     Add them in an update **after** the transfer.
+
+   The app auto-detects each capability, so anything you don't enable stays
+   hidden and inert — no dead ends, no rejection risk. The recommended launch
+   ("Option C") ships Widgets + Game Center now and adds iCloud later. Full
+   click-by-click is in `docs/CHRONOS_PLUS_SETUP.md`. **Just don't enable
    iCloud/CloudKit before the transfer.**
 
 3. **You'll need your own paid account to *receive* the app.** A transfer moves
@@ -46,9 +51,9 @@ Three things make this smooth:
    you. Until then, everything lives under their account.
 
 **Net plan:**
-`Family member enrolls → you build & submit the free build under their account →
-release → (later) you enroll your own account → they transfer the app to you →
-you add Chronos+ in an update.`
+`Family member enrolls → you build & submit under their account (Widgets +
+Game Center on, iCloud off) → release → (later) you enroll your own account →
+they transfer the app to you → you add iCloud Sync + Friends in an update.`
 
 ---
 
@@ -122,9 +127,14 @@ app and the **ChronosWidgetExtension**:
    certificate and provisioning profiles for you.
 5. Fix any red signing errors before continuing (usually just picking the Team).
 
-> **Do NOT add the iCloud/CloudKit/App Groups/Game Center capabilities yet** —
-> per the Strategy, the first release ships without them so the app stays
-> transfer-eligible. The app already hides all Chronos+ UI when they're absent.
+> **Capabilities for v1 (Option C):** you may add the two **transfer-safe**
+> capabilities now — **App Groups** (`group.app.chronos.planner`, on *both*
+> targets) for Live Widgets, and **Game Center** + the `CHRONOS_GAMECENTER` build
+> flag for leaderboards. Full steps: `docs/CHRONOS_PLUS_SETUP.md` → "the Option C
+> launch." **Do NOT add iCloud/CloudKit yet** — that's the only capability that
+> hurts transfer eligibility; it goes in after the transfer. The app hides any
+> capability you don't enable, so shipping the plainest build (no capabilities at
+> all) is also fine.
 
 **Sanity check the app builds:** set the run destination to your iPhone (or a
 Simulator) and press **⌘R**. It should launch and run.
@@ -210,9 +220,11 @@ In the new app → the **1.0 version** page (left sidebar) and the **App
 Information** / **Pricing** pages:
 
 - **Screenshots:** upload the 6.7" set from step 5.
-- **Promotional text / Description:** what Chronos is and does. Be accurate — don't
-  mention features the shipped build doesn't have (Chronos+ is hidden in this
-  build, so **don't** advertise leaderboards/friends/iCloud sync in 1.0).
+- **Promotional text / Description:** what Chronos is and does. Be accurate —
+  only mention what's actually in the binary you upload. If you enabled **Game
+  Center** (Option C), you may advertise the **global leaderboards** (paste the
+  "Compete on Game Center" block from `docs/APP_STORE_LISTING.md`). **Don't**
+  advertise **iCloud sync or friends** — those ship after the transfer.
 - **Keywords:** comma-separated, e.g.
   `planner,time block,calendar,tasks,focus,pomodoro,habits,agenda,schedule,productivity`.
 - **Support URL:** a reachable page (can be the same GitHub Pages site, or a
@@ -248,9 +260,13 @@ essentially **"Data Not Collected."** Walk it like this:
   frameworks to a server you control, "Data Not Collected" is the accurate,
   common choice for an app like this.
 - **Tracking:** **No** (no ATT prompt, no cross-app tracking).
+- **If you enabled Game Center (Option C):** still **"Data Not Collected"** for
+  your label — Game Center is Apple's own service under Apple's privacy policy,
+  and you run no server and collect nothing. Tracking stays **No**.
 
-> When you later add **Chronos+** (after the transfer), you'll revisit this and
-> disclose the friend-presence data shared via CloudKit. For 1.0 it's clean.
+> When you later add **iCloud Sync + Friends** (after the transfer), you'll
+> revisit this and disclose the friend-presence data shared via CloudKit. For the
+> pre-transfer build (even with Widgets + Game Center) it's clean.
 
 **Export compliance:** Chronos uses only Apple's standard HTTPS encryption. On
 upload you'll be asked about encryption — answer that it uses only
@@ -314,8 +330,8 @@ Just make sure the app runs cleanly on a real device via ⌘R first.
 
 **Common rejection reasons to pre-empt (all already handled in this build):**
 - Vague permission strings → yours are specific (step 4).
-- Advertising features that don't work → Chronos+ is hidden in this build (step
-  8: don't mention it in the description).
+- Advertising features that don't work → only describe what you enabled (step 8:
+  Game Center OK if you turned it on; never mention iCloud sync/friends pre-transfer).
 - Missing privacy policy → you hosted one (step 6).
 - Broken links / placeholder content → none; support & privacy URLs resolve.
 - Crash on launch → you verified via TestFlight (step 12).
@@ -346,8 +362,10 @@ memberships).
 your app → **App Information** → scroll to **Additional Information** →
 **Transfer App**. Apple shows a **checklist of blockers**. Make sure:
    - The app has at least one **released** version.
-   - No **CloudKit** is in use (you kept Chronos+ off — good; if you had enabled
-     it, CloudKit containers complicate/block transfers).
+   - No **CloudKit** is in use (you kept iCloud Sync/Friends off — good; **App
+     Groups and Game Center do NOT block transfers**, so Widgets + leaderboards
+     being live is fine). If you had enabled CloudKit, its containers
+     complicate/block transfers.
    - No unresolved agreements, and you're not using capabilities that block
      transfer (Apple Pay merchant IDs, etc. — Chronos uses none).
 
@@ -363,11 +381,13 @@ its versions, TestFlight, ratings, and bundle ID move to your account.
 **E. Re-sign future updates from your account.** In Xcode, switch the targets'
 **Team** to your own team, and future archives upload under you.
 
-**F. Now add Chronos+ (optional).** Follow **`docs/CHRONOS_PLUS_SETUP.md`**: add
-iCloud/CloudKit + App Groups + Game Center capabilities under **your** team, add
-the `CHRONOS_PLUS` build flag, create the two Game Center leaderboards, and ship
-an update. The previously-hidden Chronos+ UI switches on automatically, and you'll
-update the App Privacy label (step 9) to disclose friend presence.
+**F. Now add iCloud Sync + Friends (optional).** This is the *only* part you held
+back. Follow **`docs/CHRONOS_PLUS_SETUP.md`** → "After the transfer": add the
+**iCloud/CloudKit** capability under **your** team and the `CHRONOS_CLOUD` build
+flag (or swap all à-la-carte flags for the single `CHRONOS_PLUS` umbrella), then
+ship an update. Widgets and Game Center are already live from v1 and carry over
+untouched. The previously-hidden Sync/Friends UI switches on automatically, and
+you'll update the App Privacy label (step 9) to disclose friend presence.
 
 > **Timing tip:** transfers can take a little while to complete and the app stays
 > live throughout. Don't start a transfer mid-review (finish/withdraw any pending
@@ -385,8 +405,10 @@ update the App Privacy label (step 9) to disclose friend presence.
   about age/identity, use the transfer path above.
 - **Will the app's reviews/downloads survive the transfer?** Yes — ratings,
   reviews, and history move with the app.
-- **Can I enable Chronos+ before transferring?** You *can*, but **don't** — its
-  CloudKit usage can make the app ineligible to transfer. Add it after.
+- **Can I enable Chronos+ features before transferring?** Partly — and you
+  should. **Live Widgets** (App Group) and **Game Center leaderboards** are
+  transfer-safe, so ship them in v1 (Option C). Only **iCloud Sync + Friends**
+  (CloudKit) must wait until after the transfer.
 - **What if "Chronos" is taken?** Use a distinct App Store **Name** (e.g.,
   "Chronos: Plan & Focus"); the on-device app name and bundle ID are separate.
 
@@ -395,16 +417,17 @@ update the App Privacy label (step 9) to disclose friend presence.
 ## TL;DR checklist
 
 1. Family member enrolls in the Apple Developer Program ($99). Wait for approval.
-2. Xcode → sign in with their account → set Team + bundle IDs on both targets
-   (no CloudKit yet).
+2. Xcode → sign in with their account → set Team + bundle IDs on both targets.
+   Optional Option C: add App Groups (Widgets) + Game Center + `CHRONOS_GAMECENTER`
+   (leaderboards). **No CloudKit/iCloud yet.**
 3. Icon (1024²) + screenshots (6.7").
 4. Host `docs/PRIVACY_POLICY.md` on GitHub Pages → get the URL.
 5. App Store Connect → New App → fill metadata, age rating (4+), **App Privacy =
    Data Not Collected**, Privacy Policy URL.
 6. Archive → Distribute → Upload → TestFlight → test the real first launch.
 7. Submit for Review → Release.
-8. **Later:** enroll your own account → Transfer App to yourself → add Chronos+ in
-   an update (`docs/CHRONOS_PLUS_SETUP.md`).
+8. **Later:** enroll your own account → Transfer App to yourself → add iCloud
+   Sync + Friends in an update (`docs/CHRONOS_PLUS_SETUP.md` → "After the transfer").
 
 Related: `docs/CHRONOS_PLUS_SETUP.md` (turning on the paid layer after transfer),
 `docs/WIDGETS_SETUP.md` (widgets), `docs/PRIVACY_POLICY.md` (host this).

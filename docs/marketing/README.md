@@ -1,26 +1,34 @@
 # Chronos — marketing assets
 
-## App icon (`AppIcon.svg`)
+## App icon
 
-A clean starting-point icon: a "time block" arc on a clock, in the app's
-blue→indigo. Full-bleed (Apple applies the rounded-corner mask itself).
+The Chronos mark: a single rounded **time block** on a faint hour grid, crossed
+by a thin coral **"now" line** anchored by a node — the essence of timeblocking
+(a slot of your day, and the moment you're living right now) in one confident
+shape, in the app's indigo on premium charcoal.
 
-**Export to the 1024×1024 PNG the App Store needs** (pick one):
+Two forms, both kept in sync:
 
-- **Preview / any browser:** open the SVG, or use an online "SVG to PNG" at
-  1024×1024.
-- **Command line (if you have `rsvg-convert`):**
-  `rsvg-convert -w 1024 -h 1024 AppIcon.svg -o AppIcon-1024.png`
-- **Or `cairosvg`:** `cairosvg AppIcon.svg -W 1024 -H 1024 -o AppIcon-1024.png`
-- **Design tools:** import the SVG into Figma/Sketch/Affinity, tweak if you like,
-  export 1024×1024 PNG.
+- **`AppIcon-1024.png`** — the ready-to-ship 1024×1024 PNG the App Store needs.
+  Generated straight from the app's own icon renderer, so it is pixel-identical
+  to what ships on the Home Screen.
+- **`AppIcon.svg`** — a vector twin, for tweaking in Figma/Sketch/Affinity or
+  re-exporting at any size.
 
-**Icon rules:** 1024×1024, PNG, **no transparency**, **no rounded corners** (the
-art fills the whole square; Apple rounds it), sRGB. Drop it into Xcode's asset
-catalog → **AppIcon** (Xcode 15+ accepts the single 1024 and generates the rest).
+**Regenerate everything** (the full iOS + macOS icon set *and* this marketing
+PNG) with one command — no design tool required:
 
-Treat this as a tasteful default — feel free to refine the mark, or commission a
-designer later; swapping the icon is a normal app update.
+```
+python3 scripts/make_icon.py
+```
+
+That writes the light / dark / tinted iOS 1024s and every macOS size into
+`Chronos/Assets.xcassets/AppIcon.appiconset`, plus `AppIcon-1024.png` here.
+
+**Icon rules (already satisfied by the PNG):** 1024×1024, PNG, **no
+transparency**, **no rounded corners** (the art fills the whole square; Apple
+rounds it), sRGB. In Xcode the asset catalog → **AppIcon** already points at the
+generated set, so a fresh `make_icon.py` run is all it takes to update the app.
 
 ## Screenshots & App Preview video
 See `../SCREENSHOTS_AND_PREVIEW.md` for the exact shot list, captions, sizes, and

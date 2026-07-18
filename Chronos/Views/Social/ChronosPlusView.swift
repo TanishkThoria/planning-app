@@ -130,16 +130,16 @@ struct ChronosPlusView: View {
             Label("Ready when you are", systemImage: "lock.open")
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Theme.accentColor)
-            Text("Every Chronos+ feature is already built in. They switch on the moment your app is signed with a paid Apple Developer account, which adds the iCloud, App Group and Game Center capabilities. No new code — just capabilities.")
+            Text("Every Chronos+ feature is already built in. They switch on the moment your app is signed with a paid Apple Developer account — and they're independent, so you can turn on the transfer-safe ones first. No new code — just capabilities.")
                 .font(.system(size: 14))
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 8) {
                 guideStep(1, "In Xcode, select the Chronos target → Signing & Capabilities.")
-                guideStep(2, "Add iCloud (CloudKit + the container), App Groups (group.app.chronos.planner), and Game Center.")
-                guideStep(3, "Add CHRONOS_PLUS to Active Compilation Conditions (the safety interlock).")
-                guideStep(4, "Reopen this screen — the master switch appears and everything turns on with one tap.")
+                guideStep(2, "Ship now: add App Groups (group.app.chronos.planner) for Live Widgets, and Game Center + the CHRONOS_GAMECENTER flag for leaderboards.")
+                guideStep(3, "After transfer: add iCloud (CloudKit + container) + the CHRONOS_CLOUD flag for Sync & Friends. (CHRONOS_PLUS enables everything at once.)")
+                guideStep(4, "Reopen this screen — the master switch appears and everything you enabled turns on with one tap.")
             }
             .padding(12)
             .background(Theme.elevated, in: RoundedRectangle(cornerRadius: 10, style: .continuous))

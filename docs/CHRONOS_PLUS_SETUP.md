@@ -1,126 +1,159 @@
 # Chronos+ — turning on the paid-account features
 
 Chronos+ is the set of features that ride on Apple capabilities available only
-to a **paid Apple Developer account**: iCloud sync, Game Center leaderboards,
-Friends presence, and the live Home/Lock Screen widgets.
+to a **paid Apple Developer account**: live Home/Lock Screen widgets, Game
+Center leaderboards, iCloud sync, and Friends presence.
 
 **Everything is already built.** The code compiles and ships today on the free
-account — it just stays dormant. Chronos auto-detects the capabilities at
-runtime (by reading its own entitlements) and never touches CloudKit, GameKit,
-or the App Group unless they're actually present. Nothing nags, nothing breaks.
+account — it just stays dormant. Chronos auto-detects each capability and never
+touches the App Group, GameKit, or CloudKit unless it's actually present.
+Nothing nags, nothing breaks.
 
-When you upgrade, turning it on is: **add three capabilities in Xcode, tap one
-switch in the app.** This document is the click-by-click.
+The important part for a launch you'll want to **transfer to your own account
+later**: these features are **not** all-or-nothing. They split into three
+independent switches with different transfer characteristics, so you can turn on
+the transfer-safe ones **now** and add iCloud **after** the transfer.
 
 ---
 
-## What lights up
+## The three switches (turn on what you can, when you can)
 
-| Feature | Apple capability | Where it shows |
-|---|---|---|
-| **iCloud Sync** — Grow data, momentum, planner profile, connected schools & focus log across all your devices | iCloud → CloudKit | Automatic; status in Settings › Chronos+ |
-| **Leaderboards** — weekly focus minutes & all-time momentum, ranked with friends | Game Center | Chronos+ › Leaderboard |
-| **Friends** — a shareable code and live presence (what a friend is focusing on, how busy) | iCloud → CloudKit (public DB) | Chronos+ › Friends |
-| **Live Widgets** — Home & Lock Screen widgets that update through the day | App Groups | Add widgets from the Home Screen |
+| Feature | Apple capability | Compile flag | Transfer-safe? | When |
+|---|---|---|---|---|
+| **Live Widgets** — Home & Lock Screen widgets that update through the day | App Groups | *none* (runtime-detected) | ✅ Yes | **Ship now** |
+| **Leaderboards** — weekly focus minutes & all-time momentum on Apple's global Game Center | Game Center | `CHRONOS_GAMECENTER` | ✅ Yes | **Ship now (Option C)** |
+| **iCloud Sync** — Grow data, momentum, planner profile, connected schools & focus log across your devices | iCloud → CloudKit | `CHRONOS_CLOUD` | ⚠️ No — see below | **After transfer** |
+| **Friends** — shareable code + live presence (what a friend is focusing on) | iCloud → CloudKit | `CHRONOS_CLOUD` | ⚠️ No | **After transfer** |
 
-Blocks and tasks are **not** part of iCloud Sync — they already live in Apple
-Calendar & Reminders, which iCloud syncs natively. Chronos+ only carries the
-extra data Apple's apps can't hold.
+The umbrella flag **`CHRONOS_PLUS`** turns on *all* of the above at once — use it
+post-transfer when everything is in place. `CHRONOS_GAMECENTER` and
+`CHRONOS_CLOUD` are the à-la-carte flags for the Option C path.
+
+> **Why iCloud waits (the transfer catch):** a CloudKit container is bound to
+> the developer account that created it, and App Transfer moves the app but the
+> data-migration story for a public CloudKit database is messy. Game Center and
+> App Groups carry over cleanly. So the recommended launch — **Option C** — is:
+> ship **Live Widgets + Game Center** on the family account now, then add
+> **iCloud Sync + Friends** once the app is on your own account (no user data to
+> migrate, because there was never any CloudKit data yet).
+
+Blocks and tasks are **never** part of iCloud Sync — they already live in Apple
+Calendar & Reminders, which iCloud syncs natively.
 
 ---
 
 ## Prerequisites
 
-- A paid **Apple Developer Program** membership ($99/yr).
+- A paid **Apple Developer Program** membership ($99/yr) on the account that
+  will sign the build.
 - You're signed into Xcode with that team (Xcode › Settings › Accounts).
 
 ---
 
-## Step 1 — Add the capabilities in Xcode
+## Recommended: the Option C launch (now)
 
-Open `Chronos.xcodeproj`, select the **Chronos** target → **Signing &
-Capabilities**, set your paid **Team**, then click **+ Capability** and add:
+This is everything transfer-safe. Do this before the first submission.
 
-### iCloud
-1. Tick **CloudKit**.
-2. Under Containers, click **+** and create `iCloud.app.chronos.planner`
-   (or accept the default `iCloud.<bundle-id>`).
-3. That's it — `CloudSyncService` and the Friends backend find the default
-   container automatically.
+### A. Live Widgets — App Group (no compile flag)
 
-### App Groups
-1. Click **+** under App Groups and add **`group.app.chronos.planner`**.
+1. Xcode → **Chronos** target → **Signing & Capabilities** → **+ Capability** →
+   **App Groups** → add **`group.app.chronos.planner`**.
 2. Select the **ChronosWidgetExtension** target and add the **same** App Group
-   there too (both targets must share it). See `docs/WIDGETS_SETUP.md` for the
-   widget target itself.
+   there too (both targets must share it). See `docs/WIDGETS_SETUP.md`.
 
-### Game Center
-1. Just add the **Game Center** capability (no options to configure here).
-2. In **App Store Connect** → your app → **Features › Game Center**, create two
+That's it — no flag. Live Widgets are detected purely at runtime by
+`AppEntitlements.appGroupConfigured` (it just checks whether the shared
+container exists), so they light up the moment the App Group is present.
+
+### B. Game Center leaderboards — `CHRONOS_GAMECENTER`
+
+1. **+ Capability** → **Game Center** (nothing to configure in the sheet).
+2. **Build Settings** → **Active Compilation Conditions** → add
+   **`CHRONOS_GAMECENTER`** (Debug **and** Release).
+3. In **App Store Connect** → your app → **Features › Game Center**, create two
    leaderboards with these exact IDs:
    - `chronos.focus.weekly` — *Weekly Focus Minutes* (higher is better, integer)
    - `chronos.momentum.alltime` — *All-Time Momentum* (higher is better, integer)
 
-Xcode writes these into `Chronos.entitlements` for you. For reference, the
-finished file contains:
+> Add `CHRONOS_GAMECENTER` **only after** the Game Center capability is in place.
+> Without the flag, the binary can never call GameKit (which would crash without
+> the entitlement); with it, the app knows Game Center is present.
+
+After A + B your entitlements file contains:
 
 ```xml
-<key>com.apple.developer.icloud-container-identifiers</key>
-<array><string>iCloud.app.chronos.planner</string></array>
-<key>com.apple.developer.icloud-services</key>
-<array><string>CloudKit</string></array>
 <key>com.apple.security.application-groups</key>
 <array><string>group.app.chronos.planner</string></array>
 <key>com.apple.developer.game-center</key>
 <true/>
 ```
 
-## Step 2 — Flip on the code path
+No iCloud keys yet — which is exactly what keeps the app easy to transfer.
 
-The app only reaches CloudKit/GameKit when the build is compiled with the
-**`CHRONOS_PLUS`** flag. This is a safety interlock: without it, the free
-account's binary can never touch a paid framework (which would crash without the
-matching entitlement).
+---
 
-In the **Chronos** target → **Build Settings** → **Active Compilation
-Conditions**, add **`CHRONOS_PLUS`** (to Debug and Release).
+## After the transfer: add iCloud Sync + Friends — `CHRONOS_CLOUD`
 
-> Add this flag **only after** all three capabilities above are in place — it
-> tells the app every paid capability is present.
+Once the app is on **your own** paid account (App Transfer complete):
 
-## Step 3 — Turn it on in the app
+1. **+ Capability** → **iCloud** → tick **CloudKit** → under Containers, **+** →
+   create `iCloud.app.chronos.planner` (or accept the default `iCloud.<bundle-id>`).
+2. **Build Settings** → **Active Compilation Conditions** → add
+   **`CHRONOS_CLOUD`** (Debug and Release). (Or swap both à-la-carte flags for
+   the single **`CHRONOS_PLUS`** umbrella, which implies both.)
+
+The finished entitlements file then also contains:
+
+```xml
+<key>com.apple.developer.icloud-container-identifiers</key>
+<array><string>iCloud.app.chronos.planner</string></array>
+<key>com.apple.developer.icloud-services</key>
+<array><string>CloudKit</string></array>
+```
+
+Because you had no CloudKit data before the transfer, there is nothing to
+migrate — friends and sync simply begin working for everyone on the next update.
+
+---
+
+## Turn it on in the app
 
 1. Build & run on your device.
-2. **Settings › Chronos+** — the master switch now appears (it's hidden until a
-   capability is entitled).
-3. Flip **Turn on Chronos+**. Sync starts, Game Center signs in, and the
-   per-feature toggles become live.
+2. **Settings › Chronos+** — the master switch appears (it's hidden until at
+   least one capability is entitled).
+3. Flip **Turn on Chronos+**. The per-feature toggles for whatever you've
+   enabled become live; anything not in this build simply isn't listed.
 
-That's the one tap. If you pre-enabled the switch on the free account, it's
-already on and everything activates the moment the entitled build launches.
+If you pre-enabled the switch earlier, it's already on and each capability
+activates the moment an entitled build launches.
 
 ---
 
 ## How the graceful degradation works (for maintainers)
 
-Every paid path gates on `PaidFeatures.shared.isReady(_:)`, which is true only
-when **all three** hold:
+Every paid path gates on `PaidFeatures.shared.isReady(_:)`, and each capability
+is entitled **independently** via `isEntitled(_:)` in
+`Chronos/Services/PaidFeatures.swift`:
 
-1. **Entitled** — `AppEntitlements.chronosPlusBuild` is the `CHRONOS_PLUS`
-   compile flag. On the free build it's false, so the CloudKit/GameKit APIs are
-   never called (constructing a `CKContainer` without the entitlement would
-   otherwise crash — this is why we gate *before* touching it).
-2. **Account available** — for iCloud features, `CKContainer.accountStatus`
-   reports `.available`.
-3. **User opted in** — the `Prefs.chronosPlusEnabled` master toggle (plus the
-   per-feature toggle) is on.
+- `.liveWidgets` → `AppEntitlements.appGroupConfigured` — a **runtime** check
+  (does the App Group container exist?). No compile flag.
+- `.leaderboards` → `AppEntitlements.gameCenterBuild` — the `CHRONOS_GAMECENTER`
+  (or `CHRONOS_PLUS`) compile flag.
+- `.cloudSync`, `.friends` → `AppEntitlements.cloudBuild` — the `CHRONOS_CLOUD`
+  (or `CHRONOS_PLUS`) compile flag.
+
+`isReady` additionally requires the account to be available (for iCloud) and the
+user's master + per-feature toggles to be on. On the free build every
+`isEntitled` is false, so the CloudKit/GameKit APIs are never called
+(constructing a `CKContainer` without the entitlement would otherwise crash —
+this is why we gate *before* touching it).
 
 This mirrors how App Groups and Apple Foundation Models already degrade: compile
 everywhere, run only when available, otherwise no-op with a clear message. See:
 
-- `Chronos/Services/PaidFeatures.swift` — availability + entitlement detection
+- `Chronos/Services/PaidFeatures.swift` — per-capability entitlement detection
 - `Chronos/Services/CloudSyncService.swift` — CloudKit mirror of the local blobs
-- `Chronos/Services/SocialService.swift` — Game Center + Friends (CloudKit) 
+- `Chronos/Services/SocialService.swift` — Game Center + Friends (CloudKit)
 - `Chronos/Views/Social/` — the Chronos+ hub, Leaderboard, Friends UI
 
 Nothing here requires an upgrade to keep building green on the free account.
