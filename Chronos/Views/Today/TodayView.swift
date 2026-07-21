@@ -9,6 +9,8 @@ struct TodayView: View {
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var timer: FocusTimerController
     @EnvironmentObject private var life: LifeStore
+    @EnvironmentObject private var focusLog: FocusLog
+    @ObservedObject private var momentum = MomentumStore.shared
 
     @State private var now = Date()
     private let clock = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
@@ -50,6 +52,53 @@ struct TodayView: View {
 
     private var dueHabits: [Habit] {
         life.activeHabits.filter { $0.isDue(on: today) }
+    }
+
+    // MARK: Momentum / streak pressure
+
+    private var momentumInput: MomentumEngine.Input {
+        MomentumEngine.dailyInput(service: service, life: life, focusLog: focusLog,
+                                  hiddenCalendars: model.hiddenCalendarIDs, frogTaskID: model.frogTaskID)
+    }
+    private var todayScore: Int { MomentumEngine.score(momentumInput) }
+
+    /// A streak worth protecting, today still below "solid", and late enough in
+    /// the day that it's genuinely at risk — the moment to apply pressure.
+    private var streakAtRisk: Bool {
+        let hour = Calendar.current.component(.hour, from: now)
+        return momentum.streak() >= 2 && todayScore < MomentumStore.solidThreshold && hour >= 16
+    }
+
+    private var streakRiskBanner: some View {
+        let action = MomentumEngine.nextBestAction(momentumInput)
+        return Button {
+            model.momentumDetailPresented = true
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "flame.fill")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(Theme.danger)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Your \(momentum.streak())-day streak is at risk")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(action?.tip ?? "You're at \(todayScore) — lift today's momentum to keep the streak alive.")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.textSecondary)
+                        .lineLimit(2).minimumScaleFactor(0.85)
+                }
+                Spacer(minLength: 6)
+                Text("Save it")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.bg)
+                    .padding(.horizontal, 12).padding(.vertical, 6)
+                    .background(Theme.danger, in: Capsule())
+            }
+            .padding(.horizontal, 12).padding(.vertical, 11)
+            .background(Theme.danger.opacity(0.1), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Theme.danger.opacity(0.3), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: Carry-over
@@ -301,6 +350,7 @@ struct TodayView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     dayActionsRow
+                    if streakAtRisk { streakRiskBanner }
                     dayLoadBanner
                     frogCard
                     intentionsCard
