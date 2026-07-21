@@ -53,7 +53,10 @@ enum StatsEngine {
         allTasks: [TaskItem],
         taskLookup: (String) -> TaskItem?,
         sessions: [FocusSession],
-        now: Date = Date()
+        now: Date = Date(),
+        // Real external events (not Chronos timeblocks) auto-count as attended,
+        // focused time — unless the day review marked the occurrence skipped.
+        isEventSkipped: (TimeBlock) -> Bool = { _ in false }
     ) -> Stats {
         let sortedDays = days.sorted()
         let start = (sortedDays.first ?? now).startOfDay
@@ -97,7 +100,11 @@ enum StatsEngine {
             stats.plannedMinutes += dayPlanned
 
             let daySessions = sessions.filter { $0.start.isSameDay(as: day) }
-            let dayFocus = daySessions.reduce(0) { $0 + $1.actualMinutes }
+            // Attended real events on their start day count as focused time.
+            let attendedEventMinutes = dayBlocks
+                .filter { $0.isRealEvent && $0.start.isSameDay(as: day) && $0.end < now && !isEventSkipped($0) }
+                .reduce(0) { $0 + $1.durationMinutes }
+            let dayFocus = daySessions.reduce(0) { $0 + $1.actualMinutes } + attendedEventMinutes
             stats.focusMinutes += dayFocus
             stats.focusSessions += daySessions.count
 

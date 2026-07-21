@@ -209,11 +209,17 @@ struct TimeBlockCard: View {
             }
         }
         Button { onTap() } label: { Label("Edit", systemImage: "pencil") }
-        Button { onFocus() } label: { Label("Focus on This", systemImage: "timer") }
+        // Real external events (a doctor's appointment) aren't focus work, so
+        // the timer only appears on Chronos timeblocks.
+        if block.isChronosBlock {
+            Button { onFocus() } label: { Label("Focus on This", systemImage: "timer") }
+        }
         categorySubmenu
         if block.isEditable {
             Button { onDuplicate() } label: { Label("Duplicate", systemImage: "plus.square.on.square") }
-            Button { onStartNow() } label: { Label("Start Now", systemImage: "play.circle") }
+            if block.isChronosBlock {
+                Button { onStartNow() } label: { Label("Start Now", systemImage: "play.circle") }
+            }
             if let task = linkedTask {
                 Button { onToggleTask() } label: {
                     Label(task.isCompleted ? "Mark Task Incomplete" : "Complete Task",

@@ -204,6 +204,7 @@ final class EventKitService: ObservableObject {
             hasRecurrence: event.hasRecurrenceRules,
             isEditable: calendar.allowsContentModifications,
             hasColorOverride: overrideColor != nil,
+            isChronosBlock: BlockMetadata.isChronos(from: event.notes) || linkedTaskID != nil,
             meetingURL: meeting?.url,
             meetingPlatform: meeting?.platform
         )
@@ -520,7 +521,10 @@ final class EventKitService: ObservableObject {
         event.endDate = draft.isAllDay ? max(draft.end, draft.start) : max(draft.end, draft.start.adding(minutes: 5))
         event.isAllDay = draft.isAllDay
         event.location = draft.location.isEmpty ? nil : draft.location
-        event.notes = BlockMetadata.encode(notes: draft.notes, colorHex: draft.colorHex)
+        // Stamp new blocks (and preserve the stamp on ones we already made) as
+        // Chronos timeblocks, so real external events stay distinguishable.
+        let isChronos = isNew || BlockMetadata.isChronos(from: event.notes)
+        event.notes = BlockMetadata.encode(notes: draft.notes, colorHex: draft.colorHex, chronos: isChronos)
 
         if let taskID = draft.linkedTaskID {
             event.url = Self.taskLinkURL(for: taskID)
@@ -861,7 +865,7 @@ final class EventKitService: ObservableObject {
         event.startDate = start
         event.endDate = start.adding(minutes: max(minutes, 5))
         event.url = Self.taskLinkURL(for: task.id)
-        if let notes = task.notes, !notes.isEmpty { event.notes = notes }
+        event.notes = BlockMetadata.encode(notes: task.notes ?? "", colorHex: nil, chronos: true)
         do {
             try store.save(event, span: .thisEvent, commit: true)
             refresh()

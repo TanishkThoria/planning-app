@@ -536,7 +536,8 @@ struct CoachChatView: View {
             blocks: { service.blocks(on: $0, hiddenCalendars: model.hiddenCalendarIDs) },
             allTasks: service.tasks,
             taskLookup: { service.task(withID: $0) },
-            sessions: focusLog.sessions
+            sessions: focusLog.sessions,
+            isEventSkipped: { EventOutcomeStore.shared.isSkipped($0.id) }
         )
     }
 

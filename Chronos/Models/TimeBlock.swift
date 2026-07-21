@@ -23,12 +23,20 @@ struct TimeBlock: Identifiable, Hashable {
     /// True when the event carries an explicit per-block color (a Chronos
     /// `[color:…]` override) — so category color-coding leaves it alone.
     var hasColorOverride: Bool = false
+    /// True when Chronos itself created this block (a planned "time block"), via
+    /// its origin marker or a linked task — as opposed to a real external event
+    /// (a doctor's appointment). Real events don't get the focus timer and are
+    /// counted as attended/focused automatically.
+    var isChronosBlock: Bool = false
     /// A detected video-conferencing link (Zoom/Meet/Teams/…) if the event
     /// carries one — powers the "Join" button.
     var meetingURL: URL? = nil
     var meetingPlatform: String? = nil
 
     var hasMeeting: Bool { meetingURL != nil }
+    /// A real (non-Chronos) event: not created by Plan My Day or the block
+    /// creator, and not an all-day banner.
+    var isRealEvent: Bool { !isChronosBlock && !isAllDay }
 
     var duration: TimeInterval { end.timeIntervalSince(start) }
     var durationMinutes: Int { max(0, Int(duration / 60)) }
@@ -97,6 +105,12 @@ struct BlockDraft {
 /// independently of their calendar and still sync everywhere EventKit does.
 enum BlockMetadata {
     private static let colorPattern = "\\[color:([0-9A-Fa-f]{6})\\]"
+    /// Marks a block Chronos itself created (a planned "time block") as opposed
+    /// to a real external event synced from Apple Calendar (a doctor's
+    /// appointment). Timeblocks get the focus timer; real events don't.
+    private static let chronosToken = "[chronos:tb]"
+    private static let chronosPattern = "\\[chronos:tb\\]"
+    private static let allPatterns = [colorPattern, chronosPattern]
 
     static func colorHex(from notes: String?) -> UInt32? {
         guard let notes,
@@ -107,19 +121,30 @@ enum BlockMetadata {
         return UInt32(notes[range], radix: 16)
     }
 
+    /// True when the notes carry the Chronos-origin marker.
+    static func isChronos(from notes: String?) -> Bool {
+        guard let notes else { return false }
+        return notes.contains(chronosToken)
+    }
+
     static func strippingTokens(_ notes: String?) -> String? {
-        guard let notes, let regex = try? NSRegularExpression(pattern: colorPattern) else { return notes }
-        let cleaned = regex.stringByReplacingMatches(
-            in: notes, range: NSRange(notes.startIndex..., in: notes), withTemplate: ""
-        ).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard var cleaned = notes else { return nil }
+        for pattern in allPatterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern) else { continue }
+            cleaned = regex.stringByReplacingMatches(
+                in: cleaned, range: NSRange(cleaned.startIndex..., in: cleaned), withTemplate: ""
+            )
+        }
+        cleaned = cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
         return cleaned.isEmpty ? nil : cleaned
     }
 
-    static func encode(notes: String, colorHex: UInt32?) -> String? {
+    static func encode(notes: String, colorHex: UInt32?, chronos: Bool = false) -> String? {
         let base = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         var parts: [String] = []
         if !base.isEmpty { parts.append(base) }
         if let colorHex { parts.append(String(format: "[color:%06X]", colorHex)) }
+        if chronos { parts.append(chronosToken) }
         let joined = parts.joined(separator: "\n")
         return joined.isEmpty ? nil : joined
     }

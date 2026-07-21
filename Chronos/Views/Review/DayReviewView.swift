@@ -11,6 +11,7 @@ struct DayReviewView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var profileStore: ProfileStore
+    @ObservedObject private var outcomes = EventOutcomeStore.shared
     @Environment(\.dismiss) private var dismiss
 
     @AppStorage(Prefs.snapMinutes) private var snapMinutes = 15
@@ -41,6 +42,14 @@ struct DayReviewView: View {
         service.tasks.filter { $0.isCompleted && ($0.completionDate?.isSameDay(as: day) ?? false) }.count
     }
 
+    /// Past real (non-Chronos) events on the day — assumed attended, but the
+    /// user can mark exceptions here.
+    private var realEvents: [TimeBlock] {
+        service.blocks(on: day)
+            .filter { $0.isRealEvent && $0.end < Date() }
+            .sorted { $0.start < $1.start }
+    }
+
     struct ReviewItem: Identifiable {
         let block: TimeBlock
         let task: TaskItem
@@ -56,17 +65,25 @@ struct DayReviewView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     summaryCard
 
-                    if pending.isEmpty {
+                    if pending.isEmpty && realEvents.isEmpty {
                         EmptyStateView(
                             icon: "checkmark.seal.fill",
                             title: "All caught up",
                             message: "Every finished block has been reviewed. Nice work closing the loop."
                         )
-                    } else {
+                    }
+                    if !pending.isEmpty {
                         SectionHeader(title: "Needs a decision", trailing: "\(pending.count)")
                         ForEach(pending) { item in
                             reviewCard(item)
                         }
+                    }
+                    if !realEvents.isEmpty {
+                        SectionHeader(title: "Appointments & events", trailing: "\(realEvents.count)")
+                        Text("These count as done and focused automatically. Mark any you didn't make it to.")
+                            .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
+                            .padding(.horizontal, 2)
+                        ForEach(realEvents) { block in eventRow(block) }
                     }
                 }
                 .padding(16)
@@ -172,6 +189,39 @@ struct DayReviewView: View {
                     handled.insert(item.block.id)
                 }
             }
+        }
+        .padding(12)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func eventRow(_ block: TimeBlock) -> some View {
+        let skipped = outcomes.isSkipped(block.id)
+        return HStack(spacing: 10) {
+            RoundedRectangle(cornerRadius: 2).fill(block.color.opacity(skipped ? 0.4 : 1)).frame(width: 3, height: 30)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(block.title)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(skipped ? Theme.textTertiary : Theme.textPrimary)
+                    .strikethrough(skipped, color: Theme.textTertiary)
+                    .lineLimit(1)
+                Text(Fmt.timeRange(block.start, block.end))
+                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+            }
+            Spacer()
+            Button {
+                outcomes.toggle(block.id); Haptics.light()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: skipped ? "xmark.circle.fill" : "checkmark.circle.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                    Text(skipped ? "Didn't" : "Attended")
+                        .font(.system(size: 12, weight: .semibold))
+                }
+                .foregroundStyle(skipped ? Theme.textTertiary : Theme.success)
+                .padding(.horizontal, 10).padding(.vertical, 6)
+                .background((skipped ? Theme.textTertiary : Theme.success).opacity(0.12), in: Capsule())
+            }
+            .buttonStyle(.plain)
         }
         .padding(12)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
