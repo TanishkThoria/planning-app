@@ -75,7 +75,7 @@ struct CategoryField: View {
     @Binding var override: ActivityCategory?
 
     private var resolved: ActivityCategory {
-        override ?? ActivityCategory.guess(from: title) ?? .other
+        override ?? TagStore.shared.suggestedCategory(forTitle: title)
     }
 
     var body: some View {

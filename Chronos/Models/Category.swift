@@ -85,19 +85,19 @@ enum ActivityCategory: String, Codable, CaseIterable, Identifiable {
         let t = " " + rawTitle.lowercased() + " "
         func has(_ words: [String]) -> Bool { words.contains { t.contains($0) } }
 
-        if has([" with ", "party", "hang out", "hangout", "birthday", "coffee with", "lunch with", "dinner with", "drinks", "date night", "meetup", "meet up", "friends"]) { return .social }
-        if has(["lecture", "seminar", "recitation", "office hours", "class ", " class", "cs1", "cs2", "biology", "chemistry", "physics", "calculus", "history class", "econ"]) { return .classes }
-        if has(["homework", "assignment", "essay", "problem set", "pset", "exam", "midterm", "final exam", "quiz", "lab report", "study for", "revise for"]) { return .school }
-        if has(["study", "flashcards", "review notes", "practice problems", "reading"]) { return .study }
-        if has(["gym", "workout", "lift", "run", "jog", "yoga", "pilates", "exercise", "cardio", "cycling", "spin class"]) { return .fitness }
-        if has(["practice", "scrimmage", "game", "match", "soccer", "basketball", "tennis", "volleyball", "hockey", "football", "swim", "track", "team"]) { return .sports }
-        if has(["doctor", "dentist", "therapy", "therapist", "appointment", "clinic", "checkup", "medication", "physical"]) { return .health }
-        if has(["groceries", "shopping", "bank", "post office", "pick up", "drop off", "errand", "haircut", "pharmacy", "oil change"]) { return .errand }
-        if has(["clean", "laundry", "dishes", "chore", "tidy", "vacuum", "trash", "dust", "meal prep"]) { return .chores }
-        if has(["draw", "paint", "sketch", "write ", "journal", "music", "guitar", "piano", "design", "photo", "video edit", "art"]) { return .creative }
-        if has(["breakfast", "lunch", "dinner", "brunch", "meal", "snack"]) { return .meal }
-        if has(["nap", "rest", "break", "relax", "meditate", "sleep", "wind down", "chill"]) { return .rest }
-        if has(["work", "meeting", "standup", "stand-up", "1:1", "email", "project", "deadline", "client", "office", "sprint", "sync", "interview", "shift"]) { return .work }
+        if has([" with ", "party", "hang out", "hangout", "birthday", "coffee with", "lunch with", "dinner with", "drinks", "date night", " date ", "meetup", "meet up", "friends", " friend", "catch up", "catch-up", "call with", "call home", "facetime", "phone call", "wedding", "reunion", "happy hour", "bar ", "night out", "visit ", "hangs", "girlfriend", "boyfriend", "roommate", "get together", "grab drinks", "brunch with"]) { return .social }
+        if has(["lecture", "seminar", "recitation", "office hours", "class ", " class", "cs1", "cs2", "biology", "chemistry", "physics", "calculus", "history class", "econ", "tutorial", "discussion section", " course", "orgo", "organic chem", " bio ", " chem ", "math class", "english class", "professor", "section "]) { return .classes }
+        if has(["homework", "assignment", "essay", "problem set", "pset", "exam", "midterm", "final exam", " finals", "quiz", "lab report", "study for", "revise for", "term paper", " paper", "thesis", "dissertation", "coursework", "submit ", "due:", "capstone", "research paper", "write-up", "writeup"]) { return .school }
+        if has(["study", "flashcards", "review notes", "practice problems", "reading", "revise", "memorize", "anki", "prep for", "textbook", "review for", "cram"]) { return .study }
+        if has(["gym", "workout", "work out", "lift", "lifting", "run ", " run", "jog", "yoga", "pilates", "exercise", "cardio", "cycling", "spin class", "hiit", "crossfit", "treadmill", "weights", "stretch", "hike", "hiking", "peloton", "walk", "steps", "training", "leg day", "push day", "pull day"]) { return .fitness }
+        if has(["scrimmage", "soccer", "basketball", "tennis", "volleyball", "hockey", "football", "swim", "track meet", " team", "baseball", "golf", "climbing", "bouldering", "skiing", "snowboard", "lacrosse", "rugby", "cricket", "badminton", "tournament", "match ", " match", "practice", "pickleball", "ultimate"]) { return .sports }
+        if has(["doctor", "dentist", "therapy", "therapist", "appointment", "clinic", "checkup", "check-up", "medication", "physical ", "hospital", "vaccine", "flu shot", "optometrist", "dermatologist", "counsel", "medical", " nurse", "blood test", "x-ray", "mri", "surgery", "urgent care", " appt"]) { return .health }
+        if has(["groceries", "grocery", "shopping", " bank", "post office", "pick up", "pickup", "drop off", "dropoff", "errand", "haircut", "pharmacy", "oil change", " dmv", "mail ", "target run", "costco", "car wash", " gas ", "returns", "shipping", "package", "hardware store"]) { return .errand }
+        if has(["clean", "laundry", "dishes", "chore", "tidy", "vacuum", "trash", "dust", "meal prep", "mow", "cook", "organize", "declutter", "sweep", " mop", "fold ", "garbage", "yard work", "dry cleaning", "wash the", "chores"]) { return .chores }
+        if has(["draw", "paint", "sketch", "write ", "writing", "journal", " music", "guitar", "piano", "design", "photo", "video edit", " art", "blog", "compose", "podcast", " film", "editing", "record ", "craft", "knit", "sing", "produce", "sculpt", "animation", "portfolio"]) { return .creative }
+        if has(["breakfast", "lunch", "dinner", "brunch", " meal", "snack", " eat", "coffee", " cafe", "restaurant", " food", "dining", "grab lunch", "grab food"]) { return .meal }
+        if has(["nap", " rest", " break", "relax", "meditate", "sleep", "wind down", "chill", "unwind", "downtime", "decompress", " spa", " bath", " tv", "netflix", "gaming", "video game", "read for fun", "recharge", "lounge"]) { return .rest }
+        if has(["work", "meeting", "standup", "stand-up", "1:1", "email", " project", "deadline", "client", "office", " sprint", " sync", "interview", "shift", "presentation", " report", " zoom", " slack", "retro", " demo", "onboarding", "invoice", "proposal", "stakeholder", "roadmap", "planning", "kickoff", "1-1", "check-in", "review "]) { return .work }
         return nil
     }
 }

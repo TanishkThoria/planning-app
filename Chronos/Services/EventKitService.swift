@@ -466,6 +466,7 @@ final class EventKitService: ObservableObject {
             if let seriesID = event.eventIdentifier, draft.categoryOverride != nil {
                 TagStore.shared.setCategory(draft.categoryOverride, forID: seriesID)
             }
+            if let cat = draft.categoryOverride { TagStore.shared.learn(title: draft.title, category: cat) }
             addTravelBufferIfNeeded(draft, calendar: calendar)
             refresh()
         } catch {
@@ -503,6 +504,7 @@ final class EventKitService: ObservableObject {
             if let seriesID = event.eventIdentifier {
                 TagStore.shared.setCategory(draft.categoryOverride, forID: seriesID)
             }
+            if let cat = draft.categoryOverride { TagStore.shared.learn(title: draft.title, category: cat) }
             if let calendar = event.calendar { addTravelBufferIfNeeded(draft, calendar: calendar) }
             refresh()
         } catch {
@@ -661,6 +663,7 @@ final class EventKitService: ObservableObject {
             if draft.categoryOverride != nil {
                 TagStore.shared.setCategory(draft.categoryOverride, forID: reminder.calendarItemIdentifier)
             }
+            if let cat = draft.categoryOverride { TagStore.shared.learn(title: draft.title, category: cat) }
             refresh()
         } catch {
             fail("Couldn't create the task", error)
@@ -681,6 +684,7 @@ final class EventKitService: ObservableObject {
         do {
             try store.save(reminder, commit: true)
             TagStore.shared.setCategory(draft.categoryOverride, forID: id)
+            if let cat = draft.categoryOverride { TagStore.shared.learn(title: draft.title, category: cat) }
             refresh()
         } catch {
             fail("Couldn't save the task", error)
