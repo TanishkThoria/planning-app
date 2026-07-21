@@ -26,7 +26,7 @@ struct Routine: Codable, Identifiable, Hashable {
     /// Total timed duration — untimed check-off steps don't add clock time.
     var totalSeconds: Int { steps.filter { !$0.untimed }.reduce(0) { $0 + $1.seconds } }
     var totalMinutes: Int { max(1, totalSeconds / 60) }
-    var hasUntimedSteps: Bool { steps.contains(\.untimed) }
+    var hasUntimedSteps: Bool { steps.contains { $0.untimed } }
 }
 
 /// Persists the user's routines (defaults seeded on first run) to UserDefaults.
