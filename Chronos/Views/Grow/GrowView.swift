@@ -281,10 +281,19 @@ struct GrowView: View {
             .buttonStyle(.plain)
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(habit.title.isEmpty ? "Untitled habit" : habit.title)
-                    .font(.system(size: 14.5, weight: .semibold))
-                    .foregroundStyle(Theme.textPrimary)
-                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(habit.title.isEmpty ? "Untitled habit" : habit.title)
+                        .font(.system(size: 14.5, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                        .lineLimit(1)
+                    if habit.isTimeAnchored, let m = habit.reminderMinutes {
+                        Label(Fmt.time.string(from: today.at(minutes: m)), systemImage: "clock")
+                            .font(.system(size: 10.5, weight: .semibold))
+                            .foregroundStyle(habit.color)
+                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .background(habit.color.opacity(0.14), in: Capsule())
+                    }
+                }
                 weekDots(habit)
             }
             Spacer()

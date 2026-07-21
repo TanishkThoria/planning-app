@@ -13,6 +13,10 @@ struct DayColumn: View {
     var dimPast = true
     /// Calibrated meal/routine windows drawn as ghost bands behind blocks.
     var routineWindows: [PlannerProfile.DayWindow] = []
+    /// Time-anchored habits that appear on this day at their set time.
+    var anchoredHabits: [Habit] = []
+    var isHabitDone: (Habit) -> Bool = { _ in false }
+    var onToggleHabit: (Habit) -> Void = { _ in }
     var taskLookup: (String) -> TaskItem? = { _ in nil }
 
     var onTapBlock: (TimeBlock) -> Void = { _ in }
@@ -57,6 +61,8 @@ struct DayColumn: View {
                 if let range = createRange {
                     dragCreatePreview(range)
                 }
+
+                habitMarkers(width: geo.size.width)
 
                 ForEach(BlockLayout.place(blocks, on: date)) { placed in
                     TimeBlockCard(
@@ -140,6 +146,57 @@ struct DayColumn: View {
             }
         }
         .allowsHitTesting(false)
+    }
+
+    /// Time-anchored habits, drawn as their own compact markers at the set
+    /// time — an appointment with yourself, distinct from calendar blocks. Tap
+    /// to check off; blocks draw on top where they overlap.
+    @ViewBuilder
+    private func habitMarkers(width: CGFloat) -> some View {
+        ForEach(anchoredHabits) { habit in
+            if let minutes = habit.reminderMinutes {
+                let done = isHabitDone(habit)
+                let y = CGFloat(minutes) / 60 * hourHeight
+                let height = max(CGFloat(habit.durationMinutes) / 60 * hourHeight, 22)
+                Button {
+                    onToggleHabit(habit); Haptics.success()
+                } label: {
+                    HStack(spacing: 7) {
+                        Image(systemName: done ? "checkmark.circle.fill" : habit.iconName)
+                            .font(.system(size: 12.5, weight: .semibold))
+                            .foregroundStyle(done ? Theme.success : habit.color)
+                        if height >= 20 {
+                            Text(habit.title)
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(Theme.textPrimary)
+                                .strikethrough(done, color: Theme.textTertiary)
+                                .lineLimit(1)
+                            Spacer(minLength: 0)
+                            Text(Fmt.time.string(from: date.at(minutes: minutes)))
+                                .font(.system(size: 10.5, weight: .medium))
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                    .frame(width: width - 4, height: height, alignment: .leading)
+                    .background(habit.color.opacity(done ? 0.08 : 0.14),
+                                in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .strokeBorder(habit.color.opacity(0.5),
+                                          style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                    )
+                    .overlay(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(habit.color)
+                            .frame(width: 3)
+                            .padding(.vertical, 3)
+                    }
+                }
+                .buttonStyle(.plain)
+                .offset(x: 2, y: y)
+            }
+        }
     }
 
     /// True when a timed block overlaps the given window, so its ghost band

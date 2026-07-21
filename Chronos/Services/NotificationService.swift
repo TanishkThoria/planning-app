@@ -215,14 +215,16 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
         }
     }
 
-    /// Per-habit reminders at their configured time-of-day.
-    func scheduleHabitReminders(_ reminders: [(id: String, title: String, minutes: Int)]) {
+    /// Per-habit reminders at their configured time-of-day. `anchored` habits
+    /// happen *at* that moment, so they get an at-the-time "it's time" framing
+    /// instead of a loose nudge.
+    func scheduleHabitReminders(_ reminders: [(id: String, title: String, minutes: Int, anchored: Bool)]) {
         clear(prefix: Self.habitPrefix)
         guard enabled, authorization == .authorized else { return }
         for r in reminders.prefix(16) {
             scheduleDaily(id: "\(Self.habitPrefix)\(r.id)",
-                          title: "Habit reminder",
-                          body: r.title,
+                          title: r.anchored ? r.title : "Habit reminder",
+                          body: r.anchored ? "It's time — \(r.title)." : r.title,
                           minutes: r.minutes)
         }
     }

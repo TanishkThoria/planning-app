@@ -21,6 +21,8 @@ struct RoutineRunnerView: View {
     private var steps: [RoutineStep] { routine.steps }
     private var current: RoutineStep? { steps.indices.contains(stepIndex) ? steps[stepIndex] : nil }
     private var next: RoutineStep? { steps.indices.contains(stepIndex + 1) ? steps[stepIndex + 1] : nil }
+    /// A check-off step with no countdown — you advance it yourself.
+    private var isUntimed: Bool { current?.untimed == true }
 
     private var remaining: Int {
         running ? max(0, Int(stepEndDate.timeIntervalSince(now).rounded(.up))) : pausedRemaining
@@ -47,7 +49,7 @@ struct RoutineRunnerView: View {
         .onDisappear { speaker.stop() }
         .onReceive(tick) { value in
             now = value
-            if running, !finished, remaining <= 0 { advance() }
+            if running, !finished, !isUntimed, remaining <= 0 { advance() }
         }
     }
 
@@ -90,21 +92,35 @@ struct RoutineRunnerView: View {
                 .lineLimit(2)
 
             ZStack {
-                Circle().stroke(Theme.fill, lineWidth: 10)
-                Circle()
-                    .trim(from: 0, to: stepProgress)
-                    .stroke(Theme.accentColor, style: StrokeStyle(lineWidth: 10, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .animation(.linear(duration: 0.3), value: stepProgress)
-                Text(timeText(remaining))
-                    .font(.system(size: 44, weight: .bold))
-                    .foregroundStyle(Theme.textPrimary)
-                    .monospacedDigit()
+                if isUntimed {
+                    Circle().stroke(Theme.accentColor.opacity(0.5),
+                                    style: StrokeStyle(lineWidth: 10, lineCap: .round, dash: [3, 10]))
+                    VStack(spacing: 6) {
+                        Image(systemName: "hand.tap.fill")
+                            .font(.system(size: 40, weight: .semibold))
+                            .foregroundStyle(Theme.accentColor)
+                        Text("Tap Done\nwhen finished")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(Theme.textSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+                } else {
+                    Circle().stroke(Theme.fill, lineWidth: 10)
+                    Circle()
+                        .trim(from: 0, to: stepProgress)
+                        .stroke(Theme.accentColor, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                        .animation(.linear(duration: 0.3), value: stepProgress)
+                    Text(timeText(remaining))
+                        .font(.system(size: 44, weight: .bold))
+                        .foregroundStyle(Theme.textPrimary)
+                        .monospacedDigit()
+                }
             }
             .frame(width: 220, height: 220)
 
             if let next {
-                Text("Next: \(next.title) · \(next.minutes) min")
+                Text("Next: \(next.title)\(next.untimed ? "" : " · \(next.minutes) min")")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             } else {
@@ -135,8 +151,12 @@ struct RoutineRunnerView: View {
     private var controls: some View {
         HStack(spacing: 14) {
             control("backward.fill", "Back", Theme.textSecondary) { begin(max(0, stepIndex - 1)) }
-            control(running ? "pause.fill" : "play.fill", running ? "Pause" : "Resume", Theme.accentColor, prominent: true) {
-                running ? pause() : resume()
+            if isUntimed {
+                control("checkmark", "Done", Theme.accentColor, prominent: true) { advance() }
+            } else {
+                control(running ? "pause.fill" : "play.fill", running ? "Pause" : "Resume", Theme.accentColor, prominent: true) {
+                    running ? pause() : resume()
+                }
             }
             control("forward.fill", "Skip", Theme.textSecondary) { advance() }
         }
@@ -224,7 +244,11 @@ struct RoutineRunnerView: View {
     private func announce(_ step: RoutineStep) {
         Haptics.light()
         guard voiceEnabled else { return }
-        speaker.speak("Now: \(step.title). \(step.minutes) minute\(step.minutes == 1 ? "" : "s").")
+        if step.untimed {
+            speaker.speak("Now: \(step.title).")
+        } else {
+            speaker.speak("Now: \(step.title). \(step.minutes) minute\(step.minutes == 1 ? "" : "s").")
+        }
     }
 
     private func timeText(_ seconds: Int) -> String {

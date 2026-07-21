@@ -51,11 +51,16 @@ struct RoutinesView: View {
         HStack(spacing: 8) {
             Image(systemName: voiceEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
                 .font(.system(size: 13.5)).foregroundStyle(Theme.accentColor)
-            Text("Guided, hands-free. Each step counts down and is announced aloud — great for mornings and beating time-blindness.")
+            Text("Build a routine to follow step by step — timed steps count down and are announced aloud, or add check-off steps for things like “no phone”. Great for mornings and beating time-blindness.")
                 .font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, 4)
+    }
+
+    private func cardSubtitle(_ routine: Routine) -> String {
+        let steps = "\(routine.steps.count) step\(routine.steps.count == 1 ? "" : "s")"
+        return routine.totalSeconds > 0 ? "\(steps) · \(routine.totalMinutes) min" : steps
     }
 
     private func routineCard(_ routine: Routine) -> some View {
@@ -63,7 +68,7 @@ struct RoutinesView: View {
             Text(routine.emoji).font(.system(size: 26))
             VStack(alignment: .leading, spacing: 2) {
                 Text(routine.name).font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.textPrimary)
-                Text("\(routine.steps.count) steps · \(routine.totalMinutes) min")
+                Text(cardSubtitle(routine))
                     .font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
             }
             Spacer()
@@ -104,6 +109,14 @@ private struct RoutineEditorSheet: View {
 
     private let emojis = ["✨", "☀️", "🌙", "📚", "🏃", "🧘", "🧹", "💻", "☕️", "🛏️"]
 
+    private func move(_ step: RoutineStep, by offset: Int) {
+        guard let i = routine.steps.firstIndex(where: { $0.id == step.id }) else { return }
+        let j = i + offset
+        guard routine.steps.indices.contains(j) else { return }
+        routine.steps.swapAt(i, j)
+        Haptics.selection()
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -128,33 +141,65 @@ private struct RoutineEditorSheet: View {
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("STEPS").font(.system(size: 11.5, weight: .semibold)).tracking(1.2).foregroundStyle(Theme.textTertiary)
+                        HStack {
+                            Text("STEPS").font(.system(size: 11.5, weight: .semibold)).tracking(1.2).foregroundStyle(Theme.textTertiary)
+                            Spacer()
+                            Text("Timed or check-off").font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                        }
                         ForEach($routine.steps) { $step in
                             HStack(spacing: 10) {
                                 TextField("Step", text: $step.title)
                                     .textFieldStyle(.plain).font(.system(size: 15)).foregroundStyle(Theme.textPrimary)
-                                Stepper(value: Binding(
-                                    get: { max(1, step.seconds / 60) },
-                                    set: { $step.wrappedValue.seconds = $0 * 60 }
-                                ), in: 1...120) {
-                                    Text("\(max(1, step.seconds / 60))m")
-                                        .font(.system(size: 13.5, weight: .medium))
-                                        .foregroundStyle(Theme.textSecondary).monospacedDigit()
+                                if step.untimed {
+                                    Text("Check-off")
+                                        .font(.system(size: 11.5, weight: .semibold))
+                                        .foregroundStyle(Theme.accentColor)
+                                        .padding(.horizontal, 8).padding(.vertical, 3)
+                                        .background(Theme.accentColor.opacity(0.14), in: Capsule())
+                                } else {
+                                    Stepper(value: Binding(
+                                        get: { max(1, step.seconds / 60) },
+                                        set: { $step.wrappedValue.seconds = $0 * 60 }
+                                    ), in: 1...120) {
+                                        Text("\(max(1, step.seconds / 60))m")
+                                            .font(.system(size: 13.5, weight: .medium))
+                                            .foregroundStyle(Theme.textSecondary).monospacedDigit()
+                                    }
+                                    .labelsHidden()
                                 }
-                                .labelsHidden()
-                                Button { routine.steps.removeAll { $0.id == step.id } } label: {
-                                    Image(systemName: "minus.circle.fill").font(.system(size: 16)).foregroundStyle(Theme.textTertiary)
+                                Menu {
+                                    Button {
+                                        $step.wrappedValue.untimed.toggle()
+                                        if !$step.wrappedValue.untimed, $step.wrappedValue.seconds < 60 { $step.wrappedValue.seconds = 300 }
+                                    } label: {
+                                        Label(step.untimed ? "Make it timed" : "Make it check-off",
+                                              systemImage: step.untimed ? "timer" : "checkmark.circle")
+                                    }
+                                    Button { move(step, by: -1) } label: { Label("Move up", systemImage: "arrow.up") }
+                                    Button { move(step, by: 1) } label: { Label("Move down", systemImage: "arrow.down") }
+                                    Divider()
+                                    Button(role: .destructive) { routine.steps.removeAll { $0.id == step.id } } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                } label: {
+                                    Image(systemName: "ellipsis.circle").font(.system(size: 16)).foregroundStyle(Theme.textTertiary)
                                 }
-                                .buttonStyle(.plain)
+                                .menuIndicator(.hidden)
                             }
                             .padding(.horizontal, 12).padding(.vertical, 10)
                             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                             .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
                         }
-                        Button { routine.steps.append(RoutineStep(title: "New step", seconds: 300)) } label: {
-                            Label("Add step", systemImage: "plus").font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                        HStack(spacing: 10) {
+                            Button { routine.steps.append(RoutineStep(title: "New step", seconds: 300)) } label: {
+                                Label("Timed step", systemImage: "plus").font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                            }
+                            .buttonStyle(.plain)
+                            Button { routine.steps.append(RoutineStep(title: "New step", seconds: 60, untimed: true)) } label: {
+                                Label("Check-off step", systemImage: "checkmark.circle").font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
 
                     Button(role: .destructive) { onDelete(routine); dismiss() } label: {

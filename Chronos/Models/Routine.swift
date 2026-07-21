@@ -23,8 +23,10 @@ struct Routine: Codable, Identifiable, Hashable {
     var emoji: String
     var steps: [RoutineStep]
 
-    var totalSeconds: Int { steps.reduce(0) { $0 + $1.seconds } }
+    /// Total timed duration — untimed check-off steps don't add clock time.
+    var totalSeconds: Int { steps.filter { !$0.untimed }.reduce(0) { $0 + $1.seconds } }
     var totalMinutes: Int { max(1, totalSeconds / 60) }
+    var hasUntimedSteps: Bool { steps.contains(\.untimed) }
 }
 
 /// Persists the user's routines (defaults seeded on first run) to UserDefaults.
@@ -80,11 +82,12 @@ final class RoutineStore: ObservableObject {
 
     static let defaults: [Routine] = [
         Routine(name: "Morning Launch", emoji: "☀️", steps: [
-            step("Water & wake up", 2),
-            step("Stretch", 3),
+            step("Wake up & water", 2),
+            RoutineStep(title: "No phone", seconds: 60, untimed: true),
+            step("Wash your face", 3),
+            step("Healthy breakfast", 15),
             step("Shower", 10),
-            step("Get dressed", 5),
-            step("Plan today", 5),
+            step("Get dressed & go", 5),
         ]),
         Routine(name: "Study Sprint", emoji: "📚", steps: [
             step("Clear your desk", 2),

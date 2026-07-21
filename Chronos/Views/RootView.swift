@@ -592,9 +592,9 @@ struct RootView: View {
     }
 
     private func rescheduleHabitReminders() {
-        let reminders = life.activeHabits.compactMap { habit -> (id: String, title: String, minutes: Int)? in
+        let reminders = life.activeHabits.compactMap { habit -> (id: String, title: String, minutes: Int, anchored: Bool)? in
             guard let minutes = habit.reminderMinutes else { return nil }
-            return (id: habit.id.uuidString, title: habit.title, minutes: minutes)
+            return (id: habit.id.uuidString, title: habit.title, minutes: minutes, anchored: habit.anchored)
         }
         notifications.scheduleHabitReminders(reminders)
     }

@@ -49,10 +49,13 @@ struct HabitEditorView: View {
                 }
             }
 
-            FieldRow(label: "Daily reminder") {
+            FieldRow(label: "Reminder") {
                 Toggle("", isOn: Binding(
                     get: { habit.reminderMinutes != nil },
-                    set: { habit.reminderMinutes = $0 ? (habit.reminderMinutes ?? 9 * 60) : nil }
+                    set: {
+                        habit.reminderMinutes = $0 ? (habit.reminderMinutes ?? 9 * 60) : nil
+                        if !$0 { habit.anchored = false }
+                    }
                 ))
                 .labelsHidden().toggleStyle(.switch)
             }
@@ -63,6 +66,25 @@ struct HabitEditorView: View {
                         set: { habit.reminderMinutes = $0.minutesSinceMidnight }
                     ), displayedComponents: [.hourAndMinute])
                     .labelsHidden()
+                }
+                FieldRow(label: "Happens at this time") {
+                    Toggle("", isOn: $habit.anchored).labelsHidden().toggleStyle(.switch)
+                }
+                Text(habit.anchored
+                     ? "This habit is an appointment with yourself: it shows on your day at \(Fmt.time.string(from: Date().startOfDay.at(minutes: habit.reminderMinutes ?? 540))) and alerts you right then."
+                     : "A gentle nudge at that time. Turn on “happens at this time” to place it on your timeline like an event.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textTertiary)
+                    .padding(.horizontal, 4)
+                if habit.anchored {
+                    FieldRow(label: "For") {
+                        Stepper(value: $habit.durationMinutes, in: 5...240, step: 5) {
+                            Text(Fmt.duration(minutes: habit.durationMinutes))
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(Theme.textPrimary)
+                        }
+                        .fixedSize()
+                    }
                 }
             }
 

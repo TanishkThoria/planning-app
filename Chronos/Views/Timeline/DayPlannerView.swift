@@ -12,6 +12,7 @@ struct DayPlannerView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var profileStore: ProfileStore
+    @EnvironmentObject private var life: LifeStore
 
     @AppStorage(Prefs.hourHeight) private var hourHeight = 72.0
     @AppStorage(Prefs.snapMinutes) private var snapMinutes = 15
@@ -32,6 +33,11 @@ struct DayPlannerView: View {
 
     private var allDayBlocks: [TimeBlock] { dayBlocks.filter(\.isAllDay) }
     private var timedBlocks: [TimeBlock] { dayBlocks.filter { !$0.isAllDay } }
+
+    /// Time-anchored habits due on the selected day, shown on the timeline.
+    private var anchoredHabitsForDay: [Habit] {
+        life.activeHabits.filter { $0.isTimeAnchored && $0.isDue(on: model.selectedDate) }
+    }
 
     /// Past task-linked blocks whose task is still open — candidates for the
     /// end-of-day review.
@@ -314,6 +320,9 @@ struct DayPlannerView: View {
             snapMinutes: snapMinutes,
             dimPast: dimPastBlocks,
             routineWindows: profileStore.profile.routineWindows(on: model.selectedDate),
+            anchoredHabits: anchoredHabitsForDay,
+            isHabitDone: { life.isDone($0, on: model.selectedDate) },
+            onToggleHabit: { life.toggle($0, on: model.selectedDate) },
             taskLookup: { service.task(withID: $0) },
             onTapBlock: { model.blockEditor = service.editorContext(for: $0) },
             onMoveBlock: { block, newStart in service.moveBlock(id: block.id, to: newStart) },
