@@ -37,18 +37,18 @@ struct StatisticsView: View {
         ))
     }
 
-    private var budgeted: [(cal: CalendarInfo, target: Double, minutes: Int)] {
-        life.budgets.compactMap { budget in
-            guard let cal = service.calendarInfo(withID: budget.calendarID) else { return nil }
-            let minutes = weekDays.reduce(0) { acc, day in
-                acc + service.blocks(on: day)
-                    .filter { !$0.isAllDay && $0.calendarID == budget.calendarID }
-                    .compactMap { $0.clamped(to: day) }
-                    .reduce(0) { $0 + Int($1.end.timeIntervalSince($1.start) / 60) }
+    private var budgeted: [(category: ActivityCategory, target: Double, minutes: Int)] {
+        guard !life.categoryBudgets.isEmpty else { return [] }
+        var totals: [ActivityCategory: Int] = [:]
+        for day in weekDays {
+            for block in service.blocks(on: day, hiddenCalendars: model.hiddenCalendarIDs) where !block.isAllDay {
+                guard let clamped = block.clamped(to: day) else { continue }
+                let m = Int(clamped.end.timeIntervalSince(clamped.start) / 60)
+                guard m > 0 else { continue }
+                totals[TagStore.shared.category(for: block), default: 0] += m
             }
-            return (cal, budget.weeklyHoursTarget, minutes)
         }
-        .sorted { $0.cal.title < $1.cal.title }
+        return life.budgetedCategories.map { ($0.category, $0.weeklyHoursTarget, totals[$0.category] ?? 0) }
     }
 
     private var stats: StatsEngine.Stats {
@@ -389,16 +389,18 @@ struct StatisticsView: View {
                 .buttonStyle(.plain)
             }
             if budgeted.isEmpty {
-                Text("Set weekly hour targets per calendar to keep your time honest.")
+                Text("Set weekly hour targets per category (Work, Gym, Social…) to keep your time honest.")
                     .font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary)
             } else {
-                ForEach(budgeted, id: \.cal.id) { entry in
+                ForEach(budgeted, id: \.category) { entry in
                     let frac = entry.target > 0 ? Double(entry.minutes) / (entry.target * 60) : 0
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
                             HStack(spacing: 6) {
-                                Circle().fill(entry.cal.color).frame(width: 7, height: 7)
-                                Text(entry.cal.title).font(.system(size: 13.5, weight: .medium)).foregroundStyle(Theme.textPrimary)
+                                Image(systemName: entry.category.icon)
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(entry.category.color)
+                                Text(entry.category.title).font(.system(size: 13.5, weight: .medium)).foregroundStyle(Theme.textPrimary)
                             }
                             Spacer()
                             Text("\(Fmt.duration(minutes: entry.minutes)) / \(String(format: "%g h", entry.target))")
@@ -408,7 +410,7 @@ struct StatisticsView: View {
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
                                 Capsule().fill(Theme.fill)
-                                Capsule().fill(frac >= 1 ? Theme.success : entry.cal.color)
+                                Capsule().fill(frac >= 1 ? Theme.success : entry.category.color)
                                     .frame(width: min(geo.size.width, geo.size.width * frac))
                             }
                         }

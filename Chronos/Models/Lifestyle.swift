@@ -172,9 +172,19 @@ struct DayTemplate: Codable, Identifiable, Hashable {
 
 // MARK: - Time budgets
 
+/// Legacy per-calendar budget. Kept only so old saved blobs still decode; the
+/// live feature is now `CategoryBudget` (per activity category).
 struct TimeBudget: Codable, Identifiable, Hashable {
     var id = UUID()
     var calendarID: String
+    var weeklyHoursTarget: Double
+}
+
+/// A weekly hours target for a whole activity category (Work, Gym, Social, …),
+/// so budgets track what you're *doing*, not which calendar it lives on.
+struct CategoryBudget: Codable, Identifiable, Hashable {
+    var id = UUID()
+    var category: ActivityCategory
     var weeklyHoursTarget: Double
 }
 
@@ -195,6 +205,7 @@ private struct LifeData: Codable {
     var growthItems: [GrowthItem]? = nil
     var selfTraits: [SelfTrait]? = nil
     var niceToHaves: [NiceToHave]? = nil
+    var categoryBudgets: [CategoryBudget]? = nil
 }
 
 /// One local store for the whole lifestyle layer — goals, habits, journal,
@@ -216,6 +227,7 @@ final class LifeStore: ObservableObject {
     @Published var growthItems: [GrowthItem] { didSet { save() } }
     @Published var selfTraits: [SelfTrait] { didSet { save() } }
     @Published var niceToHaves: [NiceToHave] { didSet { save() } }
+    @Published var categoryBudgets: [CategoryBudget] { didSet { save() } }
 
     init() {
         if let data = UserDefaults.standard.data(forKey: Self.key),
@@ -231,6 +243,7 @@ final class LifeStore: ObservableObject {
             growthItems = decoded.growthItems ?? []
             selfTraits = decoded.selfTraits ?? []
             niceToHaves = decoded.niceToHaves ?? []
+            categoryBudgets = decoded.categoryBudgets ?? []
         } else {
             goals = []
             habits = []
@@ -243,6 +256,7 @@ final class LifeStore: ObservableObject {
             growthItems = []
             selfTraits = []
             niceToHaves = []
+            categoryBudgets = []
         }
         observeCloudPulls()
     }
@@ -262,6 +276,7 @@ final class LifeStore: ObservableObject {
         growthItems = decoded.growthItems ?? []
         selfTraits = decoded.selfTraits ?? []
         niceToHaves = decoded.niceToHaves ?? []
+        categoryBudgets = decoded.categoryBudgets ?? []
     }
 
     private func observeCloudPulls() {
@@ -285,7 +300,8 @@ final class LifeStore: ObservableObject {
             journal: journal, templates: templates, budgets: budgets,
             habitFreezes: Array(habitFreezes),
             projects: projects, growthItems: growthItems,
-            selfTraits: selfTraits, niceToHaves: niceToHaves
+            selfTraits: selfTraits, niceToHaves: niceToHaves,
+            categoryBudgets: categoryBudgets
         )
     }
 
@@ -313,6 +329,7 @@ final class LifeStore: ObservableObject {
         growthItems = decoded.growthItems ?? []
         selfTraits = decoded.selfTraits ?? []
         niceToHaves = decoded.niceToHaves ?? []
+        categoryBudgets = decoded.categoryBudgets ?? []
         return true
     }
 
@@ -450,17 +467,24 @@ final class LifeStore: ObservableObject {
     }
     func deleteTemplate(_ id: UUID) { templates.removeAll { $0.id == id } }
 
-    // MARK: Budgets
+    // MARK: Budgets (per activity category)
 
-    func budget(for calendarID: String) -> TimeBudget? {
-        budgets.first { $0.calendarID == calendarID }
+    func budget(for category: ActivityCategory) -> CategoryBudget? {
+        categoryBudgets.first { $0.category == category }
     }
-    func setBudget(calendarID: String, hours: Double) {
-        if hours <= 0 { budgets.removeAll { $0.calendarID == calendarID }; return }
-        if let idx = budgets.firstIndex(where: { $0.calendarID == calendarID }) {
-            budgets[idx].weeklyHoursTarget = hours
+    func setBudget(category: ActivityCategory, hours: Double) {
+        if hours <= 0 { categoryBudgets.removeAll { $0.category == category }; return }
+        if let idx = categoryBudgets.firstIndex(where: { $0.category == category }) {
+            categoryBudgets[idx].weeklyHoursTarget = hours
         } else {
-            budgets.append(TimeBudget(calendarID: calendarID, weeklyHoursTarget: hours))
+            categoryBudgets.append(CategoryBudget(category: category, weeklyHoursTarget: hours))
+        }
+    }
+    /// Categories with a target set, in the enum's natural order.
+    var budgetedCategories: [CategoryBudget] {
+        categoryBudgets.sorted {
+            (ActivityCategory.allCases.firstIndex(of: $0.category) ?? 0)
+                < (ActivityCategory.allCases.firstIndex(of: $1.category) ?? 0)
         }
     }
 
