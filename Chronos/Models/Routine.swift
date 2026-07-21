@@ -1,11 +1,16 @@
 import Foundation
 import Combine
 
-/// A single step in a guided routine — a named micro-task with its own timer.
+/// A single step in a guided routine — a named micro-task. Usually timed (it
+/// counts down), but a step can be marked `untimed` for things that aren't about
+/// a clock — "no phone", "make the bed" — where you just tap Done to move on.
 struct RoutineStep: Codable, Identifiable, Hashable {
     var id = UUID()
     var title: String
     var seconds: Int
+    /// A check-off step with no countdown. Optional/defaulted so older saved
+    /// routines decode unchanged.
+    var untimed: Bool = false
     var minutes: Int { max(1, seconds / 60) }
 }
 

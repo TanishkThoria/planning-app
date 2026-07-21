@@ -470,6 +470,15 @@ struct RootView: View {
         .sheet(item: $model.routineRunner) { routine in
             RoutineRunnerView(routine: routine)
         }
+        .sheet(isPresented: $model.projectsPresented) {
+            ProjectsView()
+        }
+        .sheet(isPresented: $model.personalGrowthPresented) {
+            PersonalGrowthView()
+        }
+        .sheet(isPresented: $model.niceToHavesPresented) {
+            NiceToHavesView()
+        }
     }
 
     private func errorAlert<Content: View>(_ content: Content) -> some View {

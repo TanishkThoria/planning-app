@@ -162,6 +162,14 @@ final class AppModel: ObservableObject {
     @Published var momentumDetailPresented = false
     /// Guided routines library.
     @Published var routinesPresented = false
+    /// Long-term projects hub (milestones + updates).
+    @Published var projectsPresented = false
+    /// When set, the projects hub opens focused on this project.
+    var projectsInitialID: UUID?
+    /// Personal growth: start/stop commitments + the self-mirror.
+    @Published var personalGrowthPresented = false
+    /// Nice-to-haves: downtime & rewards for when there's extra time.
+    @Published var niceToHavesPresented = false
     /// The routine currently being run (guided step-by-step).
     @Published var routineRunner: Routine?
     /// Chronos+ hub (iCloud sync, leaderboards, friends).

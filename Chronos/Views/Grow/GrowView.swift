@@ -29,6 +29,8 @@ struct GrowView: View {
                     journalCard
                     goalsSection
                     habitsSection
+                    projectsSection
+                    selfSection
                 }
                 .padding(18)
             }
@@ -63,6 +65,16 @@ struct GrowView: View {
                 }
                 Button { model.routinesPresented = true } label: {
                     Label("Guided Routines", systemImage: "figure.walk.motion")
+                }
+                Divider()
+                Button { model.projectsInitialID = nil; model.projectsPresented = true } label: {
+                    Label("New Project", systemImage: "square.stack.3d.up")
+                }
+                Button { model.personalGrowthPresented = true } label: {
+                    Label("Personal Growth", systemImage: "arrow.up.heart")
+                }
+                Button { model.niceToHavesPresented = true } label: {
+                    Label("Nice-to-haves", systemImage: "star")
                 }
                 Divider()
                 Button { model.weeklyReviewPresented = true } label: {
@@ -321,6 +333,120 @@ struct GrowView: View {
                     .frame(width: 12, height: 12)
             }
         }
+    }
+
+    // MARK: Projects
+
+    private var projectsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                SectionHeader(title: "Projects", trailing: "\(life.activeProjects.count)")
+                Spacer(minLength: 8)
+                Button {
+                    model.projectsInitialID = nil
+                    model.projectsPresented = true
+                } label: {
+                    Image(systemName: "plus").font(.system(size: 12.5, weight: .semibold))
+                        .foregroundStyle(Theme.accentColor)
+                }
+                .buttonStyle(.plain)
+            }
+            if life.activeProjects.isEmpty {
+                Button { model.projectsPresented = true } label: {
+                    emptyRow("square.stack.3d.up", "Track a long-term project",
+                             "Milestones, updates, and progress for the big things — a thesis, a launch, getting fit.")
+                }
+                .buttonStyle(.plain)
+            } else {
+                ForEach(life.activeProjects.prefix(4)) { project in
+                    projectRow(project)
+                }
+                if life.activeProjects.count > 4 {
+                    Button { model.projectsPresented = true } label: {
+                        Text("See all \(life.activeProjects.count) projects")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(Theme.accentColor)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 6)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private func projectRow(_ project: Project) -> some View {
+        Button {
+            model.projectsInitialID = project.id
+            model.projectsPresented = true
+        } label: {
+            HStack(spacing: 12) {
+                ProjectRing(progress: project.progress, color: project.color, emoji: project.emoji, size: 40)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(project.title.isEmpty ? "Untitled project" : project.title)
+                        .font(.system(size: 14.5, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                        .lineLimit(1)
+                    Text(projectSubtitle(project))
+                        .font(.system(size: 12.5))
+                        .foregroundStyle(project.isUpdateDue ? Theme.warning : Theme.textSecondary)
+                        .lineLimit(1)
+                }
+                Spacer()
+                Text("\(Int((project.progress * 100).rounded()))%")
+                    .font(.system(size: 14.5, weight: .bold))
+                    .foregroundStyle(project.color)
+            }
+            .panel(padding: 12)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func projectSubtitle(_ project: Project) -> String {
+        if project.isUpdateDue { return "Update due · \(project.updateCadence.short.lowercased())" }
+        if !project.milestones.isEmpty {
+            return "\(project.doneMilestoneCount)/\(project.milestones.count) milestones"
+        }
+        if let days = project.daysUntilTarget {
+            if days == 0 { return "Target today" }
+            return days < 0 ? "\(-days)d past target" : "\(days) days left"
+        }
+        return "In progress"
+    }
+
+    // MARK: Self (personal growth + nice-to-haves)
+
+    private var selfSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeader(title: "Self")
+            hubRow("arrow.up.heart.fill", "Personal growth",
+                   "Start & stop doing, and the things you like about yourself",
+                   tint: Color(hex: 0x5BD899)) { model.personalGrowthPresented = true }
+            hubRow("star.fill", "Nice-to-haves",
+                   "Fun & downtime for when the work is done",
+                   tint: Theme.warning) { model.niceToHavesPresented = true }
+        }
+    }
+
+    private func hubRow(_ icon: String, _ title: String, _ subtitle: String, tint: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(tint)
+                    .frame(width: 30, height: 30)
+                    .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title).font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                    Text(subtitle).font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.textTertiary)
+            }
+            .panel(padding: 12)
+        }
+        .buttonStyle(.plain)
     }
 
     private func emptyRow(_ icon: String, _ title: String, _ message: String) -> some View {

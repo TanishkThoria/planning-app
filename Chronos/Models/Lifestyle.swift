@@ -78,8 +78,24 @@ struct Habit: Codable, Identifiable, Hashable {
     var reminderMinutes: Int?              // time-of-day nudge
     var createdEpoch: TimeInterval = 0
     var isArchived: Bool = false
+    /// When true (and a time is set), this habit happens *at* `reminderMinutes`
+    /// rather than being a loose "sometime today" — it shows on the day timeline
+    /// at that moment and the alert fires then, like an appointment with
+    /// yourself. Optional/defaulted so older saved habits decode unchanged.
+    var anchored: Bool = false
+    /// How long the anchored occurrence lasts on the timeline (minutes).
+    var durationMinutes: Int = 30
 
     var color: Color { Palette.color(colorHex) }
+
+    /// A habit that occupies a real slot on the day (anchored + has a time).
+    var isTimeAnchored: Bool { anchored && reminderMinutes != nil }
+
+    /// The anchored occurrence's start on a given day, if it has one.
+    func anchorStart(on day: Date) -> Date? {
+        guard let reminderMinutes, anchored else { return nil }
+        return day.at(minutes: reminderMinutes)
+    }
 
     /// Is the habit expected on this weekday? (1 = Sunday … 7 = Saturday)
     func isDue(on day: Date) -> Bool {
@@ -174,6 +190,11 @@ private struct LifeData: Codable {
     /// "habitID#yyyy-MM-dd" days preserved by a streak freeze. Optional so
     /// blobs written before freezes existed still decode.
     var habitFreezes: [String]? = nil
+    // Self-growth layer (see Growth.swift). All optional so older blobs decode.
+    var projects: [Project]? = nil
+    var growthItems: [GrowthItem]? = nil
+    var selfTraits: [SelfTrait]? = nil
+    var niceToHaves: [NiceToHave]? = nil
 }
 
 /// One local store for the whole lifestyle layer — goals, habits, journal,
@@ -191,6 +212,10 @@ final class LifeStore: ObservableObject {
     @Published var journal: [JournalEntry] { didSet { save() } }
     @Published var templates: [DayTemplate] { didSet { save() } }
     @Published var budgets: [TimeBudget] { didSet { save() } }
+    @Published var projects: [Project] { didSet { save() } }
+    @Published var growthItems: [GrowthItem] { didSet { save() } }
+    @Published var selfTraits: [SelfTrait] { didSet { save() } }
+    @Published var niceToHaves: [NiceToHave] { didSet { save() } }
 
     init() {
         if let data = UserDefaults.standard.data(forKey: Self.key),
@@ -202,6 +227,10 @@ final class LifeStore: ObservableObject {
             journal = decoded.journal
             templates = decoded.templates
             budgets = decoded.budgets
+            projects = decoded.projects ?? []
+            growthItems = decoded.growthItems ?? []
+            selfTraits = decoded.selfTraits ?? []
+            niceToHaves = decoded.niceToHaves ?? []
         } else {
             goals = []
             habits = []
@@ -210,6 +239,10 @@ final class LifeStore: ObservableObject {
             journal = []
             templates = []
             budgets = []
+            projects = []
+            growthItems = []
+            selfTraits = []
+            niceToHaves = []
         }
         observeCloudPulls()
     }
@@ -225,6 +258,10 @@ final class LifeStore: ObservableObject {
         journal = decoded.journal
         templates = decoded.templates
         budgets = decoded.budgets
+        projects = decoded.projects ?? []
+        growthItems = decoded.growthItems ?? []
+        selfTraits = decoded.selfTraits ?? []
+        niceToHaves = decoded.niceToHaves ?? []
     }
 
     private func observeCloudPulls() {
@@ -246,7 +283,9 @@ final class LifeStore: ObservableObject {
             goals: goals, habits: habits,
             habitCompletions: Array(habitCompletions),
             journal: journal, templates: templates, budgets: budgets,
-            habitFreezes: Array(habitFreezes)
+            habitFreezes: Array(habitFreezes),
+            projects: projects, growthItems: growthItems,
+            selfTraits: selfTraits, niceToHaves: niceToHaves
         )
     }
 
@@ -270,6 +309,10 @@ final class LifeStore: ObservableObject {
         templates = decoded.templates
         budgets = decoded.budgets
         habitFreezes = Set(decoded.habitFreezes ?? [])
+        projects = decoded.projects ?? []
+        growthItems = decoded.growthItems ?? []
+        selfTraits = decoded.selfTraits ?? []
+        niceToHaves = decoded.niceToHaves ?? []
         return true
     }
 
@@ -419,5 +462,115 @@ final class LifeStore: ObservableObject {
         } else {
             budgets.append(TimeBudget(calendarID: calendarID, weeklyHoursTarget: hours))
         }
+    }
+
+    // MARK: Projects
+
+    /// Active projects, most recently started first.
+    var activeProjects: [Project] {
+        projects.filter { !$0.isArchived }.sorted { $0.startEpoch > $1.startEpoch }
+    }
+    /// Projects gently asking for a check-in, per their cadence.
+    var projectsNeedingUpdate: [Project] { activeProjects.filter(\.isUpdateDue) }
+
+    func upsert(_ project: Project) {
+        if let idx = projects.firstIndex(where: { $0.id == project.id }) {
+            projects[idx] = project
+        } else {
+            var p = project
+            if p.startEpoch == 0 { p.startEpoch = Date().timeIntervalSince1970 }
+            projects.append(p)
+        }
+    }
+    func deleteProject(_ id: UUID) { projects.removeAll { $0.id == id } }
+
+    func project(_ id: UUID) -> Project? { projects.first { $0.id == id } }
+
+    /// Log a dated update, optionally stamping the current progress reading.
+    func addUpdate(to projectID: UUID, text: String, stampProgress: Bool) {
+        guard let idx = projects.firstIndex(where: { $0.id == projectID }) else { return }
+        let snap = stampProgress ? projects[idx].progress : nil
+        projects[idx].updates.append(
+            ProjectUpdate(epoch: Date().timeIntervalSince1970, text: text, progress: snap)
+        )
+    }
+    func deleteUpdate(_ updateID: UUID, from projectID: UUID) {
+        guard let idx = projects.firstIndex(where: { $0.id == projectID }) else { return }
+        projects[idx].updates.removeAll { $0.id == updateID }
+    }
+
+    func toggleMilestone(_ milestoneID: UUID, in projectID: UUID) {
+        guard let pIdx = projects.firstIndex(where: { $0.id == projectID }),
+              let mIdx = projects[pIdx].milestones.firstIndex(where: { $0.id == milestoneID }) else { return }
+        projects[pIdx].milestones[mIdx].isDone.toggle()
+        projects[pIdx].milestones[mIdx].doneEpoch =
+            projects[pIdx].milestones[mIdx].isDone ? Date().timeIntervalSince1970 : nil
+    }
+
+    // MARK: Growth commitments (start / stop doing)
+
+    var activeGrowthItems: [GrowthItem] { growthItems.filter { !$0.isArchived } }
+    func commitments(_ direction: GrowthDirection) -> [GrowthItem] {
+        activeGrowthItems.filter { $0.direction == direction }.sorted { $0.createdEpoch < $1.createdEpoch }
+    }
+
+    func upsert(_ item: GrowthItem) {
+        if let idx = growthItems.firstIndex(where: { $0.id == item.id }) {
+            growthItems[idx] = item
+        } else {
+            var g = item
+            if g.createdEpoch == 0 { g.createdEpoch = Date().timeIntervalSince1970 }
+            growthItems.append(g)
+        }
+    }
+    func deleteGrowthItem(_ id: UUID) { growthItems.removeAll { $0.id == id } }
+
+    // MARK: Self-mirror (like / dislike)
+
+    var likes: [SelfTrait] {
+        selfTraits.filter { !$0.isArchived && $0.side == .like }.sorted { $0.createdEpoch < $1.createdEpoch }
+    }
+    var dislikes: [SelfTrait] {
+        selfTraits.filter { !$0.isArchived && $0.side == .dislike }.sorted { $0.createdEpoch < $1.createdEpoch }
+    }
+    /// How many dislikes you've turned around into likes — the panel's score.
+    var improvedTraitCount: Int { selfTraits.filter { $0.wasImproved && $0.side == .like }.count }
+
+    func addTrait(_ text: String, side: SelfTraitSide) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        selfTraits.append(SelfTrait(text: trimmed, side: side, createdEpoch: Date().timeIntervalSince1970))
+    }
+    func updateTrait(_ trait: SelfTrait) {
+        if let idx = selfTraits.firstIndex(where: { $0.id == trait.id }) { selfTraits[idx] = trait }
+    }
+    func deleteTrait(_ id: UUID) { selfTraits.removeAll { $0.id == id } }
+
+    /// Move a disliked trait over to the like side — the satisfying core gesture.
+    func moveTraitToLike(_ id: UUID) {
+        guard let idx = selfTraits.firstIndex(where: { $0.id == id }) else { return }
+        selfTraits[idx].side = .like
+        selfTraits[idx].movedEpoch = Date().timeIntervalSince1970
+    }
+
+    // MARK: Nice-to-haves (rewards)
+
+    var activeNiceToHaves: [NiceToHave] {
+        niceToHaves.filter { !$0.isArchived }.sorted { $0.createdEpoch < $1.createdEpoch }
+    }
+
+    func upsert(_ item: NiceToHave) {
+        if let idx = niceToHaves.firstIndex(where: { $0.id == item.id }) {
+            niceToHaves[idx] = item
+        } else {
+            var n = item
+            if n.createdEpoch == 0 { n.createdEpoch = Date().timeIntervalSince1970 }
+            niceToHaves.append(n)
+        }
+    }
+    func deleteNiceToHave(_ id: UUID) { niceToHaves.removeAll { $0.id == id } }
+    func markEnjoyed(_ id: UUID) {
+        guard let idx = niceToHaves.firstIndex(where: { $0.id == id }) else { return }
+        niceToHaves[idx].lastEnjoyedEpoch = Date().timeIntervalSince1970
     }
 }
