@@ -163,9 +163,15 @@ struct RootView: View {
             model.handleDeepLink(url)
         }
         .task {
-            // Route completed focus stretches into the persistent log.
-            timer.onSessionComplete = { [weak focusLog] session in
+            // Route completed focus stretches into the persistent log. If the
+            // session was tagged with a habit, count it done for today too.
+            timer.onSessionComplete = { [weak focusLog, weak life] session in
                 focusLog?.record(session)
+                if let habitID = session.habitID,
+                   let habit = life?.habits.first(where: { $0.id == habitID }),
+                   life?.isDone(habit, on: Date()) == false {
+                    life?.toggle(habit, on: Date())
+                }
             }
             // Onboarding owns the first-run permission flow; only auto-request
             // here once it's been completed, so we never double-prompt.

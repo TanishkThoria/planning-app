@@ -14,6 +14,12 @@ struct FocusSession: Codable, Identifiable, Hashable {
     var plannedMinutes: Int
     var wasPomodoro: Bool
     var completedFullDuration: Bool
+    /// What you were focusing on — set when you tag the session. Optional/
+    /// defaulted so older stored sessions decode unchanged.
+    var category: ActivityCategory? = nil
+    /// A habit or goal this session counts toward.
+    var habitID: UUID? = nil
+    var goalID: UUID? = nil
 
     var start: Date { Date(timeIntervalSince1970: startEpoch) }
     var end: Date { Date(timeIntervalSince1970: endEpoch) }

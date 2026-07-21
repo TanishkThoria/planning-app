@@ -6,11 +6,15 @@ import SwiftUI
 struct FocusTimerView: View {
     @EnvironmentObject private var timer: FocusTimerController
     @EnvironmentObject private var service: EventKitService
+    @EnvironmentObject private var life: LifeStore
     @Environment(\.dismiss) private var dismiss
     @AppStorage(Prefs.defaultListID) private var defaultListID = ""
 
     @State private var parkedThought = ""
     @State private var showParkedConfirmation = false
+    @State private var selectedCategory: ActivityCategory?
+    @State private var selectedHabitID: UUID?
+    @State private var selectedGoalID: UUID?
 
     /// Optional task to focus on (from a block or task context menu).
     var presetTaskID: String?
@@ -271,6 +275,8 @@ struct FocusTimerView: View {
                 .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
 
+            tagRow
+
             if selectedMode == .pomodoro {
                 HStack(spacing: 8) {
                     presetChip("Quick start", 5, 5)
@@ -294,7 +300,8 @@ struct FocusTimerView: View {
             Button {
                 timer.focusMinutes = focusMinutes
                 timer.breakMinutes = breakMinutes
-                timer.start(taskID: presetTaskID, title: presetTitle ?? "Focus", mode: selectedMode)
+                timer.start(taskID: presetTaskID, title: presetTitle ?? "Focus", mode: selectedMode,
+                            category: selectedCategory, habitID: selectedHabitID, goalID: selectedGoalID)
             } label: {
                 Text("Start")
                     .font(.system(size: 16, weight: .semibold))
@@ -305,6 +312,82 @@ struct FocusTimerView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    // MARK: Session tagging
+
+    /// Optional tags so a session counts toward the right category, habit, or
+    /// goal — not just the linked task.
+    private var tagRow: some View {
+        VStack(spacing: 8) {
+            tagMenu(
+                label: "Category",
+                valueText: selectedCategory?.title ?? "Optional",
+                icon: selectedCategory?.icon ?? "tag",
+                tint: selectedCategory?.color ?? Theme.textTertiary
+            ) {
+                Button { selectedCategory = nil } label: { Label("None", systemImage: "xmark") }
+                Divider()
+                ForEach(ActivityCategory.allCases) { cat in
+                    Button { selectedCategory = cat } label: { Label(cat.title, systemImage: cat.icon) }
+                }
+            }
+            if !life.activeHabits.isEmpty {
+                let habit = life.activeHabits.first { $0.id == selectedHabitID }
+                tagMenu(
+                    label: "Habit",
+                    valueText: habit?.title ?? "Optional",
+                    icon: habit?.iconName ?? "repeat",
+                    tint: habit?.color ?? Theme.textTertiary
+                ) {
+                    Button { selectedHabitID = nil } label: { Label("None", systemImage: "xmark") }
+                    Divider()
+                    ForEach(life.activeHabits) { h in
+                        Button { selectedHabitID = h.id } label: { Label(h.title, systemImage: h.iconName) }
+                    }
+                }
+            }
+            if !life.activeGoals.isEmpty {
+                let goal = life.activeGoals.first { $0.id == selectedGoalID }
+                tagMenu(
+                    label: "Goal",
+                    valueText: goal?.title ?? "Optional",
+                    icon: goal?.kind.icon ?? "target",
+                    tint: goal?.color ?? Theme.textTertiary
+                ) {
+                    Button { selectedGoalID = nil } label: { Label("None", systemImage: "xmark") }
+                    Divider()
+                    ForEach(life.activeGoals) { g in
+                        Button { selectedGoalID = g.id } label: { Label(g.title, systemImage: g.kind.icon) }
+                    }
+                }
+            }
+        }
+    }
+
+    private func tagMenu<Content: View>(label: String, valueText: String, icon: String, tint: Color,
+                                        @ViewBuilder menu: () -> Content) -> some View {
+        HStack(spacing: 8) {
+            Text(label)
+                .font(.system(size: 13.5))
+                .foregroundStyle(Theme.textSecondary)
+            Spacer()
+            Menu {
+                menu()
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: icon).font(.system(size: 12, weight: .semibold)).foregroundStyle(tint)
+                    Text(valueText)
+                        .font(.system(size: 13.5, weight: .medium))
+                        .foregroundStyle(valueText == "Optional" ? Theme.textTertiary : Theme.textPrimary)
+                        .lineLimit(1)
+                    Image(systemName: "chevron.up.chevron.down").font(.system(size: 9)).foregroundStyle(Theme.textTertiary)
+                }
+            }
+            .fixedSize()
+        }
+        .padding(.horizontal, 12).padding(.vertical, 9)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     /// One-tap session shapes — "Quick start" is the 5-minute

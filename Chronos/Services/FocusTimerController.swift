@@ -19,6 +19,11 @@ final class FocusTimerController: ObservableObject {
     @Published private(set) var taskID: String?
     @Published private(set) var taskTitle: String = "Focus"
     @Published private(set) var completedPomodoros = 0
+    /// Optional tags for this session — what kind of work, and a habit/goal it
+    /// counts toward. Settable live while the timer runs.
+    @Published var category: ActivityCategory?
+    @Published var habitID: UUID?
+    @Published var goalID: UUID?
 
     /// Seconds counted in the current phase before the latest resume.
     private var accumulated: TimeInterval = 0
@@ -53,9 +58,13 @@ final class FocusTimerController: ObservableObject {
 
     // MARK: Control
 
-    func start(taskID: String?, title: String, mode: Mode) {
+    func start(taskID: String?, title: String, mode: Mode,
+               category: ActivityCategory? = nil, habitID: UUID? = nil, goalID: UUID? = nil) {
         self.taskID = taskID
         self.taskTitle = title.isEmpty ? "Focus" : title
+        self.category = category
+        self.habitID = habitID
+        self.goalID = goalID
         self.mode = mode
         phase = .focus
         completedPomodoros = 0
@@ -160,7 +169,10 @@ final class FocusTimerController: ObservableObject {
             endEpoch: now,
             plannedMinutes: mode == .pomodoro ? focusMinutes : minutes,
             wasPomodoro: mode == .pomodoro,
-            completedFullDuration: completedFull
+            completedFullDuration: completedFull,
+            category: category,
+            habitID: habitID,
+            goalID: goalID
         )
         onSessionComplete?(session)
         focusStartEpoch = now
