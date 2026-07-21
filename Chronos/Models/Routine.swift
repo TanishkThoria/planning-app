@@ -22,11 +22,27 @@ struct Routine: Codable, Identifiable, Hashable {
     var name: String
     var emoji: String
     var steps: [RoutineStep]
+    /// When true, this is a routine you're *establishing*: it's tracked like a
+    /// habit — you log it each day, build a streak, and (optionally) get a
+    /// reminder. Optional/defaulted so older saved routines decode unchanged.
+    var tracked: Bool = false
+    var cadence: HabitCadence = .daily
+    var reminderMinutes: Int?
 
     /// Total timed duration — untimed check-off steps don't add clock time.
     var totalSeconds: Int { steps.filter { !$0.untimed }.reduce(0) { $0 + $1.seconds } }
     var totalMinutes: Int { max(1, totalSeconds / 60) }
     var hasUntimedSteps: Bool { steps.contains { $0.untimed } }
+
+    /// Is this tracked routine expected on the given weekday?
+    func isDue(on day: Date) -> Bool {
+        switch cadence {
+        case .daily, .weekly: return true
+        case .weekdays:
+            let wd = Calendar.current.component(.weekday, from: day)
+            return (2...6).contains(wd)
+        }
+    }
 }
 
 /// Persists the user's routines (defaults seeded on first run) to UserDefaults.
@@ -35,8 +51,11 @@ final class RoutineStore: ObservableObject {
     static let shared = RoutineStore()
 
     @Published var routines: [Routine] { didSet { save() } }
+    /// "routineID#yyyy-MM-dd" days a tracked routine was completed.
+    @Published private(set) var completions: Set<String> { didSet { saveCompletions() } }
 
     private static let key = "chronos.routines.v1"
+    private static let completionsKey = "chronos.routines.completions.v1"
 
     private init() {
         if let data = UserDefaults.standard.data(forKey: Self.key),
@@ -44,6 +63,12 @@ final class RoutineStore: ObservableObject {
             routines = decoded
         } else {
             routines = Self.defaults
+        }
+        if let data = UserDefaults.standard.data(forKey: Self.completionsKey),
+           let decoded = try? JSONDecoder().decode([String].self, from: data) {
+            completions = Set(decoded)
+        } else {
+            completions = []
         }
         NotificationCenter.default.addObserver(
             forName: .chronosCloudDidPull, object: nil, queue: .main
@@ -57,12 +82,60 @@ final class RoutineStore: ObservableObject {
            let decoded = try? JSONDecoder().decode([Routine].self, from: data) {
             routines = decoded
         }
+        if let data = UserDefaults.standard.data(forKey: Self.completionsKey),
+           let decoded = try? JSONDecoder().decode([String].self, from: data) {
+            completions = Set(decoded)
+        }
     }
 
     private func save() {
         if let data = try? JSONEncoder().encode(routines) {
             UserDefaults.standard.set(data, forKey: Self.key)
         }
+    }
+
+    private func saveCompletions() {
+        if let data = try? JSONEncoder().encode(Array(completions)) {
+            UserDefaults.standard.set(data, forKey: Self.completionsKey)
+        }
+    }
+
+    // MARK: Tracking (completions + streaks, for `tracked` routines)
+
+    var trackedRoutines: [Routine] { routines.filter(\.tracked) }
+
+    private func token(_ id: UUID, _ day: Date) -> String { "\(id)#\(Fmt.dayKey(day))" }
+
+    func isDone(_ routine: Routine, on day: Date) -> Bool {
+        completions.contains(token(routine.id, day))
+    }
+    /// Mark done for the day (used when a run finishes); idempotent.
+    func markDone(_ routine: Routine, on day: Date = Date()) {
+        completions.insert(token(routine.id, day))
+    }
+    func toggle(_ routine: Routine, on day: Date) {
+        let t = token(routine.id, day)
+        if completions.contains(t) { completions.remove(t) } else { completions.insert(t) }
+    }
+
+    /// Consecutive due-days completed, ending today (today-not-yet-done is grace).
+    func streak(_ routine: Routine, now: Date = Date()) -> Int {
+        var streak = 0
+        var cursor = now.startOfDay
+        if routine.isDue(on: cursor) && !isDone(routine, on: cursor) { cursor = cursor.adding(days: -1) }
+        var guardCount = 0
+        while guardCount < 400 {
+            guardCount += 1
+            if routine.isDue(on: cursor) {
+                if isDone(routine, on: cursor) { streak += 1 } else { break }
+            }
+            cursor = cursor.adding(days: -1)
+        }
+        return streak
+    }
+
+    func completionCount(_ routine: Routine, inLast days: Int, now: Date = Date()) -> Int {
+        (0..<days).reduce(0) { $0 + (isDone(routine, on: now.adding(days: -$1)) ? 1 : 0) }
     }
 
     func add(_ routine: Routine) { routines.append(routine) }
@@ -74,7 +147,10 @@ final class RoutineStore: ObservableObject {
         if let i = routines.firstIndex(where: { $0.id == routine.id }) { routines[i] = routine }
         else { routines.append(routine) }
     }
-    func delete(_ routine: Routine) { routines.removeAll { $0.id == routine.id } }
+    func delete(_ routine: Routine) {
+        routines.removeAll { $0.id == routine.id }
+        completions = completions.filter { !$0.hasPrefix("\(routine.id)#") }
+    }
 
     private static func step(_ title: String, _ minutes: Int) -> RoutineStep {
         RoutineStep(title: title, seconds: minutes * 60)

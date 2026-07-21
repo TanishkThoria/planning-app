@@ -36,6 +36,7 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
     private static let startPrefix = "chronos.blockstart."
     private static let ritualPrefix = "chronos.ritual."
     private static let habitPrefix = "chronos.habit."
+    private static let routinePrefix = "chronos.routine."
     private let center = UNUserNotificationCenter.current()
 
     override init() {
@@ -225,6 +226,18 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
             scheduleDaily(id: "\(Self.habitPrefix)\(r.id)",
                           title: r.anchored ? r.title : "Habit reminder",
                           body: r.anchored ? "It's time — \(r.title)." : r.title,
+                          minutes: r.minutes)
+        }
+    }
+
+    /// Daily reminders for tracked routines you're establishing.
+    func scheduleRoutineReminders(_ reminders: [(id: String, name: String, minutes: Int)]) {
+        clear(prefix: Self.routinePrefix)
+        guard enabled, authorization == .authorized else { return }
+        for r in reminders.prefix(12) {
+            scheduleDaily(id: "\(Self.routinePrefix)\(r.id)",
+                          title: "Time for \(r.name)",
+                          body: "Follow your routine step by step, and keep the streak going.",
                           minutes: r.minutes)
         }
     }

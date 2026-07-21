@@ -7,6 +7,7 @@ struct GrowView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var life: LifeStore
+    @ObservedObject private var routineStore = RoutineStore.shared
 
     private var today: Date { Date().startOfDay }
 
@@ -29,6 +30,7 @@ struct GrowView: View {
                     journalCard
                     goalsSection
                     habitsSection
+                    routinesSection
                     projectsSection
                     selfSection
                 }
@@ -339,6 +341,92 @@ struct GrowView: View {
                             lineWidth: day.isToday ? 1.5 : 1
                         )
                     )
+                    .frame(width: 12, height: 12)
+            }
+        }
+    }
+
+    // MARK: Routines
+
+    private var routinesSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                SectionHeader(title: "Routines", trailing: "\(routineStore.trackedRoutines.count)")
+                Spacer(minLength: 8)
+                Button { model.routinesPresented = true } label: {
+                    Image(systemName: "plus").font(.system(size: 12.5, weight: .semibold))
+                        .foregroundStyle(Theme.accentColor)
+                }
+                .buttonStyle(.plain)
+            }
+            if routineStore.trackedRoutines.isEmpty {
+                Button { model.routinesPresented = true } label: {
+                    emptyRow("figure.walk.motion", "Build a routine",
+                             "Set up a morning or wind-down sequence, follow it step by step, and track it into a habit.")
+                }
+                .buttonStyle(.plain)
+            } else {
+                ForEach(routineStore.trackedRoutines) { routine in
+                    routineRow(routine)
+                }
+            }
+        }
+    }
+
+    private func routineRow(_ routine: Routine) -> some View {
+        let done = routineStore.isDone(routine, on: today)
+        let streak = routineStore.streak(routine)
+        return HStack(spacing: 12) {
+            Button {
+                withAnimation(.snappy) { routineStore.toggle(routine, on: today) }
+                Haptics.success()
+            } label: {
+                ZStack {
+                    Circle().fill(done ? Theme.accentColor : Theme.fill).frame(width: 34, height: 34)
+                    Image(systemName: done ? "checkmark" : "figure.walk.motion")
+                        .font(.system(size: 14.5, weight: .semibold))
+                        .foregroundStyle(done ? Theme.bg : Theme.accentColor)
+                }
+            }
+            .buttonStyle(.plain)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("\(routine.emoji) \(routine.name)")
+                    .font(.system(size: 14.5, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+                routineWeekDots(routine)
+            }
+            Spacer()
+            if streak > 0 {
+                Label("\(streak)", systemImage: "flame.fill")
+                    .font(.system(size: 12.5, weight: .bold))
+                    .foregroundStyle(Theme.warning)
+            }
+            Button { model.routineRunner = routine } label: {
+                Image(systemName: "play.fill")
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundStyle(Theme.accentColor)
+                    .frame(width: 30, height: 30)
+                    .background(Theme.accentColor.opacity(0.12), in: Circle())
+            }
+            .buttonStyle(.plain)
+        }
+        .panel(padding: 12)
+        .contentShape(Rectangle())
+        .onTapGesture { model.routinesPresented = true }
+    }
+
+    private func routineWeekDots(_ routine: Routine) -> some View {
+        HStack(spacing: 4) {
+            ForEach(weekDays, id: \.self) { day in
+                let done = routineStore.isDone(routine, on: day)
+                let due = routine.isDue(on: day)
+                let future = day > today
+                Circle()
+                    .fill(done ? Theme.accentColor : (due && !future ? Theme.fill : Color.clear))
+                    .overlay(Circle().strokeBorder(day.isToday ? Theme.accentColor.opacity(0.8) : Theme.hairline,
+                                                   lineWidth: day.isToday ? 1.5 : 1))
                     .frame(width: 12, height: 12)
             }
         }

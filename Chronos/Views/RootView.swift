@@ -603,5 +603,11 @@ struct RootView: View {
             return (id: habit.id.uuidString, title: habit.title, minutes: minutes, anchored: habit.anchored)
         }
         notifications.scheduleHabitReminders(reminders)
+
+        let routineReminders = RoutineStore.shared.trackedRoutines.compactMap { r -> (id: String, name: String, minutes: Int)? in
+            guard let minutes = r.reminderMinutes else { return nil }
+            return (id: r.id.uuidString, name: r.name, minutes: minutes)
+        }
+        notifications.scheduleRoutineReminders(routineReminders)
     }
 }

@@ -67,7 +67,17 @@ struct RoutinesView: View {
         HStack(spacing: 12) {
             Text(routine.emoji).font(.system(size: 26))
             VStack(alignment: .leading, spacing: 2) {
-                Text(routine.name).font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                HStack(spacing: 6) {
+                    Text(routine.name).font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                    if routine.tracked {
+                        let streak = store.streak(routine)
+                        Label(streak > 0 ? "\(streak)" : "Tracked", systemImage: streak > 0 ? "flame.fill" : "repeat")
+                            .font(.system(size: 10.5, weight: .bold))
+                            .foregroundStyle(streak > 0 ? Theme.warning : Theme.accentColor)
+                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .background((streak > 0 ? Theme.warning : Theme.accentColor).opacity(0.14), in: Capsule())
+                    }
+                }
                 Text(cardSubtitle(routine))
                     .font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
             }
@@ -115,6 +125,58 @@ private struct RoutineEditorSheet: View {
         guard routine.steps.indices.contains(j) else { return }
         routine.steps.swapAt(i, j)
         Haptics.selection()
+    }
+
+    /// Turn a routine into one you're establishing: tracked like a habit, with
+    /// a streak, a cadence, and an optional reminder.
+    private var trackSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("BUILD THE HABIT").font(.system(size: 11.5, weight: .semibold)).tracking(1.2).foregroundStyle(Theme.textTertiary)
+            fieldRow {
+                Toggle(isOn: $routine.tracked) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Track this routine").font(.system(size: 14.5, weight: .medium)).foregroundStyle(Theme.textPrimary)
+                        Text("Log it each day and build a streak").font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    }
+                }
+                .toggleStyle(.switch)
+            }
+            if routine.tracked {
+                fieldRow {
+                    Text("Cadence").font(.system(size: 14)).foregroundStyle(Theme.textSecondary)
+                    Spacer()
+                    Picker("", selection: $routine.cadence) {
+                        ForEach(HabitCadence.allCases) { c in Text(c.label).tag(c) }
+                    }
+                    .labelsHidden().fixedSize()
+                }
+                fieldRow {
+                    Text("Reminder").font(.system(size: 14)).foregroundStyle(Theme.textSecondary)
+                    Spacer()
+                    Toggle("", isOn: Binding(
+                        get: { routine.reminderMinutes != nil },
+                        set: { routine.reminderMinutes = $0 ? (routine.reminderMinutes ?? 7 * 60) : nil }
+                    )).labelsHidden().toggleStyle(.switch)
+                }
+                if routine.reminderMinutes != nil {
+                    fieldRow {
+                        Text("At").font(.system(size: 14)).foregroundStyle(Theme.textSecondary)
+                        Spacer()
+                        DatePicker("", selection: Binding(
+                            get: { Date().startOfDay.at(minutes: routine.reminderMinutes ?? 7 * 60) },
+                            set: { routine.reminderMinutes = $0.minutesSinceMidnight }
+                        ), displayedComponents: [.hourAndMinute]).labelsHidden()
+                    }
+                }
+            }
+        }
+    }
+
+    private func fieldRow<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        HStack { content() }
+            .padding(.horizontal, 12).padding(.vertical, 10)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
     }
 
     var body: some View {
@@ -201,6 +263,8 @@ private struct RoutineEditorSheet: View {
                             .buttonStyle(.plain)
                         }
                     }
+
+                    trackSection
 
                     Button(role: .destructive) { onDelete(routine); dismiss() } label: {
                         Text("Delete routine").font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.danger)

@@ -237,6 +237,7 @@ struct RoutineRunnerView: View {
     private func finish() {
         running = false
         finished = true
+        if routine.tracked { RoutineStore.shared.markDone(routine) }
         Haptics.success()
         if voiceEnabled { speaker.speak("\(routine.name) complete. Nice work.") }
     }
