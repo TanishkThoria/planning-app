@@ -118,6 +118,7 @@ private struct RoutineEditorSheet: View {
     }
 
     private let emojis = ["✨", "☀️", "🌙", "📚", "🏃", "🧘", "🧹", "💻", "☕️", "🛏️"]
+    static let durationPresets = [1, 2, 3, 5, 10, 15, 20, 25, 30, 45, 60, 90]
 
     private func move(_ step: RoutineStep, by offset: Int) {
         guard let i = routine.steps.firstIndex(where: { $0.id == step.id }) else { return }
@@ -219,15 +220,28 @@ private struct RoutineEditorSheet: View {
                                         .padding(.horizontal, 8).padding(.vertical, 3)
                                         .background(Theme.accentColor.opacity(0.14), in: Capsule())
                                 } else {
-                                    Stepper(value: Binding(
-                                        get: { max(1, step.seconds / 60) },
-                                        set: { $step.wrappedValue.seconds = $0 * 60 }
-                                    ), in: 1...120) {
-                                        Text("\(max(1, step.seconds / 60))m")
-                                            .font(.system(size: 13.5, weight: .medium))
-                                            .foregroundStyle(Theme.textSecondary).monospacedDigit()
+                                    Menu {
+                                        ForEach(Self.durationPresets, id: \.self) { m in
+                                            Button {
+                                                $step.wrappedValue.seconds = m * 60
+                                            } label: {
+                                                Label(Fmt.duration(minutes: m),
+                                                      systemImage: max(1, step.seconds / 60) == m ? "checkmark" : "")
+                                            }
+                                        }
+                                    } label: {
+                                        HStack(spacing: 3) {
+                                            Text("\(max(1, step.seconds / 60)) min")
+                                                .font(.system(size: 13.5, weight: .semibold))
+                                                .foregroundStyle(Theme.accentColor).monospacedDigit()
+                                            Image(systemName: "chevron.up.chevron.down")
+                                                .font(.system(size: 9, weight: .semibold))
+                                                .foregroundStyle(Theme.textTertiary)
+                                        }
+                                        .padding(.horizontal, 9).padding(.vertical, 5)
+                                        .background(Theme.accentColor.opacity(0.12), in: Capsule())
                                     }
-                                    .labelsHidden()
+                                    .menuIndicator(.hidden)
                                 }
                                 Menu {
                                     Button {

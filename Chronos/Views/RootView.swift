@@ -11,6 +11,7 @@ struct RootView: View {
     @ObservedObject private var intentLauncher = IntentLauncher.shared
     @ObservedObject private var tour = TourController.shared
     @ObservedObject private var lms = LMSStore.shared
+    @ObservedObject private var achievements = AchievementStore.shared
     @AppStorage(Prefs.accentName) private var accentName = "Blue"
     @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
     @AppStorage("chronos.onboardingComplete") private var onboardingComplete = false
@@ -45,6 +46,12 @@ struct RootView: View {
             .overlay {
                 if tour.isActive {
                     TourOverlay().transition(.opacity)
+                } else if onboardingComplete, let celebration = achievements.current {
+                    CelebrationOverlay(celebration: celebration) {
+                        achievements.dismissCurrent()
+                    }
+                    .transition(.opacity)
+                    .zIndex(20)
                 }
             }
             .onChange(of: tour.isActive) { _, active in
@@ -184,6 +191,7 @@ struct RootView: View {
             await notifications.refreshAuthorization()
             rescheduleRituals()
             rescheduleHabitReminders()
+            checkGamification()
             LiveActivityController.shared.accentHex = Theme.accent(named: accentName).hexRGB
             refreshWidgetSnapshot()
             // Keep hidden assignment events hidden immediately, then pull any
@@ -217,21 +225,23 @@ struct RootView: View {
             // (throttled so our own imports don't loop it).
             Task { await lms.autoSyncIfStale(service: service, minInterval: 30 * 60) }
         }
-        .onChange(of: service.tasks) { _, _ in refreshWidgetSnapshot() }
+        .onChange(of: service.tasks) { _, _ in refreshWidgetSnapshot(); checkGamification() }
         .onChange(of: life.habits) { _, _ in
             rescheduleHabitReminders()
             refreshWidgetSnapshot()
         }
-        .onChange(of: life.habitCompletions) { _, _ in refreshWidgetSnapshot() }
+        .onChange(of: life.habitCompletions) { _, _ in refreshWidgetSnapshot(); checkGamification() }
         .onChange(of: timer.isActive) { _, _ in syncBlockActivity() }
         .onReceive(minuteTick) { _ in
             syncBlockActivity()
             syncSocialPresence()
         }
+        .onChange(of: focusLog.sessions.count) { _, _ in checkGamification() }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 refreshWidgetSnapshot()
                 syncBlockActivity()
+                checkGamification()
                 PaidFeatures.shared.refresh()
                 Task {
                     await CloudSyncService.shared.syncNow()
@@ -595,6 +605,58 @@ struct RootView: View {
         let action = model.pendingCommandBarAction
         model.pendingCommandBarAction = nil
         action?()
+    }
+
+    /// Records today's momentum and checks for freshly-earned achievements /
+    /// level-ups, firing a celebration when something new is unlocked. Cheap and
+    /// idempotent — safe to call on launch, on foreground, and after you tick
+    /// something off.
+    private func checkGamification() {
+        guard onboardingComplete else { return }
+        let momentum = MomentumStore.shared
+        let mInput = MomentumEngine.dailyInput(
+            service: service, life: life, focusLog: focusLog,
+            hiddenCalendars: model.hiddenCalendarIDs, frogTaskID: model.frogTaskID
+        )
+        momentum.record(MomentumEngine.score(mInput))
+
+        let today = Date().startOfDay
+        let weekDays = (0..<7).map { today.startOfWeek.adding(days: $0) }
+        let stats = StatsEngine.compute(
+            days: weekDays,
+            blocks: { service.blocks(on: $0, hiddenCalendars: model.hiddenCalendarIDs) },
+            allTasks: service.tasks,
+            taskLookup: { service.task(withID: $0) },
+            sessions: focusLog.sessions,
+            isEventSkipped: { EventOutcomeStore.shared.isSkipped($0.id) }
+        )
+        let bestHabitStreak = life.activeHabits.map { life.streak($0) }.max() ?? 0
+        let bestRoutineStreak = RoutineStore.shared.trackedRoutines.map { RoutineStore.shared.streak($0) }.max() ?? 0
+        let inputs = AchievementEngine.Inputs(
+            completionStreak: stats.streakDays,
+            totalFocusMinutes: focusLog.sessions.reduce(0) { $0 + $1.actualMinutes },
+            weekDeepMinutes: stats.deepMinutes,
+            onTimeRate: stats.onTimeRate,
+            datedCompleted: stats.datedCompleted,
+            bestHabitStreak: bestHabitStreak,
+            journalStreak: life.journalStreak,
+            templatesSaved: life.templates.count,
+            weekBlockCount: stats.blockCount,
+            momentumLevel: momentum.level,
+            momentumStreak: momentum.streak(),
+            perfectDays: momentum.perfectDays,
+            solidDays: momentum.solidDays,
+            bestRoutineStreak: bestRoutineStreak
+        )
+        achievements.register(AchievementEngine.compute(inputs))
+        achievements.registerLevel(momentum.level, title: momentum.levelTitle)
+        if momentum.score(on: today) >= 100 {
+            achievements.registerMilestone(
+                id: "perfect-\(Fmt.dayKey(today))",
+                title: "Perfect Day", subtitle: "You maxed out today's momentum. Incredible.",
+                icon: "star.circle.fill", colorHex: 0xF2C14E
+            )
+        }
     }
 
     private func rescheduleHabitReminders() {

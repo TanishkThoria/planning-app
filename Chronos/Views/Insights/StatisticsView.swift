@@ -24,6 +24,8 @@ struct StatisticsView: View {
 
     private var achievements: [Achievement] {
         let bestHabitStreak = life.activeHabits.map { life.streak($0) }.max() ?? 0
+        let momentum = MomentumStore.shared
+        let bestRoutineStreak = RoutineStore.shared.trackedRoutines.map { RoutineStore.shared.streak($0) }.max() ?? 0
         return AchievementEngine.compute(.init(
             completionStreak: stats.streakDays,
             totalFocusMinutes: focusLog.sessions.reduce(0) { $0 + $1.actualMinutes },
@@ -33,7 +35,12 @@ struct StatisticsView: View {
             bestHabitStreak: bestHabitStreak,
             journalStreak: life.journalStreak,
             templatesSaved: life.templates.count,
-            weekBlockCount: stats.blockCount
+            weekBlockCount: stats.blockCount,
+            momentumLevel: momentum.level,
+            momentumStreak: momentum.streak(),
+            perfectDays: momentum.perfectDays,
+            solidDays: momentum.solidDays,
+            bestRoutineStreak: bestRoutineStreak
         ))
     }
 
@@ -436,25 +443,34 @@ struct StatisticsView: View {
                     VStack(spacing: 5) {
                         ZStack {
                             Circle()
-                                .fill(badge.unlocked ? Theme.accentColor.opacity(0.18) : Theme.fill)
-                                .frame(width: 40, height: 40)
+                                .fill(badge.unlocked ? badge.tier.color.opacity(0.2) : Theme.fill)
+                                .frame(width: 42, height: 42)
+                            if badge.unlocked {
+                                Circle().strokeBorder(badge.tier.color.opacity(0.5), lineWidth: 1.5).frame(width: 42, height: 42)
+                            } else {
+                                Circle().trim(from: 0, to: max(0.02, badge.progress))
+                                    .stroke(Theme.textTertiary.opacity(0.5), style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                                    .rotationEffect(.degrees(-90))
+                                    .frame(width: 42, height: 42)
+                            }
                             Image(systemName: badge.icon)
                                 .font(.system(size: 17))
-                                .foregroundStyle(badge.unlocked ? Theme.accentColor : Theme.textTertiary)
+                                .foregroundStyle(badge.unlocked ? badge.tier.color : Theme.textTertiary)
                         }
                         Text(badge.title)
                             .font(.system(size: 11.5, weight: .semibold))
-                            .foregroundStyle(badge.unlocked ? Theme.textPrimary : Theme.textTertiary)
+                            .foregroundStyle(badge.unlocked ? Theme.textPrimary : Theme.textSecondary)
+                            .lineLimit(1).minimumScaleFactor(0.8)
+                        Text(badge.unlocked ? badge.tier.label : badge.progressText)
+                            .font(.system(size: 9.5, weight: badge.unlocked ? .semibold : .regular))
+                            .foregroundStyle(badge.unlocked ? badge.tier.color : Theme.textTertiary)
                             .lineLimit(1)
-                        if !badge.unlocked {
-                            Text("\(Int(badge.progress * 100))%")
-                                .font(.system(size: 9.5))
-                                .foregroundStyle(Theme.textTertiary)
-                        }
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 10).padding(.horizontal, 4)
                     .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(badge.unlocked ? badge.tier.color.opacity(0.25) : Color.clear, lineWidth: 1))
                     .help(badge.detail)
                 }
             }

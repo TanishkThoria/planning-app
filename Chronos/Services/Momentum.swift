@@ -73,6 +73,28 @@ enum MomentumEngine {
         min(100, breakdown(input).reduce(0) { $0 + $1.earned })
     }
 
+    /// Build today's momentum input from the live stores — one definition the
+    /// card, the widget, and the app-wide gamification check all share.
+    @MainActor
+    static func dailyInput(service: EventKitService, life: LifeStore, focusLog: FocusLog,
+                           hiddenCalendars: Set<String>, frogTaskID: String?,
+                           day: Date = Date().startOfDay) -> Input {
+        let blocks = service.blocks(on: day, hiddenCalendars: hiddenCalendars).filter { !$0.isAllDay }
+        let entry = life.entry(for: day)
+        let habitsDue = life.activeHabits.filter { $0.isDue(on: day) }
+        let frog = frogTaskID.flatMap { service.task(withID: $0) }
+        return Input(
+            plannedBlocks: blocks.count,
+            didMorningPlan: entry?.hasMorning ?? false,
+            tasksCompletedToday: service.tasks.filter { $0.isCompleted && ($0.completionDate?.isSameDay(as: day) ?? false) }.count,
+            focusMinutesToday: focusLog.sessions(on: day).reduce(0) { $0 + $1.actualMinutes },
+            habitsDue: habitsDue.count,
+            habitsDone: habitsDue.filter { life.isDone($0, on: day) }.count,
+            journaledEvening: entry?.hasEvening ?? false,
+            frogEaten: frog?.isCompleted ?? false
+        )
+    }
+
     /// The single highest-value thing left to do today (biggest point gain).
     static func nextBestAction(_ input: Input) -> Breakdown? {
         breakdown(input).filter { !$0.isComplete }.max { $0.remaining < $1.remaining }
