@@ -155,6 +155,32 @@ struct ActivityMoment: Identifiable, Hashable {
     var isYou: Bool
 }
 
+// MARK: - Duels (head-to-head friend challenges)
+
+/// A head-to-head challenge between two friends over a metric and a window.
+/// Scores are read live from each side's published presence, so there's no
+/// separate score to sync — the leaderboard values already flowing are the
+/// duel's scoreboard. Rides the same `.friends` capability, so it's completely
+/// dormant until Chronos+ (post-transfer).
+struct Duel: Codable, Hashable, Identifiable {
+    var challengerCode: String
+    var challengerName: String
+    var opponentCode: String
+    var opponentName: String
+    /// LeaderboardBoard.rawValue — reuses the existing ranking metrics.
+    var metricRaw: String
+    var startEpoch: TimeInterval
+    var endEpoch: TimeInterval
+    var accepted: Bool = false
+
+    var id: String { "\(challengerCode)-\(opponentCode)-\(Int(startEpoch))" }
+    var metric: LeaderboardBoard { LeaderboardBoard(rawValue: metricRaw) ?? .focusWeek }
+    var startDate: Date { Date(timeIntervalSince1970: startEpoch) }
+    var endDate: Date { Date(timeIntervalSince1970: endEpoch) }
+    var isFinished: Bool { Date().timeIntervalSince1970 >= endEpoch }
+    var isPending: Bool { !accepted && !isFinished }
+}
+
 // MARK: - Friends backend abstraction
 
 /// A pluggable source of friend presence + cheers. The live backend is
@@ -165,6 +191,8 @@ protocol FriendsBackend {
     func fetch(codes: [String]) async throws -> [FriendPresence]
     func sendCheer(_ cheer: Cheer, to code: String) async throws
     func fetchCheers(for code: String) async throws -> [Cheer]
+    func postDuel(_ duel: Duel, to code: String) async throws
+    func fetchDuels(for code: String) async throws -> [Duel]
 }
 
 struct DisabledFriendsBackend: FriendsBackend {
@@ -172,6 +200,8 @@ struct DisabledFriendsBackend: FriendsBackend {
     func fetch(codes: [String]) async throws -> [FriendPresence] { [] }
     func sendCheer(_ cheer: Cheer, to code: String) async throws {}
     func fetchCheers(for code: String) async throws -> [Cheer] { [] }
+    func postDuel(_ duel: Duel, to code: String) async throws {}
+    func fetchDuels(for code: String) async throws -> [Duel] { [] }
 }
 
 #if canImport(CloudKit)
@@ -251,6 +281,45 @@ struct CloudKitFriendsBackend: FriendsBackend {
         }
         return []
     }
+
+    static let duelInboxType = "DuelInbox"
+
+    /// Duels append to a per-user inbox (same pattern as cheers) — the
+    /// challenger writes to both participants' inboxes so each side sees it.
+    func postDuel(_ duel: Duel, to code: String) async throws {
+        let id = CKRecord.ID(recordName: "duels-\(code)")
+        let record: CKRecord
+        var existing: [Duel] = []
+        do {
+            record = try await database.record(for: id)
+            if let data = record["payload"] as? Data,
+               let list = try? JSONDecoder().decode([Duel].self, from: data) {
+                existing = list
+            }
+        } catch let error as CKError where error.code == .unknownItem {
+            record = CKRecord(recordType: Self.duelInboxType, recordID: id)
+        }
+        existing.append(duel)
+        existing = Array(existing.suffix(50))
+        if let data = try? JSONEncoder().encode(existing) {
+            record["payload"] = data as CKRecordValue
+        }
+        _ = try await database.save(record)
+    }
+
+    func fetchDuels(for code: String) async throws -> [Duel] {
+        let id = CKRecord.ID(recordName: "duels-\(code)")
+        do {
+            let record = try await database.record(for: id)
+            if let data = record["payload"] as? Data,
+               let list = try? JSONDecoder().decode([Duel].self, from: data) {
+                return list
+            }
+        } catch let error as CKError where error.code == .unknownItem {
+            return []
+        }
+        return []
+    }
 }
 #endif
 
@@ -271,6 +340,7 @@ final class SocialService: ObservableObject {
 
     @Published private(set) var gameCenterAuthenticated = false
     @Published private(set) var friends: [FriendStatus] = []
+    @Published private(set) var duels: [Duel] = []
     @Published private(set) var receivedCheers: [Cheer] = []
     @Published private(set) var lastError: String?
     @Published private(set) var lastRefreshed: Date?
@@ -452,6 +522,7 @@ final class SocialService: ObservableObject {
     func refreshFriends() async {
         guard PaidFeatures.shared.isReady(.friends), !friendCodes.isEmpty else {
             friends = []
+            duels = []
             return
         }
         do {
@@ -461,9 +532,93 @@ final class SocialService: ObservableObject {
                 .sorted { $0.presence.updatedEpoch > $1.presence.updatedEpoch }
             lastRefreshed = Date()
             await refreshCheers()
+            await refreshDuels()
         } catch {
             lastError = error.localizedDescription
         }
+    }
+
+    // MARK: Duels (head-to-head — dormant until .friends is ready)
+
+    /// Challenge a friend to a head-to-head over a metric for `days` days.
+    func sendDuel(to code: String, metric: LeaderboardBoard, days: Int = 7) {
+        guard PaidFeatures.shared.isReady(.friends) else { return }
+        let now = Date().timeIntervalSince1970
+        let opponentName = friends.first { $0.presence.code == code }?.presence.displayName ?? code
+        let duel = Duel(
+            challengerCode: myFriendCode, challengerName: myDisplayName,
+            opponentCode: code, opponentName: opponentName,
+            metricRaw: metric.rawValue, startEpoch: now, endEpoch: now + Double(days) * 86_400,
+            accepted: false
+        )
+        let backend = backend
+        let myCode = myFriendCode
+        Task {
+            do {
+                try await backend.postDuel(duel, to: code)
+                try await backend.postDuel(duel, to: myCode)
+                await refreshDuels()
+            } catch {
+                await MainActor.run { self.lastError = error.localizedDescription }
+            }
+        }
+    }
+
+    func acceptDuel(_ duel: Duel) {
+        guard PaidFeatures.shared.isReady(.friends) else { return }
+        var accepted = duel
+        accepted.accepted = true
+        let backend = backend
+        let myCode = myFriendCode
+        Task {
+            do {
+                try await backend.postDuel(accepted, to: duel.challengerCode)
+                try await backend.postDuel(accepted, to: myCode)
+                await refreshDuels()
+            } catch {
+                await MainActor.run { self.lastError = error.localizedDescription }
+            }
+        }
+    }
+
+    func refreshDuels() async {
+        guard PaidFeatures.shared.isReady(.friends) else { duels = []; return }
+        do {
+            let raw = try await backend.fetchDuels(for: myFriendCode)
+            // Both participants may have posted (invite + accept); keep the most
+            // resolved copy of each duel id.
+            var map: [String: Duel] = [:]
+            for d in raw {
+                if let existing = map[d.id] {
+                    if d.accepted && !existing.accepted { map[d.id] = d }
+                } else {
+                    map[d.id] = d
+                }
+            }
+            let recent = Date().timeIntervalSince1970 - 3 * 86_400
+            duels = map.values
+                .filter { !$0.isFinished || $0.endEpoch > recent }
+                .sorted { $0.startEpoch > $1.startEpoch }
+        } catch {
+            lastError = error.localizedDescription
+        }
+    }
+
+    /// (your score, their score) for a duel, read live from presence.
+    func duelScores(_ duel: Duel) -> (mine: Int, theirs: Int) {
+        let mine = duel.metric.value(myPresence)
+        let theirCode = duel.challengerCode == myFriendCode ? duel.opponentCode : duel.challengerCode
+        let theirs = friends.first { $0.presence.code == theirCode }.map { duel.metric.value($0.presence) } ?? 0
+        return (mine, theirs)
+    }
+
+    func opponentName(_ duel: Duel) -> String {
+        duel.challengerCode == myFriendCode ? duel.opponentName : duel.challengerName
+    }
+
+    /// A duel that arrived for me and I haven't accepted yet.
+    func isIncoming(_ duel: Duel) -> Bool {
+        duel.opponentCode == myFriendCode && !duel.accepted
     }
 
     // MARK: Game Center (optional extra)

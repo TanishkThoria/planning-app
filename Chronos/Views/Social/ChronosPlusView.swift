@@ -16,6 +16,7 @@ struct ChronosPlusView: View {
 
     @State private var leaderboardPresented = false
     @State private var friendsPresented = false
+    @State private var duelsPresented = false
 
     var body: some View {
         NavigationStack {
@@ -49,6 +50,7 @@ struct ChronosPlusView: View {
         .onAppear { paid.refresh() }
         .sheet(isPresented: $leaderboardPresented) { LeaderboardView() }
         .sheet(isPresented: $friendsPresented) { FriendsView() }
+        .sheet(isPresented: $duelsPresented) { FriendChallengesView() }
     }
 
     // MARK: Hero
@@ -263,6 +265,10 @@ struct ChronosPlusView: View {
                     icon: "person.2.fill", title: "Friends",
                     subtitle: "Presence & your friend code"
                 ) { friendsPresented = true }
+                exploreButton(
+                    icon: "flag.2.crossed.fill", title: "Duels",
+                    subtitle: "Challenge a friend head-to-head"
+                ) { duelsPresented = true }
             }
         }
     }

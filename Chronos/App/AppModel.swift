@@ -182,6 +182,8 @@ final class AppModel: ObservableObject {
     @Published var leaderboardPresented = false
     /// Friends presence (Chronos+).
     @Published var friendsPresented = false
+    /// Head-to-head friend duels (Chronos+).
+    @Published var friendChallengesPresented = false
     /// The Coach, presented as a sheet on iPhone (it's a sidebar screen on
     /// iPad/Mac). Reached from Today's action row and the command bar.
     @Published var coachPresented = false

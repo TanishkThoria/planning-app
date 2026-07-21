@@ -473,6 +473,9 @@ struct RootView: View {
         .sheet(isPresented: $model.friendsPresented) {
             FriendsView()
         }
+        .sheet(isPresented: $model.friendChallengesPresented) {
+            FriendChallengesView()
+        }
         .sheet(isPresented: $model.coachPresented) {
             CoachView()
                 .chronosAppearance()

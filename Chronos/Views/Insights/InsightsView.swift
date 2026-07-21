@@ -292,6 +292,9 @@ struct InsightsView: View {
                                : "Follow friends' focus — a Chronos+ feature", tag: "Chronos+") {
                         model.friendsPresented = true
                     }
+                    reportCard("flag.2.crossed", "Duels", "Challenge a friend head-to-head for a week", tag: "Chronos+") {
+                        model.friendChallengesPresented = true
+                    }
                 }
             }
         }
