@@ -10,6 +10,7 @@ struct InsightsView: View {
     @EnvironmentObject private var focusLog: FocusLog
     @EnvironmentObject private var life: LifeStore
     @ObservedObject private var momentum = MomentumStore.shared
+    @ObservedObject private var challenges = ChallengeStore.shared
     @ObservedObject private var paid = PaidFeatures.shared
     @ObservedObject private var social = SocialService.shared
 
@@ -32,6 +33,7 @@ struct InsightsView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     MomentumCard()
                     weekStrip
+                    challengesCard
                     gamificationCard
                     reportsSection
                     // Shown per-capability, so a build with Game Center (but not
@@ -99,6 +101,36 @@ struct InsightsView: View {
         .padding(11)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+    }
+
+    // MARK: Challenges
+
+    private var challengesCard: some View {
+        let m = ChallengeMetrics.live(service: service, life: life, focusLog: focusLog,
+                                      hiddenCalendars: model.hiddenCalendarIDs)
+        let daily = challenges.dailyChallenges()
+        let doneCount = daily.filter { challenges.isComplete($0) }.count
+        return VStack(alignment: .leading, spacing: 12) {
+            Button { model.challengesPresented = true } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "flag.checkered").font(.system(size: 14.5)).foregroundStyle(Theme.accentColor)
+                    Text("Daily Challenges").font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                    Text("\(doneCount)/\(daily.count)")
+                        .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textSecondary)
+                    Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.textTertiary)
+                }
+            }
+            .buttonStyle(.plain)
+            VStack(spacing: 8) {
+                ForEach(daily) { challenge in
+                    ChallengeRow(challenge: challenge,
+                                 value: challenges.value(challenge, m),
+                                 done: challenges.isComplete(challenge))
+                }
+            }
+        }
+        .panel()
     }
 
     // MARK: Gamification (achievements + records)

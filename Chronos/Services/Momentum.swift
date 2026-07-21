@@ -109,8 +109,12 @@ final class MomentumStore: ObservableObject {
 
     /// dayKey → score (0–100).
     @Published private(set) var history: [String: Int] = [:]
+    /// Bonus XP earned outside the daily score — completed challenges, etc.
+    /// Counts toward your level alongside the daily momentum points.
+    @Published private(set) var bonusXP: Int = 0
 
     private static let key = "chronos.momentum.v1"
+    private static let bonusKey = "chronos.momentum.bonusxp.v1"
     private init() {
         load()
         NotificationCenter.default.addObserver(
@@ -125,11 +129,19 @@ final class MomentumStore: ObservableObject {
            let decoded = try? JSONDecoder().decode([String: Int].self, from: data) {
             history = decoded
         }
+        bonusXP = UserDefaults.standard.integer(forKey: Self.bonusKey)
     }
     private func save() {
         if let data = try? JSONEncoder().encode(history) {
             UserDefaults.standard.set(data, forKey: Self.key)
         }
+    }
+
+    /// Grant bonus XP (e.g. from a completed challenge). Ratchets your level.
+    func addBonusXP(_ amount: Int) {
+        guard amount > 0 else { return }
+        bonusXP += amount
+        UserDefaults.standard.set(bonusXP, forKey: Self.bonusKey)
     }
 
     /// Record today's score. Momentum only ever ratchets up within a day, so a
@@ -216,7 +228,7 @@ final class MomentumStore: ObservableObject {
         return count
     }
 
-    var totalPoints: Int { history.values.reduce(0, +) }
+    var totalPoints: Int { history.values.reduce(0, +) + bonusXP }
     var level: Int { 1 + totalPoints / 500 }
     var pointsIntoLevel: Int { totalPoints % 500 }
     var progressToNextLevel: Double { Double(pointsIntoLevel) / 500 }

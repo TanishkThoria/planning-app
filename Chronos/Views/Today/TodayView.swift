@@ -69,6 +69,58 @@ struct TodayView: View {
         return momentum.streak() >= 2 && todayScore < MomentumStore.solidThreshold && hour >= 16
     }
 
+    /// Always-on momentum widget: today's score ring, level, streak, and this
+    /// week's day-dots — the positive anchor (the risk banner is the stick).
+    private var momentumWidget: some View {
+        let score = momentum.score(on: today)
+        let start = today.startOfWeek
+        let week = (0..<7).map { start.adding(days: $0) }
+        return Button { model.momentumDetailPresented = true } label: {
+            HStack(spacing: 13) {
+                ZStack {
+                    Circle().stroke(momentumTier(score).opacity(0.16), lineWidth: 5).frame(width: 48, height: 48)
+                    Circle().trim(from: 0, to: max(0.02, Double(score) / 100))
+                        .stroke(momentumTier(score), style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                        .rotationEffect(.degrees(-90)).frame(width: 48, height: 48)
+                    Text("\(score)").font(.system(size: 16, weight: .bold)).foregroundStyle(Theme.textPrimary)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Lv \(momentum.level) · \(momentum.levelTitle)")
+                        .font(.system(size: 14.5, weight: .bold)).foregroundStyle(Theme.textPrimary)
+                    if momentum.streak() > 0 {
+                        Label("\(momentum.streak())-day streak", systemImage: "flame.fill")
+                            .font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.warning)
+                    } else {
+                        Text("Keep the score up to start a streak")
+                            .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    }
+                }
+                Spacer(minLength: 6)
+                HStack(spacing: 4) {
+                    ForEach(week, id: \.self) { day in
+                        let s = momentum.score(on: day)
+                        Circle()
+                            .fill(day > today ? Color.clear : momentumTier(s).opacity(s > 0 ? 1 : 0.25))
+                            .overlay(Circle().strokeBorder(day.isToday ? Theme.accentColor.opacity(0.8) : Theme.hairline,
+                                                           lineWidth: day.isToday ? 1.5 : 1))
+                            .frame(width: 11, height: 11)
+                    }
+                }
+            }
+            .padding(.horizontal, 13).padding(.vertical, 11)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 13, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func momentumTier(_ score: Int) -> Color {
+        if score >= 100 { return Color(hex: 0xF2C14E) }
+        if score >= 70 { return Theme.accentColor }
+        if score >= MomentumStore.solidThreshold { return Theme.success }
+        return Theme.textTertiary
+    }
+
     private var streakRiskBanner: some View {
         let action = MomentumEngine.nextBestAction(momentumInput)
         return Button {
@@ -350,6 +402,7 @@ struct TodayView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     dayActionsRow
+                    momentumWidget
                     if streakAtRisk { streakRiskBanner }
                     dayLoadBanner
                     frogCard

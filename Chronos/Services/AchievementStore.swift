@@ -3,7 +3,7 @@ import SwiftUI
 /// One thing worth celebrating — an unlocked achievement, a level-up, or a
 /// momentum milestone. Drives the full-screen celebration popup.
 struct Celebration: Identifiable, Equatable {
-    enum Kind { case achievement, levelUp, milestone }
+    enum Kind { case achievement, levelUp, milestone, challenge }
     let id: String
     let kind: Kind
     let title: String
@@ -16,7 +16,17 @@ struct Celebration: Identifiable, Equatable {
         case .achievement: return "Achievement unlocked"
         case .levelUp: return "Level up"
         case .milestone: return "Milestone"
+        case .challenge: return "Challenge complete"
         }
+    }
+
+    init(challengeTitle: String, xp: Int, icon: String, colorHex: UInt32) {
+        id = "chal-\(challengeTitle)-\(xp)"
+        kind = .challenge
+        title = challengeTitle
+        subtitle = "+\(xp) XP earned"
+        self.icon = icon
+        self.colorHex = colorHex
     }
 
     init(_ achievement: Achievement) {
@@ -87,6 +97,11 @@ final class AchievementStore: ObservableObject {
     func dismissCurrent() {
         guard !queue.isEmpty else { return }
         queue.removeFirst()
+    }
+
+    /// Enqueue a celebration directly (the caller owns de-duplication).
+    func enqueue(_ celebration: Celebration) {
+        queue.append(celebration)
     }
 
     /// Check the freshly-computed achievements; enqueue any newly unlocked.

@@ -483,6 +483,9 @@ struct RootView: View {
         .sheet(isPresented: $model.achievementsPresented) {
             AchievementsView()
         }
+        .sheet(isPresented: $model.challengesPresented) {
+            ChallengesView()
+        }
         .sheet(isPresented: $model.routinesPresented) {
             RoutinesView()
         }
@@ -660,6 +663,11 @@ struct RootView: View {
                 icon: "star.circle.fill", colorHex: 0xF2C14E
             )
         }
+
+        // Daily / weekly challenges — award bonus XP + celebrate on completion.
+        let metrics = ChallengeMetrics.live(service: service, life: life, focusLog: focusLog,
+                                            hiddenCalendars: model.hiddenCalendarIDs, day: today)
+        ChallengeStore.shared.check(metrics, on: today)
     }
 
     private func rescheduleHabitReminders() {

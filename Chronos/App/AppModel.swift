@@ -162,6 +162,8 @@ final class AppModel: ObservableObject {
     @Published var momentumDetailPresented = false
     /// Achievements gallery (badges, tiers, records).
     @Published var achievementsPresented = false
+    /// Daily & weekly challenges.
+    @Published var challengesPresented = false
     /// Guided routines library.
     @Published var routinesPresented = false
     /// Long-term projects hub (milestones + updates).
