@@ -16,6 +16,7 @@ struct StatisticsView: View {
 
     @State private var showTimeReport = false
     @State private var showWrapped = false
+    @State private var selectedAchievementID: String?
 
     private var weekDays: [Date] {
         let start = model.selectedDate.startOfWeek
@@ -433,49 +434,116 @@ struct StatisticsView: View {
 
     // MARK: Achievements
 
+    /// The badge whose description is shown in the strip: whatever's tapped, or
+    /// (by default) the one you're closest to earning.
+    private var focusedAchievement: Achievement? {
+        if let id = selectedAchievementID, let match = achievements.first(where: { $0.id == id }) { return match }
+        return achievements.filter { !$0.unlocked }.max(by: { $0.progress < $1.progress })
+            ?? achievements.first
+    }
+
     private var achievementsCard: some View {
         let unlocked = achievements.filter(\.unlocked)
         return VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "Achievements", trailing: "\(unlocked.count)/\(achievements.count)")
+            HStack {
+                SectionHeader(title: "Achievements", trailing: "\(unlocked.count)/\(achievements.count)")
+                Spacer(minLength: 8)
+                Button { model.achievementsPresented = true } label: {
+                    Text("See all").font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                }
+                .buttonStyle(.plain)
+            }
             let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 3)
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(achievements) { badge in
-                    VStack(spacing: 5) {
-                        ZStack {
-                            Circle()
-                                .fill(badge.unlocked ? badge.tier.color.opacity(0.2) : Theme.fill)
-                                .frame(width: 42, height: 42)
-                            if badge.unlocked {
-                                Circle().strokeBorder(badge.tier.color.opacity(0.5), lineWidth: 1.5).frame(width: 42, height: 42)
-                            } else {
-                                Circle().trim(from: 0, to: max(0.02, badge.progress))
-                                    .stroke(Theme.textTertiary.opacity(0.5), style: StrokeStyle(lineWidth: 2, lineCap: .round))
-                                    .rotationEffect(.degrees(-90))
-                                    .frame(width: 42, height: 42)
-                            }
-                            Image(systemName: badge.icon)
-                                .font(.system(size: 17))
-                                .foregroundStyle(badge.unlocked ? badge.tier.color : Theme.textTertiary)
-                        }
-                        Text(badge.title)
-                            .font(.system(size: 11.5, weight: .semibold))
-                            .foregroundStyle(badge.unlocked ? Theme.textPrimary : Theme.textSecondary)
-                            .lineLimit(1).minimumScaleFactor(0.8)
-                        Text(badge.unlocked ? badge.tier.label : badge.progressText)
-                            .font(.system(size: 9.5, weight: badge.unlocked ? .semibold : .regular))
-                            .foregroundStyle(badge.unlocked ? badge.tier.color : Theme.textTertiary)
-                            .lineLimit(1)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10).padding(.horizontal, 4)
-                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .strokeBorder(badge.unlocked ? badge.tier.color.opacity(0.25) : Color.clear, lineWidth: 1))
-                    .help(badge.detail)
+                    achievementBadge(badge)
                 }
+            }
+            if let focused = focusedAchievement {
+                achievementDetailStrip(focused)
             }
         }
         .panel()
+    }
+
+    private func achievementBadge(_ badge: Achievement) -> some View {
+        let selected = focusedAchievement?.id == badge.id
+        return Button {
+            withAnimation(.snappy) { selectedAchievementID = badge.id }
+            Haptics.selection()
+        } label: {
+            VStack(spacing: 5) {
+                ZStack {
+                    Circle()
+                        .fill(badge.unlocked ? badge.tier.color.opacity(0.2) : Theme.fill)
+                        .frame(width: 42, height: 42)
+                    if badge.unlocked {
+                        Circle().strokeBorder(badge.tier.color.opacity(0.5), lineWidth: 1.5).frame(width: 42, height: 42)
+                    } else {
+                        Circle().trim(from: 0, to: max(0.02, badge.progress))
+                            .stroke(Theme.textTertiary.opacity(0.5), style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                            .frame(width: 42, height: 42)
+                    }
+                    Image(systemName: badge.icon)
+                        .font(.system(size: 17))
+                        .foregroundStyle(badge.unlocked ? badge.tier.color : Theme.textTertiary)
+                }
+                Text(badge.title)
+                    .font(.system(size: 11.5, weight: .semibold))
+                    .foregroundStyle(badge.unlocked ? Theme.textPrimary : Theme.textSecondary)
+                    .lineLimit(1).minimumScaleFactor(0.8)
+                Text(badge.unlocked ? badge.tier.label : badge.progressText)
+                    .font(.system(size: 9.5, weight: badge.unlocked ? .semibold : .regular))
+                    .foregroundStyle(badge.unlocked ? badge.tier.color : Theme.textTertiary)
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10).padding(.horizontal, 4)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(selected ? Theme.accentColor
+                              : (badge.unlocked ? badge.tier.color.opacity(0.25) : Color.clear),
+                              lineWidth: selected ? 1.5 : 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// The inline description of the focused badge — so every achievement's
+    /// meaning is right here on the stats screen, not hidden behind a tooltip.
+    private func achievementDetailStrip(_ badge: Achievement) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: badge.icon)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(badge.unlocked ? badge.tier.color : Theme.textSecondary)
+                .frame(width: 22)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(badge.title).font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                    Text(badge.tier.label.uppercased())
+                        .font(.system(size: 8.5, weight: .bold)).tracking(0.5)
+                        .foregroundStyle(badge.tier.color)
+                        .padding(.horizontal, 5).padding(.vertical, 1.5)
+                        .background(badge.tier.color.opacity(0.16), in: Capsule())
+                    if badge.unlocked {
+                        Image(systemName: "checkmark.seal.fill").font(.system(size: 11)).foregroundStyle(badge.tier.color)
+                    }
+                }
+                Text(badge.detail)
+                    .font(.system(size: 12.5))
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if !badge.unlocked {
+                    Text(badge.progressText)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Theme.textTertiary).monospacedDigit()
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(11)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.fill, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     // MARK: Texture

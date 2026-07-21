@@ -118,4 +118,40 @@ enum AchievementEngine {
                   .gold, Double(i.solidDays), 30, unit: "days"),
         ]
     }
+
+    /// Build today's achievement inputs from the live stores — the single source
+    /// used by the Statistics grid, the Achievements screen, and the app-wide
+    /// celebration check, so they never disagree.
+    @MainActor
+    static func liveInputs(service: EventKitService, life: LifeStore, focusLog: FocusLog,
+                           hiddenCalendars: Set<String>, day: Date = Date().startOfDay) -> Inputs {
+        let weekDays = (0..<7).map { day.startOfWeek.adding(days: $0) }
+        let stats = StatsEngine.compute(
+            days: weekDays,
+            blocks: { service.blocks(on: $0, hiddenCalendars: hiddenCalendars) },
+            allTasks: service.tasks,
+            taskLookup: { service.task(withID: $0) },
+            sessions: focusLog.sessions,
+            isEventSkipped: { EventOutcomeStore.shared.isSkipped($0.id) }
+        )
+        let momentum = MomentumStore.shared
+        let bestHabitStreak = life.activeHabits.map { life.streak($0) }.max() ?? 0
+        let bestRoutineStreak = RoutineStore.shared.trackedRoutines.map { RoutineStore.shared.streak($0) }.max() ?? 0
+        return Inputs(
+            completionStreak: stats.streakDays,
+            totalFocusMinutes: focusLog.sessions.reduce(0) { $0 + $1.actualMinutes },
+            weekDeepMinutes: stats.deepMinutes,
+            onTimeRate: stats.onTimeRate,
+            datedCompleted: stats.datedCompleted,
+            bestHabitStreak: bestHabitStreak,
+            journalStreak: life.journalStreak,
+            templatesSaved: life.templates.count,
+            weekBlockCount: stats.blockCount,
+            momentumLevel: momentum.level,
+            momentumStreak: momentum.streak(),
+            perfectDays: momentum.perfectDays,
+            solidDays: momentum.solidDays,
+            bestRoutineStreak: bestRoutineStreak
+        )
+    }
 }

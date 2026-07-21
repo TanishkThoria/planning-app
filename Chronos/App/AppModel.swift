@@ -160,6 +160,8 @@ final class AppModel: ObservableObject {
     @Published var nowModePresented = false
     /// Momentum deep-dive (streaks, freezes, tips).
     @Published var momentumDetailPresented = false
+    /// Achievements gallery (badges, tiers, records).
+    @Published var achievementsPresented = false
     /// Guided routines library.
     @Published var routinesPresented = false
     /// Long-term projects hub (milestones + updates).

@@ -480,6 +480,9 @@ struct RootView: View {
         .sheet(isPresented: $model.momentumDetailPresented, onDismiss: runPendingCommand) {
             MomentumDetailView()
         }
+        .sheet(isPresented: $model.achievementsPresented) {
+            AchievementsView()
+        }
         .sheet(isPresented: $model.routinesPresented) {
             RoutinesView()
         }

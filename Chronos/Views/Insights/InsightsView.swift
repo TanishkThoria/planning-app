@@ -8,9 +8,17 @@ struct InsightsView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var focusLog: FocusLog
+    @EnvironmentObject private var life: LifeStore
     @ObservedObject private var momentum = MomentumStore.shared
     @ObservedObject private var paid = PaidFeatures.shared
     @ObservedObject private var social = SocialService.shared
+
+    private var achievements: [Achievement] {
+        AchievementEngine.compute(
+            AchievementEngine.liveInputs(service: service, life: life, focusLog: focusLog,
+                                         hiddenCalendars: model.hiddenCalendarIDs)
+        )
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,6 +32,7 @@ struct InsightsView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     MomentumCard()
                     weekStrip
+                    gamificationCard
                     reportsSection
                     // Shown per-capability, so a build with Game Center (but not
                     // CloudKit yet) surfaces the leaderboard without advertising
@@ -90,6 +99,82 @@ struct InsightsView: View {
         .padding(11)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+    }
+
+    // MARK: Gamification (achievements + records)
+
+    private var gamificationCard: some View {
+        let unlocked = achievements.filter(\.unlocked)
+        let ordered = unlocked + achievements.filter { !$0.unlocked }.sorted { $0.progress > $1.progress }
+        return VStack(alignment: .leading, spacing: 12) {
+            Button { model.achievementsPresented = true } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "trophy.fill").font(.system(size: 14.5)).foregroundStyle(Color(hex: 0xF2C14E))
+                    Text("Achievements").font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                    Text("\(unlocked.count)/\(achievements.count)")
+                        .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textSecondary)
+                    Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.textTertiary)
+                }
+            }
+            .buttonStyle(.plain)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(ordered.prefix(12)) { badge in
+                        Button { model.achievementsPresented = true } label: { badgeChip(badge) }
+                            .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 1)
+            }
+
+            Rectangle().fill(Theme.hairline).frame(height: 1)
+
+            HStack(spacing: 0) {
+                miniRecord("flame.fill", "\(momentum.bestStreak())d", "Best streak", .orange)
+                recordDivider
+                miniRecord("star.circle.fill", "\(momentum.perfectDays)", "Perfect days", Color(hex: 0xF2C14E))
+                recordDivider
+                miniRecord("bolt.fill", "Lv \(momentum.level)", momentum.levelTitle, Theme.accentColor)
+            }
+        }
+        .panel()
+    }
+
+    private func badgeChip(_ badge: Achievement) -> some View {
+        VStack(spacing: 5) {
+            ZStack {
+                Circle().fill((badge.unlocked ? badge.tier.color : Theme.textTertiary).opacity(badge.unlocked ? 0.2 : 0.1))
+                    .frame(width: 46, height: 46)
+                if !badge.unlocked {
+                    Circle().trim(from: 0, to: max(0.02, badge.progress))
+                        .stroke(Theme.textTertiary.opacity(0.55), style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                        .rotationEffect(.degrees(-90)).frame(width: 46, height: 46)
+                }
+                Image(systemName: badge.icon)
+                    .font(.system(size: 18))
+                    .foregroundStyle(badge.unlocked ? badge.tier.color : Theme.textTertiary)
+            }
+            Text(badge.title)
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(badge.unlocked ? Theme.textSecondary : Theme.textTertiary)
+                .lineLimit(1)
+                .frame(width: 58)
+        }
+    }
+
+    private func miniRecord(_ icon: String, _ value: String, _ label: String, _ tint: Color) -> some View {
+        VStack(spacing: 3) {
+            Image(systemName: icon).font(.system(size: 13.5, weight: .semibold)).foregroundStyle(tint)
+            Text(value).font(.system(size: 14.5, weight: .bold)).foregroundStyle(Theme.textPrimary).lineLimit(1).minimumScaleFactor(0.7)
+            Text(label).font(.system(size: 10, weight: .medium)).foregroundStyle(Theme.textTertiary).lineLimit(1).minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var recordDivider: some View {
+        Rectangle().fill(Theme.hairline).frame(width: 1, height: 28)
     }
 
     // MARK: Reports
