@@ -123,8 +123,12 @@ struct JournalEntry: Codable, Identifiable, Hashable {
     var updatedEpoch: TimeInterval = 0
 
     var hasMorning: Bool { intentions.contains { !$0.trimmingCharacters(in: .whitespaces).isEmpty } }
+    /// Evening completion is defined by the evening-only reflection fields.
+    /// Mood/energy are deliberately excluded: the morning ritual also records
+    /// them, so counting them here marked the evening done as soon as you did
+    /// the morning.
     var hasEvening: Bool {
-        !wins.isEmpty || !improve.isEmpty || !gratitude.isEmpty || mood != nil || energy != nil
+        [wins, improve, gratitude].contains { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
     }
 }
 
