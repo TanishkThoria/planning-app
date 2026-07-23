@@ -108,10 +108,10 @@ enum Theme {
         static let cardGap: CGFloat = 16
         /// Inner padding for cards / rows.
         static let cardPadding: CGFloat = 18
-        /// The house corner radius — soft, Apple-like.
-        static let radius: CGFloat = 20
+        /// The house corner radius — big and soft for a friendly, pill-like feel.
+        static let radius: CGFloat = 26
         /// Smaller radius for chips / compact controls.
-        static let radiusSmall: CGFloat = 12
+        static let radiusSmall: CGFloat = 16
     }
 
     /// A soft shadow for elevated cards (light mode gets a real shadow; dark
@@ -161,6 +161,11 @@ struct ChronosAppearance: ViewModifier {
     func body(content: Content) -> some View {
         content
             .tint(Theme.accent(named: accentName))
+            // The single biggest "friendly" lever: every heading and label
+            // renders in SF Pro Rounded unless it opts into another design
+            // (monospaced digits keep their design). Warm and approachable
+            // across the entire app from one place.
+            .fontDesign(.rounded)
             .preferredColorScheme(scheme)
     }
     private var scheme: ColorScheme? {
