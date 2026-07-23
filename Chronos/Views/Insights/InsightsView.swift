@@ -87,12 +87,19 @@ struct InsightsView: View {
     }
 
     private func statTile(_ icon: String, _ label: String, _ value: String, _ tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 9) {
             Image(systemName: icon)
-                .font(.system(size: 14.5, weight: .semibold))
-                .foregroundStyle(tint)
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(Color.white)
+                .frame(width: 34, height: 34)
+                .background(
+                    LinearGradient(colors: [tint, tint.opacity(0.78)],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                    in: RoundedRectangle(cornerRadius: 11, style: .continuous)
+                )
+                .shadow(color: tint.opacity(0.3), radius: 5, y: 3)
             Text(value)
-                .font(.system(size: 18, weight: .bold))
+                .font(.system(size: 19, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
@@ -102,9 +109,9 @@ struct InsightsView: View {
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(11)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+        .padding(13)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
     }
 
     // MARK: Challenges
@@ -354,11 +361,16 @@ struct InsightsView: View {
 
     private func reportCard(_ icon: String, _ title: String, _ subtitle: String, tag: String? = nil, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 12) {
+            HStack(spacing: 13) {
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Theme.accentColor)
-                    .frame(width: 24)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(Color.white)
+                    .frame(width: 38, height: 38)
+                    .background(
+                        LinearGradient(colors: [Theme.accentColor, Theme.accentColor.opacity(0.78)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing),
+                        in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    )
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(title)
