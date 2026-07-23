@@ -106,31 +106,13 @@ struct ProjectsView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "square.stack.3d.up")
-                .font(.system(size: 34))
-                .foregroundStyle(Theme.accentColor)
-            Text("Track the big things")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(Theme.textPrimary)
-            Text("A thesis, a side project, getting fit — anything that takes weeks. Add milestones to break it down and log updates to keep momentum.")
-                .font(.system(size: 14))
-                .foregroundStyle(Theme.textSecondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-            Button { editing = Project() } label: {
-                Text("New project")
-                    .font(.system(size: 14.5, weight: .semibold))
-                    .foregroundStyle(Theme.bg)
-                    .padding(.horizontal, 18).padding(.vertical, 10)
-                    .background(Theme.accentColor, in: Capsule())
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 4)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 44)
-        .padding(.horizontal, 20)
+        EmptyStateView(
+            icon: "square.stack.3d.up",
+            title: "Track the big things",
+            message: "A thesis, a side project, getting fit — anything that takes weeks. Add milestones to break it down and log updates to keep momentum.",
+            actionTitle: "New project",
+            action: { editing = Project() }
+        )
     }
 
 }

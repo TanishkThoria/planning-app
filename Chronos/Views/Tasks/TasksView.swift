@@ -222,27 +222,28 @@ struct TasksView: View {
             }
             Spacer()
             if mode == .list {
-                HeaderIconButton(icon: selectionMode ? "checkmark.circle.fill" : "checklist") {
+                HeaderIconButton(icon: selectionMode ? "checkmark.circle.fill" : "checklist",
+                                 accessibility: "Select multiple") {
                     selectionMode.toggle()
                     if !selectionMode { selected.removeAll() }
                 }
                 .help("Select multiple")
             }
-            HeaderIconButton(icon: "calendar.badge.clock") {
+            HeaderIconButton(icon: "calendar.badge.clock", accessibility: "Plan deadlines") {
                 model.deadlinePlanPresented = true
             }
             .help("Plan deadlines — schedule study sessions before every due date")
-            HeaderIconButton(icon: "magnifyingglass") {
+            HeaderIconButton(icon: "magnifyingglass", accessibility: "Search") {
                 model.searchPresented = true
             }
             .help("Search")
             if visibleTasks.contains(where: { $0.isOverdue }) {
-                HeaderIconButton(icon: "calendar.badge.exclamationmark") {
+                HeaderIconButton(icon: "calendar.badge.exclamationmark", accessibility: "Clear overdue") {
                     model.overdueSweepPresented = true
                 }
                 .help("Clear overdue")
             }
-            HeaderIconButton(icon: "plus", prominent: true) {
+            HeaderIconButton(icon: "plus", prominent: true, accessibility: "New task") {
                 model.newTask(listID: defaultListID.isEmpty ? nil : defaultListID)
             }
         }

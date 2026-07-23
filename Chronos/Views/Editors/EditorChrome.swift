@@ -16,21 +16,29 @@ struct EditorSheet<Content: View>: View {
             HStack {
                 Button("Cancel") { dismiss() }
                     .buttonStyle(.plain)
-                    .font(.system(size: 14.5))
+                    .font(.system(size: 15))
                     .foregroundStyle(Theme.textSecondary)
                     .keyboardShortcut(.cancelAction)
                 Spacer()
                 Text(title)
-                    .font(.system(size: 14.5, weight: .semibold))
+                    .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
-                Button(confirmLabel) {
+                Button {
                     onConfirm()
                     dismiss()
+                } label: {
+                    Text(confirmLabel)
+                        .font(.system(size: 14.5, weight: .semibold))
+                        .foregroundStyle(confirmDisabled ? Theme.textTertiary : Theme.onAccent)
+                        .padding(.horizontal, 15)
+                        .frame(height: 32)
+                        .background(
+                            confirmDisabled ? AnyShapeStyle(Theme.fill) : AnyShapeStyle(Theme.accentColor),
+                            in: Capsule()
+                        )
                 }
-                .buttonStyle(.plain)
-                .font(.system(size: 14.5, weight: .semibold))
-                .foregroundStyle(confirmDisabled ? Theme.textTertiary : Theme.accentColor)
+                .buttonStyle(PressableButtonStyle())
                 .disabled(confirmDisabled)
                 .keyboardShortcut(.defaultAction)
             }
