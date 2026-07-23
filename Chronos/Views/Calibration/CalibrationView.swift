@@ -326,11 +326,8 @@ struct CalibrationView: View {
     }
 
     private func mapRow(_ icon: String, _ title: String, _ subtitle: String) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: icon)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Theme.accentColor)
-                .frame(width: 20)
+        HStack(alignment: .top, spacing: 11) {
+            IconChip(icon: icon, tint: ChipPalette.color(for: title), size: 30)
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))

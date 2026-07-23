@@ -180,6 +180,13 @@ enum ChipPalette {
         Color(hex: 0xFF6B9D), Color(hex: 0x4C9BFF),
     ]
     static func color(_ i: Int) -> Color { colors[((i % colors.count) + colors.count) % colors.count] }
+    /// A stable color for a string (djb2 — unlike `hashValue`, consistent across
+    /// launches), so a titled row keeps the same hue every time.
+    static func color(for s: String) -> Color {
+        var h = 5381
+        for b in s.utf8 { h = (h &* 33) ^ Int(b) }
+        return color(abs(h))
+    }
 }
 
 // MARK: - Friendly buttons

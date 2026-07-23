@@ -365,11 +365,8 @@ struct SettingsView: View {
                             model.settingsPresented = false
                             model.chronosPlusPresented = true
                         } label: {
-                            HStack(spacing: 10) {
-                                Image(systemName: "sparkles")
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundStyle(Theme.accentColor)
-                                    .frame(width: 20)
+                            HStack(spacing: 11) {
+                                IconChip(icon: "sparkles", tint: Color(hex: 0x9C7BFA), size: 32)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text("iCloud sync, leaderboards & friends")
                                         .font(.system(size: 14.5, weight: .semibold))
@@ -402,11 +399,8 @@ struct SettingsView: View {
                             }
                             model.settingsPresented = false
                         } label: {
-                            HStack(spacing: 10) {
-                                Image(systemName: "graduationcap.fill")
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundStyle(Theme.accentColor)
-                                    .frame(width: 20)
+                            HStack(spacing: 11) {
+                                IconChip(icon: "graduationcap.fill", tint: Color(hex: 0x22C3C9), size: 32)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(LMSStore.shared.isConfigured ? "Manage schools" : "Connect your school")
                                         .font(.system(size: 14.5, weight: .semibold))
@@ -432,11 +426,8 @@ struct SettingsView: View {
                             model.settingsPresented = false
                             TourController.shared.start()
                         } label: {
-                            HStack(spacing: 10) {
-                                Image(systemName: "map")
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundStyle(Theme.accentColor)
-                                    .frame(width: 20)
+                            HStack(spacing: 11) {
+                                IconChip(icon: "map.fill", tint: Color(hex: 0xFF7A59), size: 32)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text("Take the tour")
                                         .font(.system(size: 14.5, weight: .semibold))

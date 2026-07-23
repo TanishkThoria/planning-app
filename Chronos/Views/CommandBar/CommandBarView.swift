@@ -97,10 +97,7 @@ struct CommandBarView: View {
     private func row(_ command: Command) -> some View {
         Button { perform(command.run) } label: {
             HStack(spacing: 12) {
-                Image(systemName: command.icon)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(Theme.accentColor)
-                    .frame(width: 24)
+                IconChip(icon: command.icon, tint: Theme.accentColor, size: 30)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(command.title)
                         .font(.system(size: 14.5, weight: .medium))
@@ -127,10 +124,7 @@ struct CommandBarView: View {
             perform { model.quickAddPrefill = text; model.quickAddPresented = true }
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Theme.accentColor)
-                    .frame(width: 24)
+                IconChip(icon: "plus.circle.fill", tint: Color(hex: 0x3FC97A), size: 30)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(trimmedQuery.isEmpty ? "Quick add…" : "Add \u{201C}\(trimmedQuery)\u{201D}")
                         .font(.system(size: 14.5, weight: .semibold))

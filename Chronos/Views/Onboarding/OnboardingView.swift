@@ -82,15 +82,16 @@ struct OnboardingView: View {
     private func pageContent(_ page: OnboardingPage) -> some View {
         VStack(spacing: 22) {
             Spacer()
-            ZStack {
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(Theme.accentColor.opacity(0.14))
-                    .frame(width: 108, height: 108)
-                Image(systemName: page.icon)
-                    .font(.system(size: 46, weight: .medium))
-                    .foregroundStyle(Theme.accentColor)
-                    .symbolRenderingMode(.hierarchical)
-            }
+            Image(systemName: page.icon)
+                .font(.system(size: 48, weight: .bold))
+                .foregroundStyle(Color.white)
+                .frame(width: 108, height: 108)
+                .background(
+                    LinearGradient(colors: [Theme.accentColor, Theme.accentColor.opacity(0.7)],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                    in: RoundedRectangle(cornerRadius: 30, style: .continuous)
+                )
+                .shadow(color: Theme.accentColor.opacity(0.4), radius: 20, y: 12)
             VStack(spacing: 10) {
                 Text(page.title)
                     .font(.system(size: 26, weight: .bold))
@@ -106,12 +107,9 @@ struct OnboardingView: View {
 
             if !page.bullets.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
-                    ForEach(page.bullets, id: \.text) { bullet in
+                    ForEach(Array(page.bullets.enumerated()), id: \.element.text) { i, bullet in
                         HStack(spacing: 12) {
-                            Image(systemName: bullet.icon)
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(Theme.accentColor)
-                                .frame(width: 24)
+                            IconChip(icon: bullet.icon, tint: ChipPalette.color(i), size: 32)
                             Text(bullet.text)
                                 .font(.system(size: 14.5))
                                 .foregroundStyle(Theme.textSecondary)
@@ -136,15 +134,16 @@ struct OnboardingView: View {
     private var permissionsContent: some View {
         VStack(spacing: 22) {
             Spacer()
-            ZStack {
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(Theme.accentColor.opacity(0.14))
-                    .frame(width: 108, height: 108)
-                Image(systemName: "lock.shield")
-                    .font(.system(size: 46, weight: .medium))
-                    .foregroundStyle(Theme.accentColor)
-                    .symbolRenderingMode(.hierarchical)
-            }
+            Image(systemName: "lock.shield.fill")
+                .font(.system(size: 46, weight: .bold))
+                .foregroundStyle(Color.white)
+                .frame(width: 108, height: 108)
+                .background(
+                    LinearGradient(colors: [Color(hex: 0x3FC97A), Color(hex: 0x22C3C9)],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                    in: RoundedRectangle(cornerRadius: 30, style: .continuous)
+                )
+                .shadow(color: Color(hex: 0x3FC97A).opacity(0.4), radius: 20, y: 12)
             VStack(spacing: 10) {
                 Text("A couple of permissions")
                     .font(.system(size: 26, weight: .bold))
@@ -210,10 +209,7 @@ struct OnboardingView: View {
 
     private func permissionRow(icon: String, title: String, subtitle: String, granted: Bool, busy: Bool, action: @escaping () -> Void) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(Theme.accentColor)
-                .frame(width: 26)
+            IconChip(icon: icon, tint: granted ? Theme.success : Theme.accentColor, size: 36)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.system(size: 15, weight: .semibold))

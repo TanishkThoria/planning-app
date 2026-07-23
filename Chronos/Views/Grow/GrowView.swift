@@ -528,11 +528,7 @@ struct GrowView: View {
     private func hubRow(_ icon: String, _ title: String, _ subtitle: String, tint: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(tint)
-                    .frame(width: 30, height: 30)
-                    .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                IconChip(icon: icon, tint: tint, size: 34)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title).font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                     Text(subtitle).font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
