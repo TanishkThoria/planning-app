@@ -163,11 +163,18 @@ struct ProjectDetailView: View {
     var onEdit: (Project) -> Void
 
     @EnvironmentObject private var life: LifeStore
+    @EnvironmentObject private var service: EventKitService
     @Environment(\.dismiss) private var dismiss
 
     @State private var newMilestone = ""
     @State private var updateText = ""
     @State private var stampProgress = true
+    @State private var weekGoalText = ""
+    @State private var editingUpdate: ProjectUpdate?
+    @State private var editingTimeEntry: ProjectTimeEntry?
+    @State private var loggingTime = false
+    @State private var linkingPresented = false
+    @State private var showAllWeeks = false
     @FocusState private var composing: Bool
 
     private var project: Project? { life.project(projectID) }
@@ -186,8 +193,11 @@ struct ProjectDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 headerCard(project)
-                if project.manualProgress != nil { manualProgressCard(project) }
+                progressCard(project)
+                weeklyObjectiveSection(project)
+                timeSection(project)
                 milestonesSection(project)
+                linkedSection(project)
                 updatesSection(project)
             }
             .padding(Theme.Metric.screen)
@@ -200,6 +210,23 @@ struct ProjectDetailView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
+        .sheet(item: $editingUpdate) { update in
+            ProjectUpdateEditorSheet(projectID: projectID, update: update)
+                .environmentObject(life)
+        }
+        .sheet(item: $editingTimeEntry) { entry in
+            ProjectTimeEntrySheet(projectID: projectID, entry: entry)
+                .environmentObject(life)
+        }
+        .sheet(isPresented: $loggingTime) {
+            ProjectTimeEntrySheet(projectID: projectID, entry: nil)
+                .environmentObject(life)
+        }
+        .sheet(isPresented: $linkingPresented) {
+            ProjectLinkPicker(projectID: projectID)
+                .environmentObject(life)
+                .environmentObject(service)
+        }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Menu {
@@ -267,18 +294,317 @@ struct ProjectDetailView: View {
         return bits.joined(separator: " · ")
     }
 
-    private func manualProgressCard(_ project: Project) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            SectionHeader(title: "Progress")
-            Slider(value: Binding(
-                get: { project.manualProgress ?? 0 },
-                set: { var p = project; p.manualProgress = $0; life.upsert(p) }
-            ), in: 0...1)
-            .tint(project.color)
+    // MARK: Progress (stamp a custom reading any time, independent of milestones)
+
+    private func progressCard(_ project: Project) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                SectionHeader(title: "Progress")
+                Spacer()
+                if project.manualProgress != nil && !project.isComplete {
+                    Button {
+                        life.setProgress(nil, for: project.id); Haptics.light()
+                    } label: {
+                        Text(project.milestones.isEmpty ? "Clear" : "Use milestones")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Theme.accentColor)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            HStack(spacing: 12) {
+                Text("\(Int((project.progress * 100).rounded()))%")
+                    .font(.system(size: 22, weight: .bold))
+                    .monospacedDigit()
+                    .foregroundStyle(Theme.textPrimary)
+                    .frame(width: 62, alignment: .leading)
+                Slider(
+                    value: Binding(
+                        get: { project.progress },
+                        set: { life.setProgress($0, for: project.id) }
+                    ),
+                    in: 0...1, step: 0.01
+                )
+                .tint(project.color)
+                .disabled(project.isComplete)
+            }
+            HStack(spacing: 6) {
+                ForEach([0, 25, 50, 75, 100], id: \.self) { pct in
+                    Button {
+                        life.setProgress(Double(pct) / 100, for: project.id); Haptics.light()
+                    } label: {
+                        Text("\(pct)%")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Theme.textSecondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(Theme.fill, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(project.isComplete)
+                }
+            }
+            Text(progressCaption(project))
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.textTertiary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+    }
+
+    private func progressCaption(_ project: Project) -> String {
+        if project.isComplete { return "Marked complete — 100%." }
+        if project.manualProgress != nil {
+            return project.milestones.isEmpty
+                ? "A reading you set by feel."
+                : "Custom reading — overriding the \(project.doneMilestoneCount)/\(project.milestones.count) milestones below."
+        }
+        if project.milestones.isEmpty { return "Drag to set a reading, or add milestones below to track it by checklist." }
+        return "From \(project.doneMilestoneCount)/\(project.milestones.count) milestones. Drag to override with your own read."
+    }
+
+    // MARK: Weekly objectives (week-by-week steering for open-ended work)
+
+    private func weeklyObjectiveSection(_ project: Project) -> some View {
+        let current = project.weeklyGoal()
+        let past = project.pastWeeklyGoals()
+        return VStack(alignment: .leading, spacing: 10) {
+            SectionHeader(title: "This week")
+            if let goal = current {
+                weeklyGoalRow(project, goal, isCurrent: true)
+            } else {
+                HStack(spacing: 10) {
+                    Image(systemName: "calendar.badge.plus")
+                        .font(.system(size: 17)).foregroundStyle(Theme.textTertiary)
+                    TextField("This week's aim…", text: $weekGoalText)
+                        .textFieldStyle(.plain).font(.system(size: 14.5))
+                        .foregroundStyle(Theme.textPrimary)
+                        .onSubmit { commitWeekGoal(project) }
+                    if !weekGoalText.trimmingCharacters(in: .whitespaces).isEmpty {
+                        Button { commitWeekGoal(project) } label: {
+                            Text("Set").font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 12).padding(.vertical, 11)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+            }
+            if current == nil {
+                Text("For projects where the finish line is still fuzzy — set a small aim for the week and steer as you go.")
+                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if !past.isEmpty {
+                let shown = showAllWeeks ? past : Array(past.prefix(3))
+                VStack(spacing: 8) {
+                    ForEach(shown) { goal in weeklyGoalRow(project, goal, isCurrent: false) }
+                }
+                if past.count > 3 {
+                    Button { withAnimation { showAllWeeks.toggle() } } label: {
+                        Text(showAllWeeks ? "Show less" : "Show \(past.count - 3) earlier week\(past.count - 3 == 1 ? "" : "s")")
+                            .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private func weeklyGoalRow(_ project: Project, _ goal: ProjectWeeklyGoal, isCurrent: Bool) -> some View {
+        HStack(spacing: 12) {
+            Button {
+                life.toggleWeeklyGoal(goal.id, in: project.id); Haptics.light()
+            } label: {
+                Image(systemName: goal.isDone ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 20))
+                    .foregroundStyle(goal.isDone ? project.color : Theme.textTertiary)
+            }
+            .buttonStyle(.plain)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(goal.text)
+                    .font(.system(size: 14.5, weight: isCurrent ? .semibold : .regular))
+                    .foregroundStyle(goal.isDone ? Theme.textTertiary : Theme.textPrimary)
+                    .strikethrough(goal.isDone, color: Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if !isCurrent {
+                    Text(weekLabel(goal.weekKey))
+                        .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .background(isCurrent ? AnyShapeStyle(project.color.opacity(0.10)) : AnyShapeStyle(Theme.surface),
+                    in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+        .contextMenu {
+            Button(role: .destructive) {
+                life.deleteWeeklyGoal(goal.id, from: project.id)
+            } label: { Label("Delete", systemImage: "trash") }
+        }
+    }
+
+    private func commitWeekGoal(_ project: Project) {
+        life.setWeeklyGoal(weekGoalText, in: project.id)
+        weekGoalText = ""
+        Haptics.light()
+    }
+
+    private func weekLabel(_ weekKey: String) -> String {
+        guard let date = Project.date(fromWeekKey: weekKey) else { return weekKey }
+        return "Week of \(Fmt.monthDay.string(from: date))"
+    }
+
+    // MARK: Time logged
+
+    private func timeSection(_ project: Project) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeader(title: "Time", trailing: timeTrailing(project))
+            HStack(spacing: 8) {
+                ForEach([15, 30, 60], id: \.self) { mins in
+                    Button {
+                        life.logTime(to: project.id, minutes: mins); Haptics.success()
+                    } label: {
+                        Text("+\(Fmt.duration(minutes: mins))")
+                            .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                            .frame(maxWidth: .infinity).padding(.vertical, 9)
+                            .background(Theme.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+                Button { loggingTime = true } label: {
+                    Label("Custom", systemImage: "slider.horizontal.3")
+                        .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textSecondary)
+                        .frame(maxWidth: .infinity).padding(.vertical, 9)
+                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+            }
+            let entries = project.timeEntries.sorted { $0.epoch > $1.epoch }
+            if entries.isEmpty {
+                Text(project.targetHours != nil
+                     ? "Log the hours you put in — you'll watch them add up toward your target."
+                     : "Tap a chip after a work session to log time. Every bit builds the record.")
+                    .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true).padding(.top, 2)
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(entries.prefix(6)) { entry in timeEntryRow(project, entry) }
+                }
+                if entries.count > 6 {
+                    Text("+ \(entries.count - 6) more logged")
+                        .font(.system(size: 12)).foregroundStyle(Theme.textTertiary).padding(.leading, 2)
+                }
+            }
+        }
+    }
+
+    private func timeTrailing(_ project: Project) -> String? {
+        let total = project.totalLoggedMinutes
+        guard total > 0 || project.targetHours != nil else { return nil }
+        if let target = project.targetHours, target > 0 {
+            return "\(timeLabel(total)) / \(Fmt.duration(minutes: Int(target * 60)))"
+        }
+        return timeLabel(total)
+    }
+
+    private func timeEntryRow(_ project: Project, _ entry: ProjectTimeEntry) -> some View {
+        Button { editingTimeEntry = entry } label: {
+            HStack(spacing: 12) {
+                Text(timeLabel(entry.minutes))
+                    .font(.system(size: 13.5, weight: .bold)).monospacedDigit()
+                    .foregroundStyle(project.color)
+                    .frame(width: 58, alignment: .leading)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(entry.note.isEmpty ? "Focused time" : entry.note)
+                        .font(.system(size: 14)).foregroundStyle(Theme.textPrimary)
+                        .lineLimit(1)
+                    Text(Fmt.relativeDay(entry.date))
+                        .font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "pencil").font(.system(size: 11, weight: .semibold)).foregroundStyle(Theme.textTertiary)
+            }
+            .padding(.horizontal, 12).padding(.vertical, 10)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            Button(role: .destructive) { life.deleteTimeEntry(entry.id, from: project.id) } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+    }
+
+    private func timeLabel(_ minutes: Int) -> String {
+        if minutes < 60 { return "\(minutes)m" }
+        let h = minutes / 60, m = minutes % 60
+        return m == 0 ? "\(h)h" : "\(h)h \(m)m"
+    }
+
+    // MARK: Linked goals / habits / tasks
+
+    @ViewBuilder
+    private func linkedSection(_ project: Project) -> some View {
+        let goals = life.linkedGoals(for: project)
+        let habits = life.linkedHabits(for: project)
+        let tasks = (project.linkedTaskIDs ?? []).compactMap { id in service.tasks.first { $0.id == id } }
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                SectionHeader(title: "Linked")
+                Spacer()
+                Button { linkingPresented = true } label: {
+                    Label("Link", systemImage: "link")
+                        .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                }
+                .buttonStyle(.plain)
+            }
+            if goals.isEmpty && habits.isEmpty && tasks.isEmpty {
+                Text("Pull in the goals, habits and tasks this project depends on, so its moving parts live in one place.")
+                    .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(goals) { goal in
+                        linkedRow(icon: goal.kind.icon, tint: goal.color, title: goal.title,
+                                  subtitle: "Goal") { life.toggleLinkedGoal(goal.id, in: project.id) }
+                    }
+                    ForEach(habits) { habit in
+                        linkedRow(icon: habit.iconName, tint: habit.color, title: habit.title,
+                                  subtitle: "Habit · \(life.streak(habit))-day streak") { life.toggleLinkedHabit(habit.id, in: project.id) }
+                    }
+                    ForEach(tasks) { task in
+                        linkedRow(icon: task.isCompleted ? "checkmark.circle.fill" : "circle",
+                                  tint: task.color, title: task.title,
+                                  subtitle: task.isCompleted ? "Task · done" : "Task") { life.toggleLinkedTask(task.id, in: project.id) }
+                    }
+                }
+            }
+        }
+    }
+
+    private func linkedRow(icon: String, tint: Color, title: String, subtitle: String, unlink: @escaping () -> Void) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon).font(.system(size: 15, weight: .medium))
+                .foregroundStyle(tint).frame(width: 22)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title).font(.system(size: 14, weight: .medium)).foregroundStyle(Theme.textPrimary).lineLimit(1)
+                Text(subtitle).font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12).padding(.vertical, 9)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+        .contextMenu {
+            Button(role: .destructive, action: unlink) { Label("Unlink", systemImage: "link.badge.minus") }
+        }
     }
 
     // MARK: Milestones
@@ -422,33 +748,41 @@ struct ProjectDetailView: View {
     }
 
     private func updateRow(_ project: Project, _ update: ProjectUpdate) -> some View {
-        VStack(alignment: .leading, spacing: 5) {
-            HStack(spacing: 8) {
-                Text(Fmt.relativeDay(update.date))
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Theme.textSecondary)
-                if let p = update.progress {
-                    Text("\(Int((p * 100).rounded()))%")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(project.color)
-                        .padding(.horizontal, 6).padding(.vertical, 1)
-                        .background(project.color.opacity(0.14), in: Capsule())
+        Button { editingUpdate = update } label: {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 8) {
+                    Text(Fmt.relativeDay(update.date))
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Theme.textSecondary)
+                    if let p = update.progress {
+                        Text("\(Int((p * 100).rounded()))%")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(project.color)
+                            .padding(.horizontal, 6).padding(.vertical, 1)
+                            .background(project.color.opacity(0.14), in: Capsule())
+                    }
+                    Spacer()
+                    if update.wasEdited {
+                        Text("edited").font(.system(size: 10.5)).foregroundStyle(Theme.textTertiary)
+                    }
+                    Text(Fmt.time.string(from: update.date))
+                        .font(.system(size: 11))
+                        .foregroundStyle(Theme.textTertiary)
                 }
-                Spacer()
-                Text(Fmt.time.string(from: update.date))
-                    .font(.system(size: 11))
-                    .foregroundStyle(Theme.textTertiary)
+                Text(update.text)
+                    .font(.system(size: 14))
+                    .foregroundStyle(Theme.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.leading)
             }
-            Text(update.text)
-                .font(.system(size: 14))
-                .foregroundStyle(Theme.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, 12).padding(.vertical, 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
         }
-        .padding(.horizontal, 12).padding(.vertical, 10)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+        .buttonStyle(.plain)
         .contextMenu {
+            Button { editingUpdate = update } label: { Label("Edit", systemImage: "pencil") }
             Button(role: .destructive) {
                 life.deleteUpdate(update.id, from: project.id)
             } label: { Label("Delete update", systemImage: "trash") }
@@ -467,15 +801,18 @@ struct ProjectEditorView: View {
     @State private var project: Project
     @State private var hasTarget: Bool
     @State private var manualMode: Bool
+    @State private var hasHours: Bool
     @State private var confirmingDelete = false
     let isNew: Bool
 
     private let emojis = ["🎯", "🚀", "📚", "💪", "🎨", "💼", "🏗️", "🌱", "🎓", "✍️", "🏃", "🧠", "🎸", "💰", "🏠", "❤️"]
+    private let hourPresets: [Double] = [5, 10, 20, 40, 60, 100, 200]
 
     init(project: Project, isNew: Bool) {
         _project = State(initialValue: project)
         _hasTarget = State(initialValue: project.targetDate != nil)
         _manualMode = State(initialValue: project.manualProgress != nil)
+        _hasHours = State(initialValue: project.targetHours != nil)
         self.isNew = isNew
     }
 
@@ -523,11 +860,33 @@ struct ProjectEditorView: View {
                 Toggle("", isOn: $manualMode).labelsHidden().toggleStyle(.switch)
             }
             Text(manualMode
-                 ? "Progress is a slider you set yourself."
-                 : "Progress comes from the milestones you complete.")
+                 ? "Starts progress as a reading you set yourself — you can still add milestones and stamp any % later."
+                 : "Progress comes from the milestones you complete — you can still override it with a custom reading anytime.")
                 .font(.system(size: 12))
                 .foregroundStyle(Theme.textTertiary)
                 .padding(.horizontal, 4)
+
+            FieldRow(label: "Time target") {
+                Toggle("", isOn: $hasHours).labelsHidden().toggleStyle(.switch)
+            }
+            if hasHours {
+                FieldRow(label: "Aim for") {
+                    Menu {
+                        ForEach(hourPresets, id: \.self) { hrs in
+                            Button("\(Int(hrs)) hours") { project.targetHours = hrs }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text("\(Int(project.targetHours ?? 10)) hours")
+                                .font(.system(size: 14, weight: .medium)).foregroundStyle(Theme.textPrimary)
+                            Image(systemName: "chevron.up.chevron.down").font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
+                        }
+                    }
+                    .fixedSize()
+                }
+                Text("Log time as you work and watch the hours add up toward this total — great for effort-based projects without a hard deadline.")
+                    .font(.system(size: 12)).foregroundStyle(Theme.textTertiary).padding(.horizontal, 4)
+            }
 
             if !isNew {
                 Button(role: .destructive) { confirmingDelete = true } label: {
@@ -551,8 +910,12 @@ struct ProjectEditorView: View {
 
     private func commit() {
         if !hasTarget { project.targetDate = nil }
+        // "Track by feel" seeds an initial manual reading; the detail screen can
+        // still stamp a custom % on a milestone project at any time.
         if manualMode { if project.manualProgress == nil { project.manualProgress = project.milestoneProgress } }
         else { project.manualProgress = nil }
+        if !hasHours { project.targetHours = nil }
+        else if project.targetHours == nil { project.targetHours = 10 }
         life.upsert(project)
     }
 
@@ -592,5 +955,297 @@ struct ProjectEditorView: View {
         .padding(.horizontal, 12).padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+    }
+}
+
+// MARK: - Update editor
+
+/// Edit an existing project update — flesh out the note, adjust or remove its
+/// stamped progress, or delete it.
+struct ProjectUpdateEditorSheet: View {
+    let projectID: UUID
+    let update: ProjectUpdate
+
+    @EnvironmentObject private var life: LifeStore
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var text: String
+    @State private var hasProgress: Bool
+    @State private var progress: Double
+
+    init(projectID: UUID, update: ProjectUpdate) {
+        self.projectID = projectID
+        self.update = update
+        _text = State(initialValue: update.text)
+        _hasProgress = State(initialValue: update.progress != nil)
+        _progress = State(initialValue: update.progress ?? 0)
+    }
+
+    var body: some View {
+        EditorSheet(
+            title: "Edit Update",
+            confirmDisabled: text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+            onConfirm: save
+        ) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("NOTE").font(.system(size: 11, weight: .semibold)).tracking(1).foregroundStyle(Theme.textTertiary)
+                TextEditor(text: $text)
+                    .font(.system(size: 14.5)).scrollContentBackground(.hidden)
+                    .frame(minHeight: 120)
+                    .padding(8)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+            }
+
+            FieldRow(label: "Stamp progress") {
+                Toggle("", isOn: $hasProgress).labelsHidden().toggleStyle(.switch)
+            }
+            if hasProgress {
+                VStack(spacing: 8) {
+                    HStack {
+                        Text("\(Int((progress * 100).rounded()))%")
+                            .font(.system(size: 15, weight: .bold)).monospacedDigit().foregroundStyle(Theme.textPrimary)
+                        Slider(value: $progress, in: 0...1, step: 0.01).tint(Theme.accentColor)
+                    }
+                }
+                .padding(.horizontal, 12).padding(.vertical, 10)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            }
+
+            Button(role: .destructive) {
+                life.deleteUpdate(update.id, from: projectID); dismiss()
+            } label: {
+                Text("Delete Update")
+                    .font(.system(size: 14.5, weight: .medium)).foregroundStyle(Theme.danger)
+                    .frame(maxWidth: .infinity).padding(.vertical, 10)
+                    .background(Theme.danger.opacity(0.1), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func save() {
+        var edited = update
+        edited.text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        edited.progress = hasProgress ? min(max(progress, 0), 1) : nil
+        life.editUpdate(edited, in: projectID)
+        Haptics.success()
+    }
+}
+
+// MARK: - Time entry editor
+
+/// Log a new chunk of time on a project, or edit/delete an existing one.
+struct ProjectTimeEntrySheet: View {
+    let projectID: UUID
+    let entry: ProjectTimeEntry?
+
+    @EnvironmentObject private var life: LifeStore
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var minutes: Int
+    @State private var day: Date
+    @State private var note: String
+
+    private let presets = [15, 30, 45, 60, 90, 120]
+
+    init(projectID: UUID, entry: ProjectTimeEntry?) {
+        self.projectID = projectID
+        self.entry = entry
+        _minutes = State(initialValue: entry?.minutes ?? 30)
+        _day = State(initialValue: entry?.date ?? Date())
+        _note = State(initialValue: entry?.note ?? "")
+    }
+
+    var body: some View {
+        EditorSheet(
+            title: entry == nil ? "Log Time" : "Edit Time",
+            confirmDisabled: minutes <= 0,
+            onConfirm: save
+        ) {
+            FieldRow(label: "Duration") {
+                HStack(spacing: 10) {
+                    Text(label(minutes)).font(.system(size: 14, weight: .semibold)).monospacedDigit().foregroundStyle(Theme.textPrimary)
+                    Stepper("", value: $minutes, in: 5...600, step: 5).labelsHidden()
+                }
+            }
+            HStack(spacing: 6) {
+                ForEach(presets, id: \.self) { m in
+                    Button { minutes = m } label: {
+                        Text(Fmt.duration(minutes: m))
+                            .font(.system(size: 12.5, weight: .semibold))
+                            .foregroundStyle(minutes == m ? Theme.bg : Theme.textSecondary)
+                            .frame(maxWidth: .infinity).padding(.vertical, 6)
+                            .background(minutes == m ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.fill),
+                                        in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            FieldRow(label: "Day") {
+                DatePicker("", selection: $day, in: ...Date(), displayedComponents: [.date]).labelsHidden()
+            }
+
+            FieldRow(label: "Note") {
+                TextField("What did you work on?", text: $note)
+                    .textFieldStyle(.plain).font(.system(size: 14))
+                    .multilineTextAlignment(.trailing).foregroundStyle(Theme.textPrimary)
+            }
+
+            if let entry {
+                Button(role: .destructive) {
+                    life.deleteTimeEntry(entry.id, from: projectID); dismiss()
+                } label: {
+                    Text("Delete Entry")
+                        .font(.system(size: 14.5, weight: .medium)).foregroundStyle(Theme.danger)
+                        .frame(maxWidth: .infinity).padding(.vertical, 10)
+                        .background(Theme.danger.opacity(0.1), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private func label(_ m: Int) -> String {
+        if m < 60 { return "\(m)m" }
+        let h = m / 60, r = m % 60
+        return r == 0 ? "\(h)h" : "\(h)h \(r)m"
+    }
+
+    private func save() {
+        if let entry {
+            var edited = entry
+            edited.minutes = minutes
+            edited.epoch = day.timeIntervalSince1970
+            edited.note = note.trimmingCharacters(in: .whitespacesAndNewlines)
+            life.updateTimeEntry(edited, in: projectID)
+        } else {
+            life.logTime(to: projectID, minutes: minutes,
+                         note: note.trimmingCharacters(in: .whitespacesAndNewlines), on: day)
+        }
+        Haptics.success()
+    }
+}
+
+// MARK: - Link picker
+
+/// Pick which goals, habits and tasks belong to a project. Toggles apply
+/// immediately, so it's just a "Done" away.
+struct ProjectLinkPicker: View {
+    let projectID: UUID
+
+    @EnvironmentObject private var life: LifeStore
+    @EnvironmentObject private var service: EventKitService
+    @Environment(\.dismiss) private var dismiss
+
+    private enum Kind: String, CaseIterable, Identifiable { case goals = "Goals", habits = "Habits", tasks = "Tasks"; var id: String { rawValue } }
+    @State private var kind: Kind = .goals
+
+    private var project: Project? { life.project(projectID) }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                Picker("", selection: $kind) {
+                    ForEach(Kind.allCases) { Text($0.rawValue).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 8)
+
+                ScrollView {
+                    VStack(spacing: 8) {
+                        switch kind {
+                        case .goals: goalsList
+                        case .habits: habitsList
+                        case .tasks: tasksList
+                        }
+                    }
+                    .padding(16)
+                    .frame(maxWidth: 560)
+                    .frame(maxWidth: .infinity)
+                }
+                .scrollIndicators(.hidden)
+            }
+            .background(Theme.bg)
+            .navigationTitle("Link to project")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+        .chronosAppearance()
+    }
+
+    @ViewBuilder private var goalsList: some View {
+        let linked = Set(project?.linkedGoalIDs ?? [])
+        if life.activeGoals.isEmpty {
+            emptyHint("No goals yet. Add goals in Grow and they'll show up here.")
+        } else {
+            ForEach(life.activeGoals) { goal in
+                pickRow(icon: goal.kind.icon, tint: goal.color, title: goal.title,
+                        subtitle: goal.kind.label, on: linked.contains(goal.id)) {
+                    life.toggleLinkedGoal(goal.id, in: projectID); Haptics.light()
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var habitsList: some View {
+        let linked = Set(project?.linkedHabitIDs ?? [])
+        if life.activeHabits.isEmpty {
+            emptyHint("No habits yet. Build habits in Grow and they'll show up here.")
+        } else {
+            ForEach(life.activeHabits) { habit in
+                pickRow(icon: habit.iconName, tint: habit.color, title: habit.title,
+                        subtitle: "\(life.streak(habit))-day streak", on: linked.contains(habit.id)) {
+                    life.toggleLinkedHabit(habit.id, in: projectID); Haptics.light()
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var tasksList: some View {
+        let linked = Set(project?.linkedTaskIDs ?? [])
+        let candidates = service.tasks
+            .filter { !$0.isCompleted || linked.contains($0.id) }
+            .sorted { ($0.dueDate ?? .distantFuture) < ($1.dueDate ?? .distantFuture) }
+            .prefix(40)
+        if candidates.isEmpty {
+            emptyHint("No open tasks. Reminders you add show up here to link.")
+        } else {
+            ForEach(Array(candidates)) { task in
+                pickRow(icon: task.isCompleted ? "checkmark.circle.fill" : "circle", tint: task.color,
+                        title: task.title, subtitle: task.listName, on: linked.contains(task.id)) {
+                    life.toggleLinkedTask(task.id, in: projectID); Haptics.light()
+                }
+            }
+        }
+    }
+
+    private func pickRow(icon: String, tint: Color, title: String, subtitle: String, on: Bool, toggle: @escaping () -> Void) -> some View {
+        Button(action: toggle) {
+            HStack(spacing: 12) {
+                Image(systemName: icon).font(.system(size: 15, weight: .medium)).foregroundStyle(tint).frame(width: 22)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title).font(.system(size: 14.5, weight: .medium)).foregroundStyle(Theme.textPrimary).lineLimit(1)
+                    Text(subtitle).font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary).lineLimit(1)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: on ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 20)).foregroundStyle(on ? Theme.accentColor : Theme.textTertiary)
+            }
+            .padding(.horizontal, 12).padding(.vertical, 11)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(on ? tint.opacity(0.5) : Theme.hairline, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func emptyHint(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
+            .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity).padding(.vertical, 30)
     }
 }

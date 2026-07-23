@@ -34,6 +34,10 @@ struct Routine: Codable, Identifiable, Hashable {
     var totalMinutes: Int { max(1, totalSeconds / 60) }
     var hasUntimedSteps: Bool { steps.contains { $0.untimed } }
 
+    /// Wall-clock minutes to reserve when laying the routine on the calendar —
+    /// every step counts (each at least a minute), including check-off steps.
+    var plannedMinutes: Int { max(1, steps.reduce(0) { $0 + max(1, $1.minutes) }) }
+
     /// Is this tracked routine expected on the given weekday?
     func isDue(on day: Date) -> Bool {
         switch cadence {

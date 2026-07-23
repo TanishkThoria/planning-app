@@ -873,4 +873,45 @@ final class EventKitService: ObservableObject {
             fail("Couldn't schedule the task", error)
         }
     }
+
+    /// Lay a routine onto the calendar as real time blocks starting at `start`.
+    /// When `perStep` is true each step becomes its own consecutive block;
+    /// otherwise the whole routine is a single block with the steps in its notes.
+    /// The blocks are stamped as Chronos timeblocks, so they behave like any
+    /// planned block (focus timer, colour, etc.).
+    func scheduleRoutine(_ routine: Routine, startingAt start: Date, calendarID: String?, perStep: Bool) {
+        guard let calendar = writableCalendar(for: calendarID) else {
+            fail("No writable calendar available")
+            return
+        }
+        if perStep {
+            var cursor = start
+            for step in routine.steps {
+                let minutes = max(1, step.minutes)
+                let event = EKEvent(eventStore: store)
+                event.calendar = calendar
+                event.title = "\(routine.emoji) \(step.title)"
+                event.startDate = cursor
+                event.endDate = cursor.adding(minutes: minutes)
+                event.notes = BlockMetadata.encode(notes: "Part of the \(routine.name) routine.", colorHex: nil, chronos: true)
+                try? store.save(event, span: .thisEvent, commit: false)
+                cursor = cursor.adding(minutes: minutes)
+            }
+        } else {
+            let event = EKEvent(eventStore: store)
+            event.calendar = calendar
+            event.title = "\(routine.emoji) \(routine.name)"
+            event.startDate = start
+            event.endDate = start.adding(minutes: max(5, routine.plannedMinutes))
+            let body = routine.steps.map { "• \($0.title)" }.joined(separator: "\n")
+            event.notes = BlockMetadata.encode(notes: body, colorHex: nil, chronos: true)
+            try? store.save(event, span: .thisEvent, commit: false)
+        }
+        do {
+            try store.commit()
+            refresh()
+        } catch {
+            fail("Couldn't add the routine to your calendar", error)
+        }
+    }
 }

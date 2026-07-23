@@ -8,6 +8,7 @@ struct RoutinesView: View {
 
     @State private var running: Routine?
     @State private var editing: Routine?
+    @State private var scheduling: Routine?
 
     var body: some View {
         NavigationStack {
@@ -45,6 +46,7 @@ struct RoutinesView: View {
         .sheet(item: $editing) { routine in
             RoutineEditorSheet(routine: routine) { store.upsert($0) } onDelete: { store.delete($0) }
         }
+        .sheet(item: $scheduling) { RoutineScheduleSheet(routine: $0) }
     }
 
     private var intro: some View {
@@ -85,12 +87,16 @@ struct RoutinesView: View {
                     .font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
             }
             Spacer()
-            Button { editing = routine } label: {
-                Image(systemName: "slider.horizontal.3").font(.system(size: 14.5, weight: .semibold))
+            Menu {
+                Button { editing = routine } label: { Label("Edit routine", systemImage: "slider.horizontal.3") }
+                Button { scheduling = routine } label: { Label("Add to Calendar", systemImage: "calendar.badge.plus") }
+            } label: {
+                Image(systemName: "ellipsis").font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary).frame(width: 34, height: 34)
                     .background(Theme.fill, in: Circle())
             }
-            .buttonStyle(.plain)
+            .menuStyle(.borderlessButton)
+            .fixedSize()
             Button { running = routine } label: {
                 Label("Start", systemImage: "play.fill")
                     .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.bg)
@@ -308,5 +314,66 @@ private struct RoutineEditorSheet: View {
             }
         }
         .chronosAppearance()
+    }
+}
+
+// MARK: - Schedule on calendar
+
+/// Lay a routine onto the calendar as real time blocks — pick a day and start
+/// time, and whether each step becomes its own consecutive block.
+private struct RoutineScheduleSheet: View {
+    let routine: Routine
+    @EnvironmentObject private var service: EventKitService
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var start = Date.nextCleanSlot()
+    @State private var perStep = false
+    @State private var calendarID: String?
+
+    var body: some View {
+        EditorSheet(title: "Add to Calendar", confirmLabel: "Add", onConfirm: schedule) {
+            HStack(spacing: 10) {
+                Text(routine.emoji).font(.system(size: 24))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(routine.name).font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                    Text("\(routine.steps.count) step\(routine.steps.count == 1 ? "" : "s") · \(routine.plannedMinutes) min")
+                        .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 12).padding(.vertical, 10)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            FieldRow(label: "Starts") {
+                DatePicker("", selection: $start, displayedComponents: [.date, .hourAndMinute]).labelsHidden()
+            }
+
+            CalendarPickerRow(label: "Calendar", options: service.calendars, selection: $calendarID)
+
+            FieldRow(label: "Each step as its own block") {
+                Toggle("", isOn: $perStep).labelsHidden().toggleStyle(.switch)
+            }
+
+            Text(summary)
+                .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                .fixedSize(horizontal: false, vertical: true).padding(.horizontal, 4)
+        }
+        .onAppear {
+            if calendarID == nil { calendarID = service.calendars.first(where: \.isEditable)?.id }
+        }
+    }
+
+    private var summary: String {
+        let end = start.adding(minutes: max(5, routine.plannedMinutes))
+        let range = "\(Fmt.time.string(from: start))–\(Fmt.time.string(from: end))"
+        if perStep {
+            return "Creates \(routine.steps.count) back-to-back blocks starting \(Fmt.time.string(from: start))."
+        }
+        return "Creates one \(routine.plannedMinutes)-minute block, \(range), with the steps in its notes."
+    }
+
+    private func schedule() {
+        service.scheduleRoutine(routine, startingAt: start, calendarID: calendarID, perStep: perStep)
+        Haptics.success()
     }
 }

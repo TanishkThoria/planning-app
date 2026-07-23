@@ -535,6 +535,103 @@ final class LifeStore: ObservableObject {
             projects[pIdx].milestones[mIdx].isDone ? Date().timeIntervalSince1970 : nil
     }
 
+    /// Edit an existing update's text and/or stamped progress in place.
+    func editUpdate(_ update: ProjectUpdate, in projectID: UUID) {
+        guard let pIdx = projects.firstIndex(where: { $0.id == projectID }),
+              let uIdx = projects[pIdx].updates.firstIndex(where: { $0.id == update.id }) else { return }
+        var edited = update
+        edited.editedEpoch = Date().timeIntervalSince1970
+        projects[pIdx].updates[uIdx] = edited
+    }
+
+    // MARK: Project progress (manual stamp, independent of milestones)
+
+    /// Stamp an explicit progress reading (0…1). Pass nil to clear it and fall
+    /// back to the milestone-derived percentage.
+    func setProgress(_ value: Double?, for projectID: UUID) {
+        guard let idx = projects.firstIndex(where: { $0.id == projectID }) else { return }
+        projects[idx].manualProgress = value.map { min(max($0, 0), 1) }
+    }
+
+    // MARK: Project time logging
+
+    func logTime(to projectID: UUID, minutes: Int, note: String = "", on date: Date = Date()) {
+        guard minutes > 0, let idx = projects.firstIndex(where: { $0.id == projectID }) else { return }
+        var logs = projects[idx].timeLogs ?? []
+        logs.append(ProjectTimeEntry(epoch: date.timeIntervalSince1970, minutes: minutes, note: note))
+        projects[idx].timeLogs = logs
+    }
+    func updateTimeEntry(_ entry: ProjectTimeEntry, in projectID: UUID) {
+        guard let pIdx = projects.firstIndex(where: { $0.id == projectID }),
+              var logs = projects[pIdx].timeLogs,
+              let eIdx = logs.firstIndex(where: { $0.id == entry.id }) else { return }
+        logs[eIdx] = entry
+        projects[pIdx].timeLogs = logs
+    }
+    func deleteTimeEntry(_ id: UUID, from projectID: UUID) {
+        guard let pIdx = projects.firstIndex(where: { $0.id == projectID }) else { return }
+        projects[pIdx].timeLogs?.removeAll { $0.id == id }
+    }
+
+    // MARK: Project weekly objectives
+
+    /// Set (or replace) the objective for the week containing `day`.
+    func setWeeklyGoal(_ text: String, forWeekOf day: Date = Date(), in projectID: UUID) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let idx = projects.firstIndex(where: { $0.id == projectID }) else { return }
+        let key = Project.weekKey(for: day)
+        var goals = projects[idx].weeklyGoals ?? []
+        if let gIdx = goals.firstIndex(where: { $0.weekKey == key }) {
+            if trimmed.isEmpty { goals.remove(at: gIdx) }
+            else { goals[gIdx].text = trimmed }
+        } else if !trimmed.isEmpty {
+            goals.append(ProjectWeeklyGoal(weekKey: key, text: trimmed,
+                                           createdEpoch: Date().timeIntervalSince1970))
+        }
+        projects[idx].weeklyGoals = goals
+    }
+    func toggleWeeklyGoal(_ id: UUID, in projectID: UUID) {
+        guard let pIdx = projects.firstIndex(where: { $0.id == projectID }),
+              var goals = projects[pIdx].weeklyGoals,
+              let gIdx = goals.firstIndex(where: { $0.id == id }) else { return }
+        goals[gIdx].isDone.toggle()
+        goals[gIdx].doneEpoch = goals[gIdx].isDone ? Date().timeIntervalSince1970 : nil
+        projects[pIdx].weeklyGoals = goals
+    }
+    func deleteWeeklyGoal(_ id: UUID, from projectID: UUID) {
+        guard let pIdx = projects.firstIndex(where: { $0.id == projectID }) else { return }
+        projects[pIdx].weeklyGoals?.removeAll { $0.id == id }
+    }
+
+    // MARK: Project links (goals / habits / tasks)
+
+    func toggleLinkedGoal(_ goalID: UUID, in projectID: UUID) {
+        guard let idx = projects.firstIndex(where: { $0.id == projectID }) else { return }
+        var ids = projects[idx].linkedGoalIDs ?? []
+        if let i = ids.firstIndex(of: goalID) { ids.remove(at: i) } else { ids.append(goalID) }
+        projects[idx].linkedGoalIDs = ids.isEmpty ? nil : ids
+    }
+    func toggleLinkedHabit(_ habitID: UUID, in projectID: UUID) {
+        guard let idx = projects.firstIndex(where: { $0.id == projectID }) else { return }
+        var ids = projects[idx].linkedHabitIDs ?? []
+        if let i = ids.firstIndex(of: habitID) { ids.remove(at: i) } else { ids.append(habitID) }
+        projects[idx].linkedHabitIDs = ids.isEmpty ? nil : ids
+    }
+    func toggleLinkedTask(_ taskID: String, in projectID: UUID) {
+        guard let idx = projects.firstIndex(where: { $0.id == projectID }) else { return }
+        var ids = projects[idx].linkedTaskIDs ?? []
+        if let i = ids.firstIndex(of: taskID) { ids.remove(at: i) } else { ids.append(taskID) }
+        projects[idx].linkedTaskIDs = ids.isEmpty ? nil : ids
+    }
+    /// Linked goals/habits resolved against the current stores (skips any that
+    /// were since deleted), preserving link order.
+    func linkedGoals(for project: Project) -> [Goal] {
+        (project.linkedGoalIDs ?? []).compactMap { id in goals.first { $0.id == id && !$0.isArchived } }
+    }
+    func linkedHabits(for project: Project) -> [Habit] {
+        (project.linkedHabitIDs ?? []).compactMap { id in habits.first { $0.id == id && !$0.isArchived } }
+    }
+
     // MARK: Growth commitments (start / stop doing)
 
     var activeGrowthItems: [GrowthItem] { growthItems.filter { !$0.isArchived } }
