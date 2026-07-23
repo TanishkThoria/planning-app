@@ -49,11 +49,7 @@ struct ChallengesView: View {
         let earnable = all.reduce(0) { $0 + $1.xp }
         let earned = all.filter { store.isComplete($0) }.reduce(0) { $0 + $1.xp }
         return HStack(spacing: 14) {
-            Image(systemName: "flag.checkered")
-                .font(.system(size: 24, weight: .semibold))
-                .foregroundStyle(Theme.accentColor)
-                .frame(width: 48, height: 48)
-                .background(Theme.accentColor.opacity(0.16), in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+            IconChip(icon: "flag.checkered", tint: Color(hex: 0xFFB23E), size: 48)
             VStack(alignment: .leading, spacing: 3) {
                 Text("\(done) of \(all.count) cleared")
                     .font(.system(size: 17, weight: .bold)).foregroundStyle(Theme.textPrimary)

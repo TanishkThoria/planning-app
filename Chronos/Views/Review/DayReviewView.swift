@@ -129,23 +129,25 @@ struct DayReviewView: View {
         let planned = dayBlocks.compactMap { $0.clamped(to: day) }
             .reduce(0) { $0 + Int($1.end.timeIntervalSince($1.start) / 60) }
         return HStack(spacing: 0) {
-            summaryMetric("\(dayBlocks.count)", "blocks")
+            summaryMetric("rectangle.stack.fill", Theme.accentColor, "\(dayBlocks.count)", "blocks")
             divider
-            summaryMetric(Fmt.duration(minutes: planned), "planned")
+            summaryMetric("clock.fill", Color(hex: 0xFF7A59), Fmt.duration(minutes: planned), "planned")
             divider
-            summaryMetric("\(completedToday)", "done")
+            summaryMetric("checkmark.circle.fill", Color(hex: 0x3FC97A), "\(completedToday)", "done")
         }
-        .padding(.vertical, 14)
+        .padding(.vertical, 16)
         .frame(maxWidth: .infinity)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
     }
 
     private var divider: some View {
-        Rectangle().fill(Theme.hairline).frame(width: 1, height: 30)
+        Rectangle().fill(Theme.hairline).frame(width: 1, height: 44)
     }
 
-    private func summaryMetric(_ value: String, _ label: String) -> some View {
-        VStack(spacing: 3) {
+    private func summaryMetric(_ icon: String, _ tint: Color, _ value: String, _ label: String) -> some View {
+        VStack(spacing: 6) {
+            IconChip(icon: icon, tint: tint, size: 30)
             Text(value)
                 .font(.system(size: 20, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)

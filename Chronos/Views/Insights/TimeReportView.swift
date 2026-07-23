@@ -126,16 +126,17 @@ struct TimeReportView: View {
         let prev = minutes(in: previousRange)
         let focus = focusMinutes(in: range)
         return HStack(spacing: 10) {
-            bigStat(Fmt.duration(minutes: planned), "Scheduled", delta: planned - prev)
-            Rectangle().fill(Theme.hairline).frame(width: 1, height: 40)
-            bigStat(Fmt.duration(minutes: focus), "Focused", delta: focus - focusMinutes(in: previousRange))
+            bigStat("calendar", Theme.accentColor, Fmt.duration(minutes: planned), "Scheduled", delta: planned - prev)
+            Rectangle().fill(Theme.hairline).frame(width: 1, height: 56)
+            bigStat("timer", Color(hex: 0xFF7A59), Fmt.duration(minutes: focus), "Focused", delta: focus - focusMinutes(in: previousRange))
         }
         .frame(maxWidth: .infinity)
         .panel()
     }
 
-    private func bigStat(_ value: String, _ label: String, delta: Int) -> some View {
-        VStack(spacing: 3) {
+    private func bigStat(_ icon: String, _ tint: Color, _ value: String, _ label: String, delta: Int) -> some View {
+        VStack(spacing: 6) {
+            IconChip(icon: icon, tint: tint, size: 32)
             Text(value)
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)

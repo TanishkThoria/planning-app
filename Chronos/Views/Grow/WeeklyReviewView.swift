@@ -85,15 +85,16 @@ struct WeeklyReviewView: View {
 
     private var statTiles: some View {
         HStack(spacing: 10) {
-            tile("\(stats.tasksCompleted)", "Done")
-            tile(Fmt.duration(minutes: stats.plannedMinutes), "Planned")
-            tile(Fmt.duration(minutes: stats.focusMinutes), "Focused")
-            tile("\(Int((stats.completionRate * 100).rounded()))%", "On-plan")
+            tile("checkmark.circle.fill", Color(hex: 0x3FC97A), "\(stats.tasksCompleted)", "Done")
+            tile("rectangle.stack.fill", Theme.accentColor, Fmt.duration(minutes: stats.plannedMinutes), "Planned")
+            tile("timer", Color(hex: 0xFF7A59), Fmt.duration(minutes: stats.focusMinutes), "Focused")
+            tile("chart.pie.fill", Color(hex: 0x9C7BFA), "\(Int((stats.completionRate * 100).rounded()))%", "On-plan")
         }
     }
 
-    private func tile(_ value: String, _ label: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+    private func tile(_ icon: String, _ tint: Color, _ value: String, _ label: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            IconChip(icon: icon, tint: tint, size: 30)
             Text(value).font(.system(size: 20, weight: .bold)).foregroundStyle(Theme.textPrimary)
                 .lineLimit(1).minimumScaleFactor(0.6)
             Text(label.uppercased()).font(.system(size: 10, weight: .semibold)).tracking(1).foregroundStyle(Theme.textTertiary)

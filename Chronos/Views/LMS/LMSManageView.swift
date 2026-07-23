@@ -84,15 +84,8 @@ struct LMSManageView: View {
         let list = service.taskLists.first { $0.id == source.listID }
 
         return VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Theme.accentColor.opacity(0.14))
-                        .frame(width: 38, height: 38)
-                    Image(systemName: source.provider.icon)
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(Theme.accentColor)
-                }
+            HStack(spacing: 11) {
+                IconChip(icon: source.provider.icon, tint: Color(hex: 0x22C3C9), size: 38)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(source.name)
                         .font(.system(size: 15, weight: .semibold))
