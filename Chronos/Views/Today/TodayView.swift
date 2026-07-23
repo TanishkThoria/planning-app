@@ -153,6 +153,56 @@ struct TodayView: View {
         .buttonStyle(.plain)
     }
 
+    // MARK: Project nudge
+
+    /// The single most relevant project needing attention today — a weekly aim
+    /// still open late in the week, or a project overdue for its check-in.
+    private var projectAttention: (project: Project, message: String, cta: String)? {
+        let weekday = Calendar.current.component(.weekday, from: now)
+        let lateInWeek = weekday == 1 || weekday >= 5   // Thu–Sun
+        if lateInWeek,
+           let p = life.activeProjects.first(where: { proj in
+               proj.weeklyGoal().map { !$0.isDone && !$0.text.isEmpty } ?? false
+           }), let goal = p.weeklyGoal() {
+            return (p, "This week's aim: \u{201C}\(goal.text)\u{201D}", "Open")
+        }
+        if let p = life.activeProjects.first(where: \.isUpdateDue) {
+            return (p, "Due for a \(p.updateCadence.short.lowercased()) update", "Update")
+        }
+        return nil
+    }
+
+    @ViewBuilder
+    private var projectNudge: some View {
+        if let attention = projectAttention {
+            let project = attention.project
+            Button { model.projectsPresented = true } label: {
+                HStack(spacing: 10) {
+                    ProjectRing(progress: project.progress, color: project.color, emoji: project.emoji, size: 30)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(project.title.isEmpty ? "Project" : project.title)
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(Theme.textPrimary).lineLimit(1)
+                        Text(attention.message)
+                            .font(.system(size: 12))
+                            .foregroundStyle(Theme.textSecondary)
+                            .lineLimit(2).minimumScaleFactor(0.85)
+                    }
+                    Spacer(minLength: 6)
+                    Text(attention.cta)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(project.color)
+                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .background(project.color.opacity(0.16), in: Capsule())
+                }
+                .padding(.horizontal, 12).padding(.vertical, 11)
+                .background(project.color.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(project.color.opacity(0.3), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
     // MARK: Carry-over
 
     private var carryOverBanner: some View {
@@ -408,6 +458,7 @@ struct TodayView: View {
                     frogCard
                     intentionsCard
                     if !dueHabits.isEmpty { habitsStrip }
+                    projectNudge
 
                     if remainingCount == 0 && upcomingBlocks.isEmpty {
                         EmptyStateView(

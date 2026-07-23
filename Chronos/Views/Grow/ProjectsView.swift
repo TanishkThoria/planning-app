@@ -173,6 +173,7 @@ struct ProjectDetailView: View {
     @State private var editingUpdate: ProjectUpdate?
     @State private var editingTimeEntry: ProjectTimeEntry?
     @State private var loggingTime = false
+    @State private var schedulingWork = false
     @State private var linkingPresented = false
     @State private var showAllWeeks = false
     @FocusState private var composing: Bool
@@ -224,6 +225,11 @@ struct ProjectDetailView: View {
         }
         .sheet(isPresented: $linkingPresented) {
             ProjectLinkPicker(projectID: projectID)
+                .environmentObject(life)
+                .environmentObject(service)
+        }
+        .sheet(isPresented: $schedulingWork) {
+            ProjectWorkScheduleSheet(projectID: projectID)
                 .environmentObject(life)
                 .environmentObject(service)
         }
@@ -490,6 +496,13 @@ struct ProjectDetailView: View {
                 }
                 .buttonStyle(.plain)
             }
+            Button { schedulingWork = true } label: {
+                Label("Schedule a work session", systemImage: "calendar.badge.plus")
+                    .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                    .frame(maxWidth: .infinity).padding(.vertical, 9)
+                    .background(Theme.accentColor.opacity(0.10), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+            .buttonStyle(.plain)
             let entries = project.timeEntries.sorted { $0.epoch > $1.epoch }
             if entries.isEmpty {
                 Text(project.targetHours != nil
@@ -1272,5 +1285,121 @@ struct ProjectLinkPicker: View {
             .font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
             .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity).padding(.vertical, 30)
+    }
+}
+
+// MARK: - Schedule a project work session
+
+/// Reserve time for a project on the calendar — pick a length and let Chronos
+/// drop it into the next free gap today, or set the time yourself.
+struct ProjectWorkScheduleSheet: View {
+    let projectID: UUID
+
+    @EnvironmentObject private var life: LifeStore
+    @EnvironmentObject private var service: EventKitService
+    @EnvironmentObject private var profileStore: ProfileStore
+    @Environment(\.dismiss) private var dismiss
+
+    @AppStorage(Prefs.workStartMinutes) private var workStartMinutes = 9 * 60
+    @AppStorage(Prefs.workEndMinutes) private var workEndMinutes = 18 * 60
+    @AppStorage(Prefs.defaultCalendarID) private var defaultCalendarID = ""
+
+    @State private var minutes = 45
+    @State private var start = Date.nextCleanSlot()
+    @State private var calendarID: String?
+    @State private var didInit = false
+
+    private let presets = [30, 45, 60, 90, 120]
+
+    private var project: Project? { life.project(projectID) }
+
+    var body: some View {
+        EditorSheet(title: "Schedule Work", confirmLabel: "Add", onConfirm: schedule) {
+            if let project {
+                HStack(spacing: 10) {
+                    Text(project.emoji).font(.system(size: 24))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(project.title.isEmpty ? "Project" : project.title)
+                            .font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                        if let target = project.targetHours, target > 0 {
+                            Text("\(Fmt.duration(minutes: project.totalLoggedMinutes)) of \(Fmt.duration(minutes: Int(target * 60))) logged")
+                                .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
+                        }
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 12).padding(.vertical, 10)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+
+            FieldRow(label: "Length") {
+                HStack(spacing: 10) {
+                    Text(durationLabel(minutes)).font(.system(size: 14, weight: .semibold)).monospacedDigit().foregroundStyle(Theme.textPrimary)
+                    Stepper("", value: $minutes, in: 15...240, step: 15).labelsHidden()
+                }
+            }
+            HStack(spacing: 6) {
+                ForEach(presets, id: \.self) { m in
+                    Button { minutes = m } label: {
+                        Text(Fmt.duration(minutes: m))
+                            .font(.system(size: 12.5, weight: .semibold))
+                            .foregroundStyle(minutes == m ? Theme.bg : Theme.textSecondary)
+                            .frame(maxWidth: .infinity).padding(.vertical, 6)
+                            .background(minutes == m ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.fill),
+                                        in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            FieldRow(label: "Starts") {
+                DatePicker("", selection: $start, displayedComponents: [.date, .hourAndMinute]).labelsHidden()
+            }
+            Button { if let slot = nextFreeSlot() { start = slot } } label: {
+                Label("Find next free slot today", systemImage: "sparkles")
+                    .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                    .frame(maxWidth: .infinity).padding(.vertical, 9)
+                    .background(Theme.accentColor.opacity(0.10), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+            .buttonStyle(.plain)
+
+            CalendarPickerRow(label: "Calendar", options: service.calendars, selection: $calendarID)
+        }
+        .onAppear {
+            guard !didInit else { return }
+            didInit = true
+            if calendarID == nil { calendarID = service.calendars.first(where: \.isEditable)?.id }
+            if let slot = nextFreeSlot() { start = slot }
+        }
+    }
+
+    private func durationLabel(_ m: Int) -> String {
+        if m < 60 { return "\(m)m" }
+        let h = m / 60, r = m % 60
+        return r == 0 ? "\(h)h" : "\(h)h \(r)m"
+    }
+
+    /// First free gap today big enough for the session, respecting the plan
+    /// window and existing blocks.
+    private func nextFreeSlot() -> Date? {
+        AutoScheduler.freeGaps(
+            on: Date(), existing: service.blocks(on: Date()),
+            workStartMinutes: workStartMinutes, workEndMinutes: workEndMinutes,
+            profile: profileStore.profile
+        )
+        .first { $0.minutes >= minutes }?
+        .start
+    }
+
+    private func schedule() {
+        guard let project else { return }
+        var draft = BlockDraft()
+        draft.title = "\(project.emoji) \(project.title.isEmpty ? "Project" : project.title)"
+        draft.calendarID = calendarID
+        draft.start = start
+        draft.end = start.adding(minutes: minutes)
+        draft.colorHex = project.colorHex
+        service.createBlock(draft)
+        Haptics.success()
     }
 }

@@ -82,6 +82,7 @@ struct WrappedView: View {
                     heroStat("\(s.bestHabitStreak)", "day best habit streak", "showing up, again and again", "flame.fill", [Theme.warning, Theme.danger])
                 }
                 if !s.topCalendars.isEmpty { topCalendarsCard(s) }
+                if let py = projectYear { projectsCard(py) }
                 shareCard(s)
             }
             .padding(18)
@@ -164,6 +165,77 @@ struct WrappedView: View {
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
+    // MARK: Year in projects (computed straight from the project store)
+
+    private struct ProjectYearRow: Identifiable {
+        let project: Project
+        let minutes: Int
+        var id: UUID { project.id }
+    }
+    private struct ProjectYearSummary {
+        let hours: Int
+        let projectCount: Int
+        let milestones: Int
+        let top: [ProjectYearRow]
+    }
+
+    private var projectYear: ProjectYearSummary? {
+        let cal = Calendar.current
+        let year = cal.component(.year, from: Date())
+        func inYear(_ epoch: TimeInterval) -> Bool {
+            cal.component(.year, from: Date(timeIntervalSince1970: epoch)) == year
+        }
+        var rows: [ProjectYearRow] = []
+        var totalMinutes = 0
+        var milestones = 0
+        for project in life.projects where !project.isArchived {
+            let mins = project.timeEntries.filter { inYear($0.epoch) }.reduce(0) { $0 + $1.minutes }
+            if mins > 0 { rows.append(ProjectYearRow(project: project, minutes: mins)); totalMinutes += mins }
+            milestones += project.milestones.filter { $0.isDone && ($0.doneEpoch.map(inYear) ?? false) }.count
+        }
+        guard totalMinutes > 0 || milestones > 0 else { return nil }
+        let top = Array(rows.sorted { $0.minutes > $1.minutes }.prefix(3))
+        return ProjectYearSummary(hours: totalMinutes / 60, projectCount: rows.count, milestones: milestones, top: top)
+    }
+
+    private func projectsCard(_ py: ProjectYearSummary) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("YOUR YEAR IN PROJECTS")
+                .font(.system(size: 11.5, weight: .bold)).tracking(1.4)
+                .foregroundStyle(Theme.textTertiary)
+            HStack(spacing: 22) {
+                yearStat("\(py.hours)", "hours")
+                yearStat("\(py.projectCount)", py.projectCount == 1 ? "project" : "projects")
+                yearStat("\(py.milestones)", py.milestones == 1 ? "milestone" : "milestones")
+            }
+            if !py.top.isEmpty {
+                Rectangle().fill(Theme.hairline).frame(height: 1)
+                ForEach(py.top) { row in
+                    HStack(spacing: 10) {
+                        Text(row.project.emoji).font(.system(size: 16))
+                        Text(row.project.title.isEmpty ? "Untitled project" : row.project.title)
+                            .font(.system(size: 14.5, weight: .semibold))
+                            .foregroundStyle(Theme.textPrimary).lineLimit(1)
+                        Spacer()
+                        Text("\(row.minutes / 60)h")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private func yearStat(_ value: String, _ label: String) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(value).font(.system(size: 26, weight: .bold)).foregroundStyle(Theme.textPrimary)
+            Text(label).font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+        }
+    }
+
     private func shareCard(_ s: WrappedEngine.Summary) -> some View {
         ShareLink(item: shareText(s)) {
             Label("Share my \(s.periodLabel)", systemImage: "square.and.arrow.up")
@@ -183,6 +255,9 @@ struct WrappedView: View {
         lines.append("✅ \(s.tasksCompleted) tasks done")
         if s.deepHours > 0 { lines.append("🧠 \(s.deepHours)h of deep work") }
         if s.bestHabitStreak > 0 { lines.append("🔥 \(s.bestHabitStreak)-day best habit streak") }
+        if let py = projectYear, py.hours > 0 {
+            lines.append("📊 \(py.hours)h across \(py.projectCount) project\(py.projectCount == 1 ? "" : "s")")
+        }
         return lines.joined(separator: "\n")
     }
 }

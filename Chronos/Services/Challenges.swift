@@ -3,7 +3,7 @@ import Foundation
 /// What a challenge measures. Each maps to a value we can read from the live
 /// stores for a day or a week.
 enum ChallengeMetric: String, Codable {
-    case focusMinutes, tasks, momentum, habits, blocks, focusSessions, deepMinutes, journal, perfectDays
+    case focusMinutes, tasks, momentum, habits, blocks, focusSessions, deepMinutes, journal, perfectDays, projectMinutes
 }
 
 enum ChallengePeriod: String, Codable { case daily, weekly }
@@ -35,6 +35,7 @@ struct ChallengeMetrics {
     var deepMinutesWeek = 0
     var journaledToday = false
     var perfectDaysWeek = 0
+    var projectMinutesDay = 0, projectMinutesWeek = 0
 
     /// Build the live snapshot from the stores — one source for the check and
     /// every challenge view.
@@ -52,6 +53,11 @@ struct ChallengeMetrics {
             isEventSkipped: { EventOutcomeStore.shared.isSkipped($0.id) }
         )
         let focusWeek = weekDays.reduce(0) { acc, d in acc + focusLog.sessions(on: d).reduce(0) { $0 + $1.actualMinutes } }
+        let projectDay = focusLog.sessions(on: day)
+            .filter { $0.projectID != nil }.reduce(0) { $0 + $1.actualMinutes }
+        let projectWeek = weekDays.reduce(0) { acc, d in
+            acc + focusLog.sessions(on: d).filter { $0.projectID != nil }.reduce(0) { $0 + $1.actualMinutes }
+        }
         let dueHabits = life.activeHabits.filter { $0.isDue(on: day) }
         return ChallengeMetrics(
             focusMinutesDay: focusLog.sessions(on: day).reduce(0) { $0 + $1.actualMinutes },
@@ -66,7 +72,9 @@ struct ChallengeMetrics {
             focusSessionsWeek: stats.focusSessions,
             deepMinutesWeek: stats.deepMinutes,
             journaledToday: life.entry(for: day)?.hasEvening ?? false,
-            perfectDaysWeek: weekDays.filter { momentum.score(on: $0) >= 100 }.count
+            perfectDaysWeek: weekDays.filter { momentum.score(on: $0) >= 100 }.count,
+            projectMinutesDay: projectDay,
+            projectMinutesWeek: projectWeek
         )
     }
 }
@@ -146,6 +154,8 @@ final class ChallengeStore: ObservableObject {
         case (.deepMinutes, _): return m.deepMinutesWeek
         case (.journal, _): return m.journaledToday ? 1 : 0
         case (.perfectDays, _): return m.perfectDaysWeek
+        case (.projectMinutes, .daily): return m.projectMinutesDay
+        case (.projectMinutes, .weekly): return m.projectMinutesWeek
         }
     }
 
@@ -203,6 +213,7 @@ final class ChallengeStore: ObservableObject {
         c("d.blocks4", "Blocked Out", "Plan 4 time blocks today.", "square.stack.3d.up", .blocks, .daily, 4, 40, 0x7C8CF8),
         c("d.sessions2", "Double Down", "Run 2 focus sessions today.", "repeat", .focusSessions, .daily, 2, 60, 0x2FA8BF),
         c("d.journal", "Reflect", "Do your evening reflection.", "book.closed.fill", .journal, .daily, 1, 40, 0xE07BE0),
+        c("d.project45", "Move the Needle", "Spend 45 focused minutes on a project today.", "square.stack.3d.up.fill", .projectMinutes, .daily, 45, 80, 0xF2994A),
     ]
 
     static let weeklyPool: [Challenge] = [
@@ -213,5 +224,6 @@ final class ChallengeStore: ObservableObject {
         c("w.sessions10", "Ten Rounds", "Run 10 focus sessions this week.", "repeat.circle.fill", .focusSessions, .weekly, 10, 220, 0x2FA8BF),
         c("w.blocks20", "Master Planner", "Plan 20 time blocks this week.", "square.stack.3d.up.fill", .blocks, .weekly, 20, 180, 0x7C8CF8),
         c("w.perfect2", "Back to Back", "Two perfect-momentum days this week.", "star.circle.fill", .perfectDays, .weekly, 2, 320, 0xF2C14E),
+        c("w.project180", "Project Momentum", "Put 3 focused hours toward your projects this week.", "square.stack.3d.up.fill", .projectMinutes, .weekly, 180, 300, 0xF2994A),
     ]
 }
