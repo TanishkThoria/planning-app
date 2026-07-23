@@ -137,15 +137,15 @@ struct WeekPlannerView: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(Fmt.monthTitle.string(from: model.selectedDate))
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text(weekRangeLabel)
-                    .font(.system(size: 13.5, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
             DateNavigator()
-            HeaderIconButton(icon: "square.and.arrow.up") {
+            HeaderIconButton(icon: "square.and.arrow.up", accessibility: "Share availability") {
                 model.availabilityPresented = true
             }
             .help("Share availability — copy your free slots as text")

@@ -60,16 +60,16 @@ struct InsightsView: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Insights")
-                    .font(.system(size: 25, weight: .bold))
+                    .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Your momentum & progress")
-                    .font(.system(size: 13.5, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
-            HeaderIconButton(icon: "command") { model.commandBarPresented = true }
+            HeaderIconButton(icon: "command", accessibility: "Command bar") { model.commandBarPresented = true }
             #if os(iOS)
-            HeaderIconButton(icon: "gearshape") { model.settingsPresented = true }
+            HeaderIconButton(icon: "gearshape", accessibility: "Settings") { model.settingsPresented = true }
             #endif
         }
     }

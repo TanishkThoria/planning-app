@@ -213,11 +213,11 @@ struct TasksView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Tasks")
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 let open = visibleTasks.filter { !$0.isCompleted }.count
                 Text("\(open) open · synced with Apple Reminders")
-                    .font(.system(size: 13.5, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()

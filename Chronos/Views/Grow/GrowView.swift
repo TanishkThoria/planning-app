@@ -45,10 +45,10 @@ struct GrowView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Grow")
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text("Goals, habits & reflection")
-                    .font(.system(size: 13.5, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()

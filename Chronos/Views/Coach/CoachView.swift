@@ -128,26 +128,26 @@ struct CoachChatView: View {
     private var header: some View {
         HStack(spacing: 10) {
             ZStack {
-                Circle().fill(Theme.accentColor.opacity(0.16)).frame(width: 34, height: 34)
+                Circle().fill(Theme.accentColor.opacity(0.16)).frame(width: 40, height: 40)
                 Image(systemName: "sparkles")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Theme.accentColor)
             }
             VStack(alignment: .leading, spacing: 1) {
                 Text("Coach")
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 HStack(spacing: 5) {
                     Circle().fill(Theme.success).frame(width: 5, height: 5)
                     Text("On-device AI")
-                        .font(.system(size: 12.5, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                 }
             }
             Spacer()
-            HeaderIconButton(icon: "square.and.pencil") { newConversation() }
+            HeaderIconButton(icon: "square.and.pencil", accessibility: "New conversation") { newConversation() }
             if isPresented {
-                HeaderIconButton(icon: "xmark") { dismiss() }
+                HeaderIconButton(icon: "xmark", accessibility: "Close") { dismiss() }
             }
         }
     }

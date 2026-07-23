@@ -176,7 +176,7 @@ struct DayPlannerView: View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(Fmt.weekdayFull.string(from: model.selectedDate))
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 HStack(spacing: 6) {
                     Text(Fmt.monthDayYear.string(from: model.selectedDate))
