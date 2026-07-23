@@ -245,7 +245,8 @@ struct BriefingContent: View {
             stats: stats,
             profile: profileStore.profile,
             tasks: service.tasks,
-            signals: CoachInputs.signals(life: life, focusLog: focusLog)
+            signals: CoachInputs.signals(life: life, focusLog: focusLog),
+            projects: life.activeProjects
         )
     }
 
@@ -261,6 +262,7 @@ struct BriefingContent: View {
         case .eveningRitual: model.eveningRitualPresented = true
         case .focusTimer: model.startFocus(taskID: nil, title: "Focus")
         case .overdueSweep: model.overdueSweepPresented = true
+        case .openProjects: model.projectsPresented = true
         }
     }
 }

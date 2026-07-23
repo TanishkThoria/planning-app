@@ -32,7 +32,7 @@ enum Coach {
     /// is a doorway to doing the thing, not just advice.
     enum Action {
         case recalibrate, planDay, planWeek, reflow, openGrow, addHabit
-        case morningRitual, eveningRitual, focusTimer, overdueSweep
+        case morningRitual, eveningRitual, focusTimer, overdueSweep, openProjects
     }
 
     struct Suggestion: Identifiable {
@@ -65,9 +65,13 @@ enum Coach {
         stats: StatsEngine.Stats,
         profile: PlannerProfile,
         tasks: [TaskItem],
-        signals: Signals = Signals()
+        signals: Signals = Signals(),
+        projects: [Project] = [],
+        now: Date = Date()
     ) -> [Suggestion] {
         var out: [Suggestion] = []
+
+        out.append(contentsOf: projectSuggestions(projects: projects, tasks: tasks, now: now))
 
         // The most-punted open task — repeated deferral is the clearest
         // procrastination tell there is, and it usually means the task is
@@ -288,5 +292,64 @@ enum Coach {
         }
 
         return out.sorted { $0.weight > $1.weight }
+    }
+
+    /// Nudges drawn from long-term projects: an overdue linked task, a weekly
+    /// objective still open late in the week, and projects gone quiet.
+    private static func projectSuggestions(projects: [Project], tasks: [TaskItem], now: Date) -> [Suggestion] {
+        guard !projects.isEmpty else { return [] }
+        var out: [Suggestion] = []
+        let taskByID = Dictionary(tasks.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
+
+        // 1. Overdue task that a project is counting on — the sharpest signal.
+        var worstOverdue: (project: Project, task: TaskItem)?
+        for project in projects {
+            for id in project.linkedTaskIDs ?? [] {
+                guard let task = taskByID[id], task.isOverdue else { continue }
+                if worstOverdue == nil || task.daysOverdue > worstOverdue!.task.daysOverdue {
+                    worstOverdue = (project, task)
+                }
+            }
+        }
+        if let hit = worstOverdue {
+            let days = hit.task.daysOverdue
+            out.append(.init(
+                tone: .warning,
+                title: "\u{201C}\(hit.task.title)\u{201D} is holding up \(hit.project.title.isEmpty ? "a project" : hit.project.title)",
+                detail: "This task is linked to \(hit.project.emoji) \(hit.project.title) and is \(days == 0 ? "due" : "\(days) day\(days == 1 ? "" : "s") overdue"). Clear it and the project moves again — schedule it today or shrink it to a 15-minute first step.",
+                weight: 90,
+                action: .planDay, actionLabel: "Plan it in"
+            ))
+        }
+
+        // 2. This week's objective still open, and the week is running out.
+        let weekday = Calendar.current.component(.weekday, from: now)   // 1 = Sun … 7 = Sat
+        let lateInWeek = weekday == 1 || weekday >= 5   // Thu, Fri, Sat, Sun
+        if lateInWeek, out.isEmpty {
+            if let project = projects.first(where: { p in
+                p.weeklyGoal(forWeekOf: now).map { !$0.isDone && !$0.text.isEmpty } ?? false
+            }), let goal = project.weeklyGoal(forWeekOf: now) {
+                out.append(.init(
+                    tone: .warning,
+                    title: "This week's aim for \(project.title.isEmpty ? "a project" : project.title) is still open",
+                    detail: "\u{201C}\(goal.text)\u{201D} — there's still time before the week turns over. Block 30 minutes for it, or tick it off if it's actually done.",
+                    weight: 72,
+                    action: .openProjects, actionLabel: "Open project"
+                ))
+            }
+        }
+
+        // 3. A project that's gone quiet past its check-in cadence.
+        if out.isEmpty, let stale = projects.first(where: \.isUpdateDue) {
+            out.append(.init(
+                tone: .neutral,
+                title: "\(stale.emoji) \(stale.title.isEmpty ? "A project" : stale.title) is due for an update",
+                detail: "You set a \(stale.updateCadence.short.lowercased()) check-in and it's been a while. A one-line note on where things stand keeps the momentum — and the record — alive.",
+                weight: 48,
+                action: .openProjects, actionLabel: "Log an update"
+            ))
+        }
+
+        return out
     }
 }

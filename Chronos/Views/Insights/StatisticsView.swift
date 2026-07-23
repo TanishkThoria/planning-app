@@ -114,6 +114,7 @@ struct StatisticsView: View {
                     hoursPerDayCard
                     if stats.deepMinutes + stats.shallowMinutes > 0 { energySplitCard }
                     timeByCalendarCard
+                    projectsCard
                     achievementsCard
                     detailCard
                 }
@@ -383,6 +384,49 @@ struct StatisticsView: View {
             }
         }
         .panel()
+    }
+
+    // MARK: Projects
+
+    /// Time banked on long-term projects — logged by hand or captured from
+    /// project-tagged focus sessions. Ordered by total time; hidden when empty.
+    @ViewBuilder
+    private var projectsCard: some View {
+        let ranked = life.activeProjects
+            .filter { $0.totalLoggedMinutes > 0 }
+            .sorted { $0.totalLoggedMinutes > $1.totalLoggedMinutes }
+        if !ranked.isEmpty {
+            let maxMinutes = max(ranked.map(\.totalLoggedMinutes).max() ?? 0, 1)
+            let grand = ranked.reduce(0) { $0 + $1.totalLoggedMinutes }
+            VStack(alignment: .leading, spacing: 12) {
+                SectionHeader(title: "Project time", trailing: Fmt.duration(minutes: grand))
+                VStack(spacing: 10) {
+                    ForEach(ranked) { project in
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                HStack(spacing: 6) {
+                                    Text(project.emoji).font(.system(size: 13))
+                                    Text(project.title.isEmpty ? "Untitled project" : project.title)
+                                        .font(.system(size: 13.5, weight: .medium))
+                                        .foregroundStyle(Theme.textPrimary).lineLimit(1)
+                                }
+                                Spacer()
+                                Text("\(Fmt.duration(minutes: project.totalLoggedMinutes)) · \(Int((project.progress * 100).rounded()))%")
+                                    .font(.system(size: 12.5, weight: .semibold))
+                                    .foregroundStyle(Theme.textSecondary)
+                            }
+                            GeometryReader { geo in
+                                Capsule().fill(project.color)
+                                    .frame(width: max(geo.size.width * CGFloat(project.totalLoggedMinutes) / CGFloat(maxMinutes), 4))
+                            }
+                            .frame(height: 5)
+                            .background(Theme.fill, in: Capsule())
+                        }
+                    }
+                }
+            }
+            .panel()
+        }
     }
 
     // MARK: Budgets

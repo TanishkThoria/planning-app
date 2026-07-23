@@ -7,6 +7,7 @@ struct PlanMyDayView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var profileStore: ProfileStore
+    @EnvironmentObject private var life: LifeStore
     @Environment(\.dismiss) private var dismiss
 
     @AppStorage(Prefs.workStartMinutes) private var workStartMinutes = 9 * 60
@@ -18,7 +19,15 @@ struct PlanMyDayView: View {
 
     @State private var included: Set<String> = []
     @State private var includedRituals: Set<String> = []
+    @State private var includedProjects: Set<UUID> = []
     @State private var initialized = false
+
+    /// A suggested block of work toward a project's hours target.
+    private struct ProjectSession: Identifiable {
+        let project: Project
+        let minutes: Int
+        var id: UUID { project.id }
+    }
 
     private var day: Date { model.selectedDate }
 
@@ -73,13 +82,61 @@ struct PlanMyDayView: View {
         )
     }
 
+    /// Effort-based projects (an hours target, not yet met) you can spend time
+    /// toward today. Off by default — opt in per project.
+    private var projectSessionCandidates: [ProjectSession] {
+        life.activeProjects.compactMap { p in
+            guard !p.isComplete, let target = p.targetHours, target > 0 else { return nil }
+            let remaining = Int((target - p.totalLoggedHours) * 60)
+            guard remaining >= 15 else { return nil }
+            return ProjectSession(project: p, minutes: min(max(30, min(90, remaining)), remaining))
+        }
+    }
+
+    /// Places the opted-in project sessions into the day's free gaps, after the
+    /// task proposals and confirmed routine windows have claimed their time.
+    private var projectPlacements: [(session: ProjectSession, start: Date)] {
+        let chosen = projectSessionCandidates.filter { includedProjects.contains($0.id) }
+        guard !chosen.isEmpty else { return [] }
+        var reserved: [(start: Date, end: Date)] = proposals.map { ($0.start, $0.end) }
+        reserved += ritualCandidates
+            .filter { includedRituals.contains($0.id) }
+            .map { ($0.start, $0.end) }
+
+        var slots = AutoScheduler.freeGaps(
+            on: day, existing: service.blocks(on: day),
+            workStartMinutes: workStartMinutes, workEndMinutes: workEndMinutes,
+            profile: profileStore.profile
+        )
+        // Carve the task/ritual reservations out of the free slots.
+        for (rs, re) in reserved.sorted(by: { $0.start < $1.start }) {
+            var next: [AutoScheduler.Gap] = []
+            for g in slots {
+                if re <= g.start || rs >= g.end { next.append(g); continue }
+                if rs > g.start { next.append(AutoScheduler.Gap(start: g.start, end: rs)) }
+                if re < g.end { next.append(AutoScheduler.Gap(start: re, end: g.end)) }
+            }
+            slots = next
+        }
+        slots = slots.filter { $0.minutes >= 15 }.sorted { $0.start < $1.start }
+
+        var placements: [(ProjectSession, Date)] = []
+        for session in chosen {
+            guard let idx = slots.firstIndex(where: { $0.minutes >= session.minutes }) else { continue }
+            let g = slots[idx]
+            placements.append((session, g.start))
+            slots[idx] = AutoScheduler.Gap(start: g.start.adding(minutes: session.minutes + gapMinutes), end: g.end)
+        }
+        return placements
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             headerBar
 
             Rectangle().fill(Theme.hairline).frame(height: 1)
 
-            if candidates.isEmpty && ritualCandidates.isEmpty {
+            if candidates.isEmpty && ritualCandidates.isEmpty && projectSessionCandidates.isEmpty {
                 EmptyStateView(
                     icon: "checkmark.seal",
                     title: "Nothing to plan",
@@ -102,6 +159,14 @@ struct PlanMyDayView: View {
                                 .padding(.top, ritualCandidates.isEmpty ? 0 : 10)
                             ForEach(candidates) { task in
                                 candidateRow(task)
+                            }
+                        }
+                        if !projectSessionCandidates.isEmpty {
+                            SectionHeader(title: "Projects")
+                                .padding(.horizontal, 4)
+                                .padding(.top, candidates.isEmpty && ritualCandidates.isEmpty ? 0 : 10)
+                            ForEach(projectSessionCandidates) { session in
+                                projectSessionRow(session)
                             }
                         }
                     }
@@ -181,6 +246,46 @@ struct PlanMyDayView: View {
         .buttonStyle(.plain)
     }
 
+    private func projectSessionRow(_ session: ProjectSession) -> some View {
+        let isIncluded = includedProjects.contains(session.id)
+        let placement = projectPlacements.first { $0.session.id == session.id }
+        let target = Int((session.project.targetHours ?? 0) * 60)
+        return Button {
+            if isIncluded { includedProjects.remove(session.id) } else { includedProjects.insert(session.id) }
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: isIncluded ? "checkmark.square.fill" : "square")
+                    .font(.system(size: 16))
+                    .foregroundStyle(isIncluded ? Theme.accentColor : Theme.textTertiary)
+                Text(session.project.emoji).font(.system(size: 14))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(session.project.title.isEmpty ? "Untitled project" : session.project.title)
+                        .font(.system(size: 14.5, weight: .medium))
+                        .foregroundStyle(Theme.textPrimary).lineLimit(1)
+                    Text("\(Fmt.duration(minutes: session.minutes)) session · \(Fmt.duration(minutes: session.project.totalLoggedMinutes)) of \(Fmt.duration(minutes: target)) logged")
+                        .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                }
+                Spacer()
+                if isIncluded {
+                    if let placement {
+                        Text(Fmt.timeRange(placement.start, placement.start.adding(minutes: session.minutes)))
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Theme.accentColor)
+                    } else {
+                        Text("no room")
+                            .font(.system(size: 12.5, weight: .medium))
+                            .foregroundStyle(Theme.warning)
+                    }
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
     private func candidateRow(_ task: TaskItem) -> some View {
         let proposal = proposals.first { $0.task.id == task.id }
         let isIncluded = included.contains(task.id)
@@ -239,9 +344,10 @@ struct PlanMyDayView: View {
 
     private var footer: some View {
         let ritualCount = ritualCandidates.filter { includedRituals.contains($0.id) }.count
-        let totalBlocks = proposals.count + ritualCount
+        let projectCount = projectPlacements.count
+        let totalBlocks = proposals.count + ritualCount + projectCount
         return HStack {
-            let unplaced = included.count - proposals.count
+            let unplaced = (included.count - proposals.count) + (includedProjects.count - projectCount)
             VStack(alignment: .leading, spacing: 1) {
                 Text("\(totalBlocks) block\(totalBlocks == 1 ? "" : "s") will be created")
                     .font(.system(size: 13, weight: .medium))
@@ -277,6 +383,18 @@ struct PlanMyDayView: View {
         // drop task slots the user just confirmed.
         let confirmedRituals = ritualCandidates.filter { includedRituals.contains($0.id) }
         let confirmedProposals = proposals
+        let confirmedProjects = projectPlacements
+
+        for placement in confirmedProjects {
+            var draft = BlockDraft()
+            let project = placement.session.project
+            draft.title = "\(project.emoji) \(project.title.isEmpty ? "Project" : project.title)"
+            draft.calendarID = defaultCalendarID.isEmpty ? nil : defaultCalendarID
+            draft.start = placement.start
+            draft.end = placement.start.adding(minutes: placement.session.minutes)
+            draft.colorHex = project.colorHex
+            service.createBlock(draft)
+        }
 
         for window in confirmedRituals {
             var draft = BlockDraft()
