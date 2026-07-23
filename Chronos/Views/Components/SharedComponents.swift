@@ -149,6 +149,39 @@ struct EmptyStateView: View {
     }
 }
 
+/// The app's signature "colorful" accent: a bold white SF Symbol on a colored
+/// gradient rounded square. Used for card headers, list rows, and tiles so the
+/// whole app reads warm and friendly instead of a wall of gray glyphs.
+struct IconChip: View {
+    let icon: String
+    var tint: Color = Theme.accentColor
+    var size: CGFloat = 34
+
+    var body: some View {
+        Image(systemName: icon)
+            .font(.system(size: size * 0.44, weight: .bold))
+            .foregroundStyle(Color.white)
+            .frame(width: size, height: size)
+            .background(
+                LinearGradient(colors: [tint, tint.opacity(0.78)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                in: RoundedRectangle(cornerRadius: size * 0.32, style: .continuous)
+            )
+            .shadow(color: tint.opacity(0.3), radius: size * 0.15, y: 2)
+    }
+}
+
+/// A friendly palette for colorizing otherwise-monochrome icon rows/tiles —
+/// pick by index so a group of chips reads varied and warm.
+enum ChipPalette {
+    static let colors: [Color] = [
+        Color(hex: 0x5B6CF0), Color(hex: 0xFF7A59), Color(hex: 0x22C3C9),
+        Color(hex: 0x3FC97A), Color(hex: 0x9C7BFA), Color(hex: 0xFFB23E),
+        Color(hex: 0xFF6B9D), Color(hex: 0x4C9BFF),
+    ]
+    static func color(_ i: Int) -> Color { colors[((i % colors.count) + colors.count) % colors.count] }
+}
+
 // MARK: - Friendly buttons
 
 /// Springy press feedback so taps feel tactile and alive.

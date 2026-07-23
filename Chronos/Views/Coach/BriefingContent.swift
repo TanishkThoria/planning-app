@@ -58,14 +58,7 @@ struct BriefingContent: View {
 
     private func insightCard(_ item: PlannerBrief.Item) -> some View {
         HStack(alignment: .top, spacing: 12) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(item.tint.opacity(0.15))
-                    .frame(width: 38, height: 38)
-                Image(systemName: item.icon)
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(item.tint)
-            }
+            IconChip(icon: item.icon, tint: item.tint, size: 38)
             VStack(alignment: .leading, spacing: 5) {
                 Text(item.title)
                     .font(.system(size: 14.5, weight: .bold))
@@ -142,38 +135,35 @@ struct BriefingContent: View {
             SectionHeader(title: "Plan")
             let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
             LazyVGrid(columns: columns, spacing: 10) {
-                actionTile("Plan my day", "wand.and.stars", .planDay)
-                actionTile("Plan my week", "calendar.badge.clock", .planWeek)
-                actionTile("Plan deadlines", "graduationcap", .deadlines)
-                actionTile("Reflow today", "arrow.triangle.2.circlepath", .reflow)
-                actionTile("Review day", "checkmark.circle", .review)
-                actionTile("Start focus", "timer", .focus)
-                actionTile("Sweep overdue", "tray.and.arrow.down", .overdueSweep)
-                actionTile("Share availability", "square.and.arrow.up", .availability)
+                actionTile("Plan my day", "wand.and.stars", Theme.accentColor, .planDay)
+                actionTile("Plan my week", "calendar.badge.clock", Color(hex: 0x4C9BFF), .planWeek)
+                actionTile("Plan deadlines", "graduationcap", Color(hex: 0x9C7BFA), .deadlines)
+                actionTile("Reflow today", "arrow.triangle.2.circlepath", Color(hex: 0x22C3C9), .reflow)
+                actionTile("Review day", "checkmark.circle", Color(hex: 0x3FC97A), .review)
+                actionTile("Start focus", "timer", Color(hex: 0xFF7A59), .focus)
+                actionTile("Sweep overdue", "tray.and.arrow.down", Color(hex: 0xFFB23E), .overdueSweep)
+                actionTile("Share availability", "square.and.arrow.up", Color(hex: 0xFF6B9D), .availability)
             }
         }
         .panel()
     }
 
-    private func actionTile(_ title: String, _ icon: String, _ action: QuickAction) -> some View {
+    private func actionTile(_ title: String, _ icon: String, _ tint: Color, _ action: QuickAction) -> some View {
         Button { performCoachAction(action, on: model) } label: {
-            HStack(spacing: 9) {
-                Image(systemName: icon)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Theme.accentColor)
-                    .frame(width: 20)
+            HStack(spacing: 10) {
+                IconChip(icon: icon, tint: tint, size: 30)
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1).minimumScaleFactor(0.8)
                 Spacer(minLength: 0)
             }
-            .padding(.horizontal, 12).padding(.vertical, 12)
+            .padding(.horizontal, 12).padding(.vertical, 11)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle())
     }
 
     // MARK: Week glance
@@ -181,10 +171,7 @@ struct BriefingContent: View {
     private var weekGlance: some View {
         Button { model.statsPresented = true } label: {
             HStack(spacing: 12) {
-                Image(systemName: "chart.bar.xaxis")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Theme.accentColor)
-                    .frame(width: 22)
+                IconChip(icon: "chart.bar.xaxis", tint: Theme.accentColor, size: 34)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("This week")
                         .font(.system(size: 14.5, weight: .semibold))

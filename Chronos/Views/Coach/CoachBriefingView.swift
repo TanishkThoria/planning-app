@@ -27,12 +27,7 @@ struct CoachBriefingView: View {
 
     private var header: some View {
         HStack(spacing: 10) {
-            ZStack {
-                Circle().fill(Theme.accentColor.opacity(0.16)).frame(width: 34, height: 34)
-                Image(systemName: "sun.horizon.fill")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Theme.accentColor)
-            }
+            IconChip(icon: "sun.horizon.fill", tint: Color(hex: 0xFFB23E), size: 38)
             VStack(alignment: .leading, spacing: 1) {
                 Text("Coach")
                     .font(.system(size: 20, weight: .bold))

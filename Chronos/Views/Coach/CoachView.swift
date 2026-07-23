@@ -127,12 +127,7 @@ struct CoachChatView: View {
 
     private var header: some View {
         HStack(spacing: 10) {
-            ZStack {
-                Circle().fill(Theme.accentColor.opacity(0.16)).frame(width: 40, height: 40)
-                Image(systemName: "sparkles")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(Theme.accentColor)
-            }
+            IconChip(icon: "sparkles", tint: Theme.accentColor, size: 40)
             VStack(alignment: .leading, spacing: 1) {
                 Text("Coach")
                     .font(.system(size: 24, weight: .bold))
@@ -244,11 +239,7 @@ struct CoachChatView: View {
     private func insightCard(_ insight: CoachInsight) -> some View {
         Button { insight.run() } label: {
             HStack(spacing: 12) {
-                Image(systemName: insight.icon)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Color(hex: insight.tint))
-                    .frame(width: 30, height: 30)
-                    .background(Color(hex: insight.tint).opacity(0.14), in: Circle())
+                IconChip(icon: insight.icon, tint: Color(hex: insight.tint), size: 34)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(insight.title).font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                     Text(insight.detail).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
@@ -283,13 +274,10 @@ struct CoachChatView: View {
                     .font(.system(size: 12, weight: .semibold)).tracking(1.2)
                     .foregroundStyle(Theme.textTertiary)
             }
-            ForEach(Starter.allCases) { starter in
+            ForEach(Array(Starter.allCases.enumerated()), id: \.element.id) { index, starter in
                 Button { send(starter.text) } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: starter.icon)
-                            .font(.system(size: 13.5, weight: .semibold))
-                            .foregroundStyle(Theme.accentColor)
-                            .frame(width: 18)
+                    HStack(spacing: 10) {
+                        IconChip(icon: starter.icon, tint: ChipPalette.color(index), size: 30)
                         Text(starter.text)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
@@ -300,8 +288,8 @@ struct CoachChatView: View {
                     }
                     .padding(.horizontal, 12).padding(.vertical, 10)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
             }
