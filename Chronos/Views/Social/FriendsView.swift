@@ -281,11 +281,7 @@ struct FriendsView: View {
             VStack(spacing: 8) {
                 ForEach(moments) { moment in
                     HStack(spacing: 12) {
-                        Image(systemName: moment.icon)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(Color(hex: moment.tint))
-                            .frame(width: 26, height: 26)
-                            .background(Color(hex: moment.tint).opacity(0.15), in: Circle())
+                        IconChip(icon: moment.icon, tint: Color(hex: moment.tint), size: 30)
                         (Text(moment.name).font(.system(size: 14.5, weight: .semibold)) + Text(" \(moment.text)").font(.system(size: 14.5)))
                             .foregroundStyle(Theme.textPrimary)
                         Spacer(minLength: 0)

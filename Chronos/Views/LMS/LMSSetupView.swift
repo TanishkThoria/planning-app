@@ -352,19 +352,21 @@ struct LMSSetupView: View {
     // MARK: Bits
 
     private func hero(_ icon: String) -> some View {
-        ZStack {
-            Circle().fill(Theme.accentColor.opacity(0.14)).frame(width: 92, height: 92)
-            Image(systemName: icon)
-                .font(.system(size: 40, weight: .medium))
-                .foregroundStyle(Theme.accentColor)
-                .symbolRenderingMode(.hierarchical)
-        }
+        Image(systemName: icon)
+            .font(.system(size: 38, weight: .bold))
+            .foregroundStyle(Color.white)
+            .frame(width: 92, height: 92)
+            .background(
+                LinearGradient(colors: [Color(hex: 0x22C3C9), Color(hex: 0x4C9BFF)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                in: RoundedRectangle(cornerRadius: 26, style: .continuous)
+            )
+            .shadow(color: Color(hex: 0x22C3C9).opacity(0.4), radius: 16, y: 10)
     }
 
     private func bullet(_ icon: String, _ text: String) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: icon).font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(Theme.accentColor).frame(width: 22)
+            IconChip(icon: icon, tint: ChipPalette.color(for: text), size: 32)
             Text(text).font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)

@@ -65,14 +65,7 @@ struct TourOverlay: View {
     private func callout(_ step: TourStep) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 11) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 11, style: .continuous)
-                        .fill(Theme.accentColor.opacity(0.16))
-                        .frame(width: 42, height: 42)
-                    Image(systemName: step.icon)
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(Theme.accentColor)
-                }
+                IconChip(icon: step.icon, tint: Theme.accentColor, size: 42)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(tour.index + 1) of \(tour.steps.count)")
                         .font(.system(size: 11.5, weight: .bold)).tracking(0.8)

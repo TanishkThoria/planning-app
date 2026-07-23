@@ -114,9 +114,8 @@ struct TemplatesView: View {
             newName = ""
             namingTemplate = true
         } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "square.and.arrow.down.on.square")
-                    .font(.system(size: 16)).foregroundStyle(Theme.accentColor)
+            HStack(spacing: 11) {
+                IconChip(icon: "square.and.arrow.down.on.square", tint: Color(hex: 0x3FC97A), size: 34)
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Save \(Fmt.relativeDay(day)) as a template")
                         .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
@@ -138,8 +137,7 @@ struct TemplatesView: View {
             applyTarget = template
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: "square.grid.3x3.fill")
-                    .font(.system(size: 16)).foregroundStyle(Theme.accentColor)
+                IconChip(icon: "square.grid.3x3.fill", tint: ChipPalette.color(for: template.name), size: 34)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(template.name).font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary).lineLimit(1)
                     Text("\(template.blocks.count) blocks\(span.isEmpty ? "" : " · \(span)")")
