@@ -221,10 +221,7 @@ struct ChronosPlusView: View {
     private func capabilityRow(_ capability: PaidCapability, toggle: Binding<Bool>) -> some View {
         let ready = paid.isReady(capability)
         return HStack(spacing: 12) {
-            Image(systemName: capability.icon)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(ready ? Theme.accentColor : Theme.textTertiary)
-                .frame(width: 22)
+            IconChip(icon: capability.icon, tint: ready ? Theme.accentColor : Theme.textTertiary, size: 34)
             VStack(alignment: .leading, spacing: 2) {
                 Text(capability.title)
                     .font(.system(size: 14.5, weight: .semibold))
@@ -276,10 +273,7 @@ struct ChronosPlusView: View {
     private func exploreButton(icon: String, title: String, subtitle: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Theme.accentColor)
-                    .frame(width: 22)
+                IconChip(icon: icon, tint: ChipPalette.color(for: title), size: 34)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
                         .font(.system(size: 14.5, weight: .semibold))

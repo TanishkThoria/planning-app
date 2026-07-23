@@ -146,8 +146,10 @@ struct JournalView: View {
 
     private var intentionsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("Today's intentions", systemImage: "sunrise.fill")
-                .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+            HStack(spacing: 10) {
+                IconChip(icon: "sunrise.fill", tint: Color(hex: 0xFFB23E), size: 30)
+                Text("Today's intentions").font(.system(size: 15.5, weight: .bold)).foregroundStyle(Theme.textPrimary)
+            }
             Text("The three things that would make today a win.")
                 .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
             ForEach(0..<3, id: \.self) { i in
@@ -178,8 +180,10 @@ struct JournalView: View {
 
     private var checkInSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("Check-in", systemImage: "heart.text.square")
-                .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+            HStack(spacing: 10) {
+                IconChip(icon: "heart.text.square.fill", tint: Color(hex: 0xFF6B9D), size: 30)
+                Text("Check-in").font(.system(size: 15.5, weight: .bold)).foregroundStyle(Theme.textPrimary)
+            }
             ratingRow("Mood", value: $entry.mood, symbols: ["😔", "😐", "🙂", "😄", "🤩"])
             ratingRow("Energy", value: $entry.energy, symbols: ["🪫", "🔋", "⚡️", "🔥", "🚀"])
         }
@@ -210,8 +214,10 @@ struct JournalView: View {
 
     private var reflectionSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("Evening reflection", systemImage: "moon.stars.fill")
-                .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+            HStack(spacing: 10) {
+                IconChip(icon: "moon.stars.fill", tint: Color(hex: 0x9C7BFA), size: 30)
+                Text("Evening reflection").font(.system(size: 15.5, weight: .bold)).foregroundStyle(Theme.textPrimary)
+            }
             promptField("What went well?", text: $entry.wins)
             promptField("What could be better?", text: $entry.improve)
             promptField("Grateful for…", text: $entry.gratitude)

@@ -85,11 +85,7 @@ struct MomentumDetailView: View {
     private func nextUpCard(_ part: MomentumEngine.Breakdown) -> some View {
         Button { boost(part.factor) } label: {
             HStack(spacing: 12) {
-                Image(systemName: part.icon)
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Theme.accentColor)
-                    .frame(width: 30, height: 30)
-                    .background(Theme.accentColor.opacity(0.14), in: Circle())
+                IconChip(icon: part.icon, tint: Theme.accentColor, size: 36)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Biggest boost right now")
                         .font(.system(size: 12, weight: .semibold)).tracking(0.6)
@@ -158,10 +154,8 @@ struct MomentumDetailView: View {
             VStack(spacing: 12) {
                 ForEach(MomentumEngine.breakdown(input)) { part in
                     VStack(spacing: 6) {
-                        HStack(spacing: 9) {
-                            Image(systemName: part.icon)
-                                .font(.system(size: 13.5)).foregroundStyle(part.isComplete ? Theme.success : Theme.textSecondary)
-                                .frame(width: 18)
+                        HStack(spacing: 10) {
+                            IconChip(icon: part.icon, tint: part.isComplete ? Theme.success : ChipPalette.color(for: part.label), size: 28)
                             Text(part.label).font(.system(size: 14.5, weight: .medium)).foregroundStyle(Theme.textPrimary)
                             Spacer()
                             Text("\(part.earned)/\(part.max)")
@@ -201,15 +195,15 @@ struct MomentumDetailView: View {
 
     private var statsRow: some View {
         HStack(spacing: 10) {
-            statTile("star.fill", "\(store.perfectDays)", "Perfect days")
-            statTile("checkmark.seal.fill", "\(store.solidDays)", "Solid days")
-            statTile("calendar", "\(store.activeDays)", "Active days")
+            statTile("star.fill", "\(store.perfectDays)", "Perfect days", Color(hex: 0xFFB23E))
+            statTile("checkmark.seal.fill", "\(store.solidDays)", "Solid days", Color(hex: 0x3FC97A))
+            statTile("calendar", "\(store.activeDays)", "Active days", Theme.accentColor)
         }
     }
 
-    private func statTile(_ icon: String, _ value: String, _ label: String) -> some View {
-        VStack(spacing: 5) {
-            Image(systemName: icon).font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.accentColor)
+    private func statTile(_ icon: String, _ value: String, _ label: String, _ tint: Color) -> some View {
+        VStack(spacing: 7) {
+            IconChip(icon: icon, tint: tint, size: 32)
             Text(value).font(.system(size: 19, weight: .bold)).foregroundStyle(Theme.textPrimary)
                 .lineLimit(1).minimumScaleFactor(0.6)
             Text(label).font(.system(size: 11.5)).foregroundStyle(Theme.textSecondary)
