@@ -69,10 +69,8 @@ struct PersonalGrowthView: View {
     private func commitmentsCard(_ direction: GrowthDirection, draft: Binding<String>) -> some View {
         let items = life.commitments(direction)
         return VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: direction.icon)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(direction.color)
+            HStack(spacing: 10) {
+                IconChip(icon: direction.icon, tint: direction.color, size: 32)
                 Text(direction.label)
                     .font(.system(size: 15.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
@@ -167,8 +165,8 @@ struct PersonalGrowthView: View {
     private func mirrorColumn(title: String, tint: Color, icon: String,
                               traits: [SelfTrait], draft: Binding<String>, side: SelfTraitSide) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: icon).font(.system(size: 14, weight: .semibold)).foregroundStyle(tint)
+            HStack(spacing: 10) {
+                IconChip(icon: icon, tint: tint, size: 30)
                 Text(title).font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                 Spacer()
             }

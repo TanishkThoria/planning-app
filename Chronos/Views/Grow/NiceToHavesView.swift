@@ -62,9 +62,8 @@ struct NiceToHavesView: View {
         let earned = leftover >= 20
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
-                Image(systemName: earned ? "gift.fill" : "hourglass")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(earned ? Theme.success : Theme.warning)
+                IconChip(icon: earned ? "gift.fill" : "hourglass",
+                         tint: earned ? Theme.success : Theme.warning, size: 38)
                 Text(earned ? "You've earned some downtime" : "Finish your must-dos first")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)

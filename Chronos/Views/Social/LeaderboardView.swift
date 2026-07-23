@@ -58,10 +58,8 @@ struct LeaderboardView: View {
 
     /// Header for the Game-Center-only presentation (friends not in this build).
     private var gameCenterIntro: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Image(systemName: "trophy.fill")
-                .font(.system(size: 30))
-                .foregroundStyle(Theme.accentColor)
+        VStack(alignment: .leading, spacing: 10) {
+            IconChip(icon: "trophy.fill", tint: Color(hex: 0xFFB23E), size: 46)
             Text("Global leaderboards")
                 .font(.system(size: 20, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
@@ -163,10 +161,8 @@ struct LeaderboardView: View {
     }
 
     private var soloState: some View {
-        VStack(spacing: 10) {
-            Image(systemName: board.icon)
-                .font(.system(size: 30))
-                .foregroundStyle(Theme.accentColor)
+        VStack(spacing: 12) {
+            IconChip(icon: board.icon, tint: Theme.accentColor, size: 48)
             Text(board.display(board.value(social.myPresence)))
                 .font(.system(size: 30, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
@@ -183,9 +179,9 @@ struct LeaderboardView: View {
 
     private var gameCenterCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: social.gameCenterAuthenticated ? "checkmark.seal.fill" : "gamecontroller")
-                    .foregroundStyle(social.gameCenterAuthenticated ? Theme.success : Theme.accentColor)
+            HStack(spacing: 10) {
+                IconChip(icon: social.gameCenterAuthenticated ? "checkmark.seal.fill" : "gamecontroller.fill",
+                         tint: social.gameCenterAuthenticated ? Theme.success : Color(hex: 0x4C9BFF), size: 34)
                 Text(social.gameCenterAuthenticated ? "Also ranking on Game Center" : "Add Game Center ranking")
                     .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
@@ -230,8 +226,11 @@ struct Avatar: View {
 
     private var tint: Color {
         let palette: [UInt32] = [0x7C8CF8, 0x4FD1C5, 0xF2B95C, 0xF0719B, 0xA3E06B, 0x9B8CFF]
-        let idx = abs(name.hashValue) % palette.count
-        return Color(hex: palette[idx])
+        // Stable djb2 hash — name.hashValue is salted per launch and would
+        // recolor avatars on every relaunch.
+        var h = 5381
+        for b in name.utf8 { h = (h &* 33) ^ Int(b) }
+        return Color(hex: palette[abs(h) % palette.count])
     }
 
     var body: some View {

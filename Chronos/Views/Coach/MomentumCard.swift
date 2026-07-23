@@ -39,8 +39,8 @@ struct MomentumCard: View {
             HStack(spacing: 14) {
                 ring
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "bolt.fill").font(.system(size: 12.5)).foregroundStyle(Theme.accentColor)
+                    HStack(spacing: 8) {
+                        IconChip(icon: "bolt.fill", tint: Color(hex: 0xFFB23E), size: 24)
                         Text("Lv \(store.level) · \(store.levelTitle)")
                             .font(.system(size: 14.5, weight: .bold))
                             .foregroundStyle(Theme.textPrimary)
@@ -61,9 +61,8 @@ struct MomentumCard: View {
 
             if let next = MomentumEngine.nextBestAction(input) {
                 Button { model.momentumDetailPresented = true } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: next.icon).font(.system(size: 12.5, weight: .semibold))
-                            .foregroundStyle(Theme.accentColor)
+                    HStack(spacing: 9) {
+                        IconChip(icon: next.icon, tint: Theme.accentColor, size: 26)
                         Text(next.tip).font(.system(size: 13, weight: .medium))
                             .foregroundStyle(Theme.textPrimary).lineLimit(1)
                         Spacer(minLength: 4)
