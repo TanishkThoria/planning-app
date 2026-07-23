@@ -96,8 +96,9 @@ No iCloud keys yet — which is exactly what keeps the app easy to transfer.
 
 Once the app is on **your own** paid account (App Transfer complete):
 
-1. **+ Capability** → **iCloud** → tick **CloudKit** → under Containers, **+** →
-   create `iCloud.app.chronos.planner` (or accept the default `iCloud.<bundle-id>`).
+1. **+ Capability** → **iCloud** → tick **CloudKit** *and* **Key-value storage**
+   → under Containers, **+** → create `iCloud.app.chronos.planner` (or accept the
+   default `iCloud.<bundle-id>`).
 2. **Build Settings** → **Active Compilation Conditions** → add
    **`CHRONOS_CLOUD`** (Debug and Release). (Or swap both à-la-carte flags for
    the single **`CHRONOS_PLUS`** umbrella, which implies both.)
@@ -109,7 +110,17 @@ The finished entitlements file then also contains:
 <array><string>iCloud.app.chronos.planner</string></array>
 <key>com.apple.developer.icloud-services</key>
 <array><string>CloudKit</string></array>
+<key>com.apple.developer.ubiquity-kvstore-identifier</key>
+<string>$(TeamIdentifierPrefix)$(CFBundleIdentifier)</string>
 ```
+
+**Why Key-value storage too:** ticking it turns on `CloudKeyValueBackup`, which
+keeps a single whole-app snapshot in your iCloud key-value store. It's the one
+thing that survives a delete-and-reinstall or a brand-new phone with **no manual
+export** — on a fresh install it silently restores everything (goals, projects,
+habits, routines, growth, journals, momentum, achievements, settings). CloudKit
+Sync handles live per-key syncing across devices; this is the coarser
+always-there safety net. Both stay dormant until this entitlement ships.
 
 Because you had no CloudKit data before the transfer, there is nothing to
 migrate — friends and sync simply begin working for everyone on the next update.

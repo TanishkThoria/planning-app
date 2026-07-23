@@ -203,6 +203,7 @@ struct RootView: View {
             // Chronos+ (paid): detect availability, then sync/connect if ready.
             // All of this no-ops cleanly on the free account.
             PaidFeatures.shared.refresh()
+            CloudKeyValueBackup.shared.start()
             await CloudSyncService.shared.syncNow()
             SocialService.shared.authenticateGameCenter()
             syncSocialPresence()
@@ -243,6 +244,7 @@ struct RootView: View {
                 syncBlockActivity()
                 checkGamification()
                 PaidFeatures.shared.refresh()
+                CloudKeyValueBackup.shared.sync()
                 Task {
                     await CloudSyncService.shared.syncNow()
                     await SocialService.shared.refreshFriends()
@@ -252,6 +254,7 @@ struct RootView: View {
                 // opens the app daily; 6h staleness keeps it fresher than that.
                 Task { await lms.autoSyncIfStale(service: service) }
             } else if phase == .background {
+                CloudKeyValueBackup.shared.backUp()
                 Task { await CloudSyncService.shared.pushIfReady() }
             }
         }

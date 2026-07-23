@@ -39,6 +39,27 @@ enum ChronosBackup {
         UserDefaults.standard.dictionaryRepresentation().keys.filter(isBackedUp)
     }
 
+    /// A stable content hash of everything that would be backed up. `makeData()`
+    /// stamps a fresh `created` time on every call, so its bytes can't be
+    /// compared to detect real changes — this hashes only the user data, in a
+    /// deterministic, cross-launch-stable way (djb2, same as CloudSyncService).
+    static func fingerprint() -> Int {
+        let defaults = UserDefaults.standard
+        var h = 5381
+        func mix<S: Sequence>(_ bytes: S) where S.Element == UInt8 {
+            for b in bytes { h = (h &* 33) ^ Int(b) }
+        }
+        for key in backedUpKeys().sorted() {
+            mix(key.utf8)
+            if let data = defaults.data(forKey: key) {
+                mix(data)
+            } else if let value = defaults.object(forKey: key) {
+                mix(String(describing: value).utf8)
+            }
+        }
+        return h
+    }
+
     /// Serialize the current on-device state into a self-describing binary plist.
     static func makeData() throws -> Data {
         let defaults = UserDefaults.standard
