@@ -739,7 +739,7 @@ private struct TodayTaskRow: View {
                 withAnimation(.snappy) { service.toggleTaskCompletion(id: task.id) }
             } label: {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 17))
+                    .font(.system(size: 24))
                     .foregroundStyle(
                         task.isCompleted ? Theme.success
                             : (task.priority == .none ? Theme.textTertiary : task.priority.color)
@@ -749,7 +749,7 @@ private struct TodayTaskRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(task.title)
-                    .font(.system(size: 14.5, weight: .medium))
+                    .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(task.isCompleted ? Theme.textTertiary : Theme.textPrimary)
                     .strikethrough(task.isCompleted, color: Theme.textTertiary)
                     .lineLimit(1)
@@ -774,11 +774,12 @@ private struct TodayTaskRow: View {
 
             Spacer(minLength: 4)
 
-            Circle().fill(task.color).frame(width: 5, height: 5)
+            Circle().fill(task.color).frame(width: 8, height: 8)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .padding(.horizontal, 14)
+        .padding(.vertical, 13)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
         .contentShape(Rectangle())
         .draggable(task.id)
         .onTapGesture {
