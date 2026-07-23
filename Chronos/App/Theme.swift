@@ -52,6 +52,13 @@ enum Theme {
     static let success = dynamic(light: Color(hex: 0x30A46C), dark: Color(hex: 0x5BD899))
     static let warning = dynamic(light: Color(hex: 0xD98A2B), dark: Color(hex: 0xF2B95C))
 
+    /// Text/icon color that sits on top of a filled accent (or other vivid)
+    /// button. White reads cleanly on every accent choice in both schemes, so
+    /// primary buttons feel bold and consistent rather than muddy.
+    static let onAccent = Color.white
+    /// A soft tinted wash for friendly secondary buttons and highlights.
+    static func accentSoft(_ tint: Color = Theme.accentColor) -> Color { tint.opacity(0.14) }
+
     // MARK: Accent choices (power users pick theirs in Settings)
 
     struct AccentChoice: Identifiable, Hashable {

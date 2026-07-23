@@ -43,15 +43,9 @@ struct PermissionGateView: View {
                         .buttonStyle(.borderedProminent)
                 }
             } else {
-                Button {
+                ChronosPrimaryButton("Connect & get started", icon: "sparkles", fullWidth: false) {
                     Task { await service.requestAccess() }
-                } label: {
-                    Text("Grant Access")
-                        .font(.system(size: 15, weight: .semibold))
-                        .padding(.horizontal, 22)
-                        .padding(.vertical, 6)
                 }
-                .buttonStyle(.borderedProminent)
             }
 
             Spacer()
@@ -93,47 +87,143 @@ struct PermissionGateView: View {
 
 // MARK: - Small shared pieces
 
+/// Friendly section title — sentence case, readable weight, warm color. (It
+/// used to be a tiny all-caps tracked micro-label, which read as technical and
+/// cold; this warms every screen at once.)
 struct SectionHeader: View {
     let title: String
     var trailing: String?
 
     var body: some View {
-        HStack {
-            Text(title.uppercased())
-                .font(.system(size: 13, weight: .semibold))
-                .tracking(1.3)
-                .foregroundStyle(Theme.textSecondary)
+        HStack(alignment: .firstTextBaseline) {
+            Text(title)
+                .font(.system(size: 17, weight: .bold))
+                .foregroundStyle(Theme.textPrimary)
             Spacer()
             if let trailing {
                 Text(trailing)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Theme.textTertiary)
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
     }
 }
 
+/// A big, warm empty state — a friendly tinted icon, a clear headline, a gentle
+/// line of guidance, and (optionally) one obvious button to get moving.
 struct EmptyStateView: View {
     let icon: String
     let title: String
     let message: String
+    var actionTitle: String? = nil
+    var action: (() -> Void)? = nil
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 14) {
             Image(systemName: icon)
-                .font(.system(size: 28))
-                .foregroundStyle(Theme.textTertiary)
-            Text(title)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(Theme.textSecondary)
-            Text(message)
-                .font(.system(size: 13.5))
-                .foregroundStyle(Theme.textTertiary)
-                .multilineTextAlignment(.center)
+                .font(.system(size: 34, weight: .semibold))
+                .foregroundStyle(Theme.accentColor)
+                .frame(width: 84, height: 84)
+                .background(Theme.accentSoft(), in: Circle())
+            VStack(spacing: 6) {
+                Text(title)
+                    .font(.system(size: 19, weight: .bold))
+                    .foregroundStyle(Theme.textPrimary)
+                    .multilineTextAlignment(.center)
+                Text(message)
+                    .font(.system(size: 14.5))
+                    .foregroundStyle(Theme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if let actionTitle, let action {
+                ChronosPrimaryButton(actionTitle, fullWidth: false, action: action)
+                    .padding(.top, 2)
+            }
         }
-        .frame(maxWidth: 280)
-        .padding(.vertical, 40)
+        .frame(maxWidth: 320)
+        .padding(.vertical, 44)
         .frame(maxWidth: .infinity)
+    }
+}
+
+// MARK: - Friendly buttons
+
+/// Springy press feedback so taps feel tactile and alive.
+struct PressableButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .opacity(configuration.isPressed ? 0.9 : 1)
+            .animation(.snappy(duration: 0.14), value: configuration.isPressed)
+    }
+}
+
+/// The big, in-your-face primary action — a tall, bold, rounded, accent-filled
+/// button. The one obvious thing to tap on a screen.
+struct ChronosPrimaryButton: View {
+    let title: String
+    var icon: String? = nil
+    var tint: Color = Theme.accentColor
+    var fullWidth = true
+    let action: () -> Void
+
+    init(_ title: String, icon: String? = nil, tint: Color = Theme.accentColor,
+         fullWidth: Bool = true, action: @escaping () -> Void) {
+        self.title = title; self.icon = icon; self.tint = tint
+        self.fullWidth = fullWidth; self.action = action
+    }
+
+    var body: some View {
+        Button {
+            Haptics.light(); action()
+        } label: {
+            HStack(spacing: 8) {
+                if let icon { Image(systemName: icon).font(.system(size: 16, weight: .bold)) }
+                Text(title).font(.system(size: 16.5, weight: .semibold))
+            }
+            .foregroundStyle(Theme.onAccent)
+            .frame(maxWidth: fullWidth ? .infinity : nil)
+            .frame(height: 52)
+            .padding(.horizontal, fullWidth ? 0 : 26)
+            .background(tint, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .shadow(color: tint.opacity(0.28), radius: 10, y: 4)
+        }
+        .buttonStyle(PressableButtonStyle())
+    }
+}
+
+/// A softer companion — tinted fill, accent text — for the secondary choice.
+struct ChronosSecondaryButton: View {
+    let title: String
+    var icon: String? = nil
+    var tint: Color = Theme.accentColor
+    var fullWidth = true
+    let action: () -> Void
+
+    init(_ title: String, icon: String? = nil, tint: Color = Theme.accentColor,
+         fullWidth: Bool = true, action: @escaping () -> Void) {
+        self.title = title; self.icon = icon; self.tint = tint
+        self.fullWidth = fullWidth; self.action = action
+    }
+
+    var body: some View {
+        Button {
+            Haptics.light(); action()
+        } label: {
+            HStack(spacing: 8) {
+                if let icon { Image(systemName: icon).font(.system(size: 15, weight: .bold)) }
+                Text(title).font(.system(size: 16, weight: .semibold))
+            }
+            .foregroundStyle(tint)
+            .frame(maxWidth: fullWidth ? .infinity : nil)
+            .frame(height: 50)
+            .padding(.horizontal, fullWidth ? 0 : 22)
+            .background(Theme.accentSoft(tint), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(PressableButtonStyle())
     }
 }
 
@@ -172,33 +262,39 @@ struct DateNavigator: View {
     }
 }
 
-/// Round icon button used across screen headers.
+/// Round icon button used across screen headers — bigger, softer, and labelled
+/// for VoiceOver. A prominent one fills with the accent to read as the primary
+/// header action.
 struct HeaderIconButton: View {
     let icon: String
     var label: String?
     var prominent = false
+    /// VoiceOver name for icon-only buttons (falls back to the visible label).
+    var accessibility: String?
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                 if let label {
                     Text(label)
                         .font(.system(size: 14.5, weight: .semibold))
                 }
             }
-            .foregroundStyle(prominent ? Theme.bg : Theme.textSecondary)
-            .padding(.horizontal, label == nil ? 10 : 13)
-            .frame(height: 34)
-            .frame(minWidth: 34)
+            .foregroundStyle(prominent ? Theme.onAccent : Theme.textSecondary)
+            .padding(.horizontal, label == nil ? 11 : 15)
+            .frame(height: 38)
+            .frame(minWidth: 38)
             .background(
                 prominent ? AnyShapeStyle(Theme.accentColor) : AnyShapeStyle(Theme.fill),
-                in: RoundedRectangle(cornerRadius: 9, style: .continuous)
+                in: RoundedRectangle(cornerRadius: 12, style: .continuous)
             )
+            .shadow(color: prominent ? Theme.accentColor.opacity(0.25) : .clear, radius: 6, y: 2)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle())
+        .accessibilityLabel(label ?? accessibility ?? "")
     }
 }
 

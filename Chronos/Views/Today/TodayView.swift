@@ -504,30 +504,39 @@ struct TodayView: View {
         .onReceive(clock) { now = $0 }
     }
 
+    private var greeting: String {
+        switch Calendar.current.component(.hour, from: now) {
+        case 5..<12: return "Good morning"
+        case 12..<17: return "Good afternoon"
+        case 17..<22: return "Good evening"
+        default: return "Hello"
+        }
+    }
+
     private var header: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Today")
-                    .font(.system(size: 25, weight: .bold))
+                Text(greeting)
+                    .font(.system(size: 27, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
                 Text(remainingCount == 0
-                     ? "All tasks handled · \(Fmt.monthDay.string(from: today))"
-                     : "\(remainingCount) to finish · \(Fmt.monthDay.string(from: today))")
-                    .font(.system(size: 13.5, weight: .medium))
+                     ? "All done for today · \(Fmt.monthDay.string(from: today))"
+                     : "\(remainingCount) to go · \(Fmt.monthDay.string(from: today))")
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(remainingCount == 0 ? Theme.success : Theme.textSecondary)
             }
             Spacer()
-            HeaderIconButton(icon: "command") {
+            HeaderIconButton(icon: "command", accessibility: "Command bar") {
                 model.commandBarPresented = true
             }
             .help("Command bar (⌘K)")
             #if os(iOS)
-            HeaderIconButton(icon: "gearshape") {
+            HeaderIconButton(icon: "gearshape", accessibility: "Settings") {
                 model.settingsPresented = true
             }
             .help("Settings")
             #endif
-            HeaderIconButton(icon: "plus", prominent: true) {
+            HeaderIconButton(icon: "plus", prominent: true, accessibility: "Quick add") {
                 model.quickAddPresented = true
             }
             .help("Quick add")

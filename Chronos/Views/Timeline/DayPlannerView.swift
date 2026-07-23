@@ -205,26 +205,42 @@ struct DayPlannerView: View {
 
             DateNavigator()
 
-            HeaderIconButton(icon: "minus.magnifyingglass") {
-                hourHeight = max(40, hourHeight - 8)
-            }
-            HeaderIconButton(icon: "plus.magnifyingglass") {
-                hourHeight = min(128, hourHeight + 8)
-            }
-            HeaderIconButton(icon: "timer") {
-                model.startFocus(taskID: nil, title: "Focus")
-            }
             HeaderIconButton(icon: "wand.and.stars", label: "Plan") {
                 model.planDayPresented = true
             }
-            HeaderIconButton(icon: "sidebar.right") {
-                withAnimation(.snappy) { model.backlogVisible.toggle() }
-            }
-            HeaderIconButton(icon: "plus", prominent: true) {
+
+            overflowMenu
+
+            HeaderIconButton(icon: "plus", prominent: true, accessibility: "Quick add") {
                 model.quickAddPresented = true
             }
             .keyboardShortcut("k", modifiers: .command)
         }
+    }
+
+    /// Secondary day actions, tucked into one tidy menu so the header stays
+    /// calm — focus timer, the backlog rail, and zoom.
+    private var overflowMenu: some View {
+        Menu {
+            Button { model.startFocus(taskID: nil, title: "Focus") } label: {
+                Label("Focus timer", systemImage: "timer")
+            }
+            Button { withAnimation(.snappy) { model.backlogVisible.toggle() } } label: {
+                Label(model.backlogVisible ? "Hide backlog" : "Show backlog", systemImage: "sidebar.right")
+            }
+            Divider()
+            Button { hourHeight = min(128, hourHeight + 8) } label: { Label("Zoom in", systemImage: "plus.magnifyingglass") }
+            Button { hourHeight = max(40, hourHeight - 8) } label: { Label("Zoom out", systemImage: "minus.magnifyingglass") }
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(Theme.textSecondary)
+                .frame(width: 38, height: 38)
+                .background(Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .accessibilityLabel("More day actions")
     }
 
     private var allDayRow: some View {
