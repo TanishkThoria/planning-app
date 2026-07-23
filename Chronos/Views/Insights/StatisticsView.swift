@@ -175,22 +175,26 @@ struct StatisticsView: View {
         return VStack(alignment: .leading, spacing: 12) {
             SectionHeader(title: "This week vs last")
             VStack(spacing: 10) {
-                compareRow("Focused", "timer", this.focusMinutes, last.focusMinutes, isMinutes: true)
-                compareRow("Timeblocked", "rectangle.stack", this.plannedMinutes, last.plannedMinutes, isMinutes: true)
-                compareRow("Tasks done", "checkmark.circle", this.tasksCompleted, last.tasksCompleted, isMinutes: false)
-                compareRow("Deep work", "brain.head.profile", this.deepMinutes, last.deepMinutes, isMinutes: true)
+                compareRow("Focused", "timer", Color(hex: 0xFF7A59), this.focusMinutes, last.focusMinutes, isMinutes: true)
+                compareRow("Timeblocked", "rectangle.stack", Theme.accentColor, this.plannedMinutes, last.plannedMinutes, isMinutes: true)
+                compareRow("Tasks done", "checkmark.circle", Color(hex: 0x3FC97A), this.tasksCompleted, last.tasksCompleted, isMinutes: false)
+                compareRow("Deep work", "brain.head.profile", Color(hex: 0x9C7BFA), this.deepMinutes, last.deepMinutes, isMinutes: true)
             }
         }
         .panel()
     }
 
-    private func compareRow(_ label: String, _ icon: String, _ current: Int, _ previous: Int, isMinutes: Bool) -> some View {
+    private func compareRow(_ label: String, _ icon: String, _ tint: Color, _ current: Int, _ previous: Int, isMinutes: Bool) -> some View {
         let delta = current - previous
         let pct = previous > 0 ? Int((Double(delta) / Double(previous) * 100).rounded()) : (current > 0 ? 100 : 0)
         let up = delta >= 0
-        return HStack(spacing: 10) {
-            Image(systemName: icon).font(.system(size: 13.5)).foregroundStyle(Theme.textTertiary).frame(width: 18)
-            Text(label).font(.system(size: 14)).foregroundStyle(Theme.textSecondary)
+        return HStack(spacing: 11) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .bold)).foregroundStyle(Color.white)
+                .frame(width: 30, height: 30)
+                .background(LinearGradient(colors: [tint, tint.opacity(0.78)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                            in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            Text(label).font(.system(size: 14.5, weight: .medium)).foregroundStyle(Theme.textPrimary)
             Spacer()
             Text(isMinutes ? Fmt.duration(minutes: current) : "\(current)")
                 .font(.system(size: 14.5, weight: .semibold))
