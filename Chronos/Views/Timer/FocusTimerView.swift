@@ -264,16 +264,16 @@ struct FocusTimerView: View {
             .labelsHidden()
 
             if let title = presetTitle {
-                HStack(spacing: 8) {
-                    Image(systemName: "target").foregroundStyle(Theme.accentColor)
+                HStack(spacing: 10) {
+                    IconChip(icon: "target", tint: Color(hex: 0xFF7A59), size: 32)
                     Text(title)
                         .font(.system(size: 14.5, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     Spacer()
                 }
-                .padding(12)
-                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .padding(11)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
 
             tagRow

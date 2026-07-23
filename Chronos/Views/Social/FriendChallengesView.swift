@@ -91,14 +91,14 @@ struct FriendChallengesView: View {
 
     private var metricPreview: some View {
         HStack(spacing: 8) {
-            ForEach(LeaderboardBoard.allCases) { board in
-                VStack(spacing: 5) {
-                    Image(systemName: board.icon).font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.accentColor)
+            ForEach(Array(LeaderboardBoard.allCases.enumerated()), id: \.element.id) { i, board in
+                VStack(spacing: 7) {
+                    IconChip(icon: board.icon, tint: ChipPalette.color(i), size: 30)
                     Text(board.title).font(.system(size: 11.5, weight: .medium)).foregroundStyle(Theme.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                .background(Theme.fill, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .padding(.vertical, 11)
+                .background(Theme.fill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
         }
     }
