@@ -31,11 +31,13 @@ struct DayColumn: View {
     var onCreateRange: (Date, Date) -> Void = { _, _ in }
     var onDropTask: (String, Date) -> Void = { _, _ in }
 
-    @State private var now = Date()
     @State private var createStartMinutes: Int?
     @State private var createCurrentMinutes: Int?
-
-    private let timer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
+    /// Block layout is cached and recomputed only when the blocks or day change
+    /// — not on every render. Previously `BlockLayout.place` ran inside `body`,
+    /// so the now-line timer and drag gestures re-clustered every block each
+    /// tick/frame.
+    @State private var placed: [BlockLayout.Placed] = []
 
     var body: some View {
         GeometryReader { geo in
@@ -64,31 +66,33 @@ struct DayColumn: View {
 
                 habitMarkers(width: geo.size.width)
 
-                ForEach(BlockLayout.place(blocks, on: date)) { placed in
+                ForEach(placed) { item in
                     TimeBlockCard(
-                        placed: placed,
+                        placed: item,
                         day: date,
                         hourHeight: hourHeight,
                         snapMinutes: snapMinutes,
                         columnWidth: geo.size.width,
                         compact: compact,
                         dimPast: dimPast,
-                        linkedTask: placed.block.linkedTaskID.flatMap(taskLookup),
-                        onTap: { onTapBlock(placed.block) },
-                        onMove: { onMoveBlock(placed.block, $0) },
-                        onResize: { onResizeBlock(placed.block, $0) },
+                        linkedTask: item.block.linkedTaskID.flatMap(taskLookup),
+                        onTap: { onTapBlock(item.block) },
+                        onMove: { onMoveBlock(item.block, $0) },
+                        onResize: { onResizeBlock(item.block, $0) },
                         onToggleTask: {
-                            if let taskID = placed.block.linkedTaskID { onToggleTask(taskID) }
+                            if let taskID = item.block.linkedTaskID { onToggleTask(taskID) }
                         },
-                        onDuplicate: { onDuplicateBlock(placed.block) },
-                        onStartNow: { onStartBlockNow(placed.block) },
-                        onFocus: { onFocusBlock(placed.block) },
-                        onDelete: { onDeleteBlock(placed.block) }
+                        onDuplicate: { onDuplicateBlock(item.block) },
+                        onStartNow: { onStartBlockNow(item.block) },
+                        onFocus: { onFocusBlock(item.block) },
+                        onDelete: { onDeleteBlock(item.block) }
                     )
                 }
 
+                // Its own subview with its own timer, so the ticking "now" line
+                // never invalidates the grid or the blocks.
                 if date.isToday {
-                    NowLine(hourHeight: hourHeight, now: now)
+                    NowLineView(hourHeight: hourHeight)
                 }
             }
             .dropDestination(for: String.self) { items, location in
@@ -98,7 +102,9 @@ struct DayColumn: View {
             }
         }
         .frame(height: 24 * hourHeight)
-        .onReceive(timer) { now = $0 }
+        .onAppear { placed = BlockLayout.place(blocks, on: date) }
+        .onChange(of: blocks) { _, newBlocks in placed = BlockLayout.place(newBlocks, on: date) }
+        .onChange(of: date) { _, newDate in placed = BlockLayout.place(blocks, on: newDate) }
     }
 
     private var grid: some View {
@@ -265,5 +271,18 @@ struct DayColumn: View {
             .offset(y: y)
             .padding(.horizontal, 2)
             .allowsHitTesting(false)
+    }
+}
+
+/// The "now" indicator, isolated with its own timer so its 30-second ticks
+/// only re-render this thin line — never the hour grid or the day's blocks.
+private struct NowLineView: View {
+    let hourHeight: CGFloat
+    @State private var now = Date()
+    private let timer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        NowLine(hourHeight: hourHeight, now: now)
+            .onReceive(timer) { now = $0 }
     }
 }

@@ -270,6 +270,8 @@ struct TimeReportView: View {
             Text("\(label) · \(Fmt.duration(minutes: minutes))")
                 .font(.system(size: 12))
                 .foregroundStyle(Theme.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
         }
     }
 }

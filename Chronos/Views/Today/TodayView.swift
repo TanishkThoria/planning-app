@@ -595,6 +595,8 @@ struct TodayView: View {
                     Text("\(Fmt.duration(minutes: load.committedMinutes)) / \(Fmt.duration(minutes: load.freeMinutes)) free")
                         .font(.system(size: 12.5, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
+                        .lineLimit(1)
+                        .fixedSize()
                 }
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {

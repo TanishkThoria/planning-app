@@ -141,7 +141,9 @@ struct MomentumDetailView: View {
         VStack(spacing: 5) {
             Image(systemName: icon).font(.system(size: 16, weight: .semibold)).foregroundStyle(tint)
             Text(value).font(.system(size: 20, weight: .bold)).foregroundStyle(Theme.textPrimary)
+                .lineLimit(1).minimumScaleFactor(0.6)
             Text(label).font(.system(size: 11.5)).foregroundStyle(Theme.textSecondary)
+                .lineLimit(1).minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
@@ -209,7 +211,9 @@ struct MomentumDetailView: View {
         VStack(spacing: 5) {
             Image(systemName: icon).font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.accentColor)
             Text(value).font(.system(size: 19, weight: .bold)).foregroundStyle(Theme.textPrimary)
+                .lineLimit(1).minimumScaleFactor(0.6)
             Text(label).font(.system(size: 11.5)).foregroundStyle(Theme.textSecondary)
+                .lineLimit(1).minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)

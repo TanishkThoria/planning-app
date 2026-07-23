@@ -30,6 +30,13 @@ struct WeekPlannerView: View {
     @State private var pendingDelete: TimeBlock?
     @State private var hOffset: CGFloat = 0
 
+    // Per-day blocks, cached and refreshed only when the loaded events, the
+    // week, or the hidden-calendar set change. Previously every horizontal-scroll
+    // frame wrote `hOffset`, re-ran `body`, and re-filtered `service.blocks(on:)`
+    // 14 times (7 columns + 7 headers) — the cause of the week-view scroll lag.
+    @State private var weekTimed: [Date: [TimeBlock]] = [:]
+    @State private var weekHasAllDay: Set<Date> = []
+
     /// Comfortable minimum column width; below this we scroll horizontally.
     private let minColumnWidth: CGFloat = 116
     private let headerHeight: CGFloat = 52
@@ -37,6 +44,18 @@ struct WeekPlannerView: View {
     private var weekDays: [Date] {
         let start = model.selectedDate.startOfWeek
         return (0..<7).map { start.adding(days: $0) }
+    }
+
+    private func refreshWeekBlocks() {
+        var timed: [Date: [TimeBlock]] = [:]
+        var hasAllDay: Set<Date> = []
+        for day in weekDays {
+            let all = service.blocks(on: day, hiddenCalendars: model.hiddenCalendarIDs)
+            timed[day.startOfDay] = all.filter { !$0.isAllDay }
+            if all.contains(where: \.isAllDay) { hasAllDay.insert(day.startOfDay) }
+        }
+        weekTimed = timed
+        weekHasAllDay = hasAllDay
     }
 
     var body: some View {
@@ -74,6 +93,10 @@ struct WeekPlannerView: View {
             }
         }
         .background(Theme.bg)
+        .onAppear(perform: refreshWeekBlocks)
+        .onChange(of: service.blocks) { _, _ in refreshWeekBlocks() }
+        .onChange(of: model.selectedDate) { _, _ in refreshWeekBlocks() }
+        .onChange(of: model.hiddenCalendarIDs) { _, _ in refreshWeekBlocks() }
         .confirmationDialog(
             "Delete \u{201C}\(pendingDelete?.title ?? "")\u{201D}?",
             isPresented: Binding(
@@ -158,8 +181,7 @@ struct WeekPlannerView: View {
     }
 
     private func dayHeader(_ day: Date) -> some View {
-        let hasAllDay = service.blocks(on: day, hiddenCalendars: model.hiddenCalendarIDs)
-            .contains(where: \.isAllDay)
+        let hasAllDay = weekHasAllDay.contains(day.startOfDay)
         return Button {
             model.openDay(day)
         } label: {
@@ -217,8 +239,7 @@ struct WeekPlannerView: View {
     }
 
     private func column(for day: Date) -> some View {
-        let blocks = service.blocks(on: day, hiddenCalendars: model.hiddenCalendarIDs)
-            .filter { !$0.isAllDay }
+        let blocks = weekTimed[day.startOfDay] ?? []
         return DayColumn(
             date: day,
             blocks: blocks,

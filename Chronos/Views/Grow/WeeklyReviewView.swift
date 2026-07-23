@@ -97,6 +97,7 @@ struct WeeklyReviewView: View {
             Text(value).font(.system(size: 20, weight: .bold)).foregroundStyle(Theme.textPrimary)
                 .lineLimit(1).minimumScaleFactor(0.6)
             Text(label.uppercased()).font(.system(size: 10, weight: .semibold)).tracking(1).foregroundStyle(Theme.textTertiary)
+                .lineLimit(1).minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .panel(padding: 12)

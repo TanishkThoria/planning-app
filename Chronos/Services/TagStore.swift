@@ -22,6 +22,12 @@ final class TagStore: ObservableObject {
     /// keyword list can't know (a team name, a project, a class nickname).
     @Published private var learned: [String: [String: Int]] = [:]
 
+    /// Memoises resolved categories (id+title → category) so the keyword scan in
+    /// `ActivityCategory.guess` doesn't re-run for every block on every render —
+    /// a hot path while scrolling/dragging the timeline. Not `@Published`: it's a
+    /// pure cache, and is cleared whenever overrides or learned words change.
+    private var resolveCache: [String: ActivityCategory] = [:]
+
     private static let key = "chronos.tags.v1"
     private static let learnedKey = "chronos.catlearn.v1"
     /// How many times a word must point at one category before we trust it over
@@ -46,6 +52,7 @@ final class TagStore: ObservableObject {
            let decoded = try? JSONDecoder().decode([String: [String: Int]].self, from: data) {
             learned = decoded
         }
+        resolveCache.removeAll(keepingCapacity: true)
     }
 
     private func save() {
@@ -70,6 +77,7 @@ final class TagStore: ObservableObject {
 
     func setCategory(_ category: ActivityCategory?, forID id: String) {
         if let category { overrides[id] = category.rawValue } else { overrides.removeValue(forKey: id) }
+        resolveCache.removeAll(keepingCapacity: true)
         save()
     }
 
@@ -97,7 +105,7 @@ final class TagStore: ObservableObject {
             learned[word] = votes
             changed = true
         }
-        if changed { saveLearned() }
+        if changed { resolveCache.removeAll(keepingCapacity: true); saveLearned() }
     }
 
     /// The personalised guess from learned words, if confident enough.
@@ -114,11 +122,21 @@ final class TagStore: ObservableObject {
     // MARK: Resolution (override → learned → keyword guess → other)
 
     func category(for block: TimeBlock) -> ActivityCategory {
-        override(forID: block.eventID) ?? suggestedCategory(forTitle: block.title)
+        resolve(id: block.eventID, title: block.title)
     }
 
     func category(for task: TaskItem) -> ActivityCategory {
-        override(forID: task.id) ?? suggestedCategory(forTitle: task.title)
+        resolve(id: task.id, title: task.title)
+    }
+
+    /// Memoised resolution — the keyword classifier is expensive and this runs
+    /// once per visible block per render, so cache the answer per (id, title).
+    private func resolve(id: String, title: String) -> ActivityCategory {
+        let key = id + "\u{1}" + title
+        if let hit = resolveCache[key] { return hit }
+        let result = override(forID: id) ?? suggestedCategory(forTitle: title)
+        resolveCache[key] = result
+        return result
     }
 
     /// The best automatic category for a bare title (no explicit override):

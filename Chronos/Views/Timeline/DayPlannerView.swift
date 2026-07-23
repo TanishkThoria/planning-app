@@ -27,12 +27,22 @@ struct DayPlannerView: View {
     @State private var pinchBaseHeight: Double?
     private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
-    private var dayBlocks: [TimeBlock] {
-        service.blocks(on: model.selectedDate, hiddenCalendars: model.hiddenCalendarIDs)
-    }
+    // The day's blocks, split once and cached — recomputed only when the loaded
+    // events, the selected day, or the hidden-calendar set change. Previously
+    // each of these was a computed property that re-ran the O(n) `blocks(on:)`
+    // filter, and they were read ~8 times per body pass.
+    @State private var dayTimed: [TimeBlock] = []
+    @State private var dayAllDay: [TimeBlock] = []
 
-    private var allDayBlocks: [TimeBlock] { dayBlocks.filter(\.isAllDay) }
-    private var timedBlocks: [TimeBlock] { dayBlocks.filter { !$0.isAllDay } }
+    private var dayBlocks: [TimeBlock] { dayAllDay + dayTimed }
+    private var allDayBlocks: [TimeBlock] { dayAllDay }
+    private var timedBlocks: [TimeBlock] { dayTimed }
+
+    private func refreshDayBlocks() {
+        let all = service.blocks(on: model.selectedDate, hiddenCalendars: model.hiddenCalendarIDs)
+        dayAllDay = all.filter(\.isAllDay)
+        dayTimed = all.filter { !$0.isAllDay }
+    }
 
     /// Time-anchored habits due on the selected day, shown on the timeline.
     private var anchoredHabitsForDay: [Habit] {
@@ -125,6 +135,10 @@ struct DayPlannerView: View {
         }
         .background(Theme.bg)
         .onReceive(timer) { now = $0 }
+        .onAppear(perform: refreshDayBlocks)
+        .onChange(of: service.blocks) { _, _ in refreshDayBlocks() }
+        .onChange(of: model.selectedDate) { _, _ in refreshDayBlocks() }
+        .onChange(of: model.hiddenCalendarIDs) { _, _ in refreshDayBlocks() }
         .confirmationDialog(
             "Delete \u{201C}\(pendingDelete?.title ?? "")\u{201D}?",
             isPresented: Binding(
