@@ -33,10 +33,8 @@ private struct RitualScaffold<Content: View>: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Image(systemName: icon)
-                            .font(.system(size: 30))
-                            .foregroundStyle(accent)
+                    VStack(alignment: .leading, spacing: 10) {
+                        IconChip(icon: icon, tint: accent, size: 48)
                         Text(eyebrow.uppercased())
                             .font(.system(size: 12, weight: .semibold)).tracking(1.5)
                             .foregroundStyle(accent)
