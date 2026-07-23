@@ -71,7 +71,7 @@ struct QuickAddView: View {
                 Button(action: submit) {
                     Text("Create")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Theme.bg)
+                        .foregroundStyle(Theme.onAccent)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 6)
                         .background(Theme.accentColor, in: Capsule())

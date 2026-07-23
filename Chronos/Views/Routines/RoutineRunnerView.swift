@@ -191,7 +191,7 @@ struct RoutineRunnerView: View {
                 .font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
             Spacer()
             Button { dismiss() } label: {
-                Text("Done").font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.bg)
+                Text("Done").font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.onAccent)
                     .frame(maxWidth: .infinity).padding(.vertical, 14)
                     .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             }

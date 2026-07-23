@@ -73,7 +73,7 @@ struct DayPlannerView: View {
                 Spacer()
                 Text("Review")
                     .font(.system(size: 12.5, weight: .semibold))
-                    .foregroundStyle(Theme.bg)
+                    .foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
                     .background(Theme.warning, in: Capsule())

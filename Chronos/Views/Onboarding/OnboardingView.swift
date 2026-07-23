@@ -251,7 +251,7 @@ struct OnboardingView: View {
             } label: {
                 Text(step < lastStep ? "Continue" : "Start planning")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Theme.bg)
+                    .foregroundStyle(Theme.onAccent)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 13, style: .continuous))

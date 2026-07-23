@@ -135,7 +135,7 @@ struct OverdueSweepView: View {
                 dismiss()
             } label: {
                 Text("Schedule All")
-                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.bg)
+                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 18).padding(.vertical, 7)
                     .background(Theme.accentColor, in: Capsule())
             }

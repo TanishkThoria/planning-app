@@ -336,7 +336,7 @@ struct CoachChatView: View {
             Button { send(input) } label: {
                 Image(systemName: "arrow.up")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Theme.bg)
+                    .foregroundStyle(Theme.onAccent)
                     .frame(width: 36, height: 36)
                     .background(canSend ? Theme.accentColor : Theme.fill, in: Circle())
             }

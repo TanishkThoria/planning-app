@@ -149,7 +149,7 @@ struct TodayView: View {
                 Spacer(minLength: 6)
                 Text("Save it")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Theme.bg)
+                    .foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 12).padding(.vertical, 6)
                     .background(Theme.danger, in: Capsule())
             }
@@ -233,7 +233,7 @@ struct TodayView: View {
             } label: {
                 Text("Roll over")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Theme.bg)
+                    .foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 11).padding(.vertical, 6)
                     .background(Theme.warning, in: Capsule())
             }
@@ -308,7 +308,7 @@ struct TodayView: View {
                         } label: {
                             Label("Just start · 5 min", systemImage: "bolt.fill")
                                 .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(Theme.bg)
+                                .foregroundStyle(Theme.onAccent)
                                 .padding(.horizontal, 11).padding(.vertical, 6)
                                 .background(Theme.accentColor, in: Capsule())
                         }

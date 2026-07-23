@@ -147,7 +147,7 @@ struct TemplatesView: View {
                 }
                 Spacer()
                 Text("Apply")
-                    .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.bg)
+                    .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 10).padding(.vertical, 4)
                     .background(Theme.accentColor, in: Capsule())
             }

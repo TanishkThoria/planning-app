@@ -240,7 +240,7 @@ struct WrappedView: View {
         ShareLink(item: shareText(s)) {
             Label("Share my \(s.periodLabel)", systemImage: "square.and.arrow.up")
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(Theme.bg)
+                .foregroundStyle(Theme.onAccent)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)
                 .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 13, style: .continuous))

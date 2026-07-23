@@ -47,7 +47,7 @@ private struct RitualScaffold<Content: View>: View {
                     content
                     Button { onDone(); dismiss() } label: {
                         Text(doneLabel)
-                            .font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.bg)
+                            .font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.onAccent)
                             .frame(maxWidth: .infinity).padding(.vertical, 13)
                             .background(accent, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
                     }

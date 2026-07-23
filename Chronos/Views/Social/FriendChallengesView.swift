@@ -183,7 +183,7 @@ struct FriendChallengesView: View {
             if social.isIncoming(duel) {
                 Button { social.acceptDuel(duel); Haptics.success() } label: {
                     Text("Accept challenge")
-                        .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.bg)
+                        .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.onAccent)
                         .frame(maxWidth: .infinity).padding(.vertical, 8)
                         .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }

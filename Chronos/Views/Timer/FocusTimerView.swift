@@ -307,7 +307,7 @@ struct FocusTimerView: View {
             } label: {
                 Text("Start")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Theme.bg)
+                    .foregroundStyle(Theme.onAccent)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))

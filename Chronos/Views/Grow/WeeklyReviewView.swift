@@ -198,7 +198,7 @@ struct WeeklyReviewView: View {
                 model.planWeekPresented = true
             } label: {
                 Label("Plan Next Week", systemImage: "wand.and.stars")
-                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.bg)
+                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 16).padding(.vertical, 8)
                     .background(Theme.accentColor, in: Capsule())
             }

@@ -207,7 +207,7 @@ struct DayPulseChip: View {
                     } label: {
                         Label("Reflow the day", systemImage: "arrow.triangle.2.circlepath")
                             .font(.system(size: 14.5, weight: .semibold))
-                            .foregroundStyle(Theme.bg)
+                            .foregroundStyle(Theme.onAccent)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 11)
                             .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 11, style: .continuous))

@@ -156,7 +156,7 @@ struct NiceToHavesView: View {
             Button { editing = NiceToHave() } label: {
                 Text("Add a nice-to-have")
                     .font(.system(size: 14.5, weight: .semibold))
-                    .foregroundStyle(Theme.bg)
+                    .foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 18).padding(.vertical, 10)
                     .background(Theme.accentColor, in: Capsule())
             }

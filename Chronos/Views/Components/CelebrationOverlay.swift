@@ -49,7 +49,7 @@ struct CelebrationOverlay: View {
             Button(action: dismiss) {
                 Text("Nice!")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Theme.bg)
+                    .foregroundStyle(Theme.onAccent)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(celebration.color, in: RoundedRectangle(cornerRadius: 14, style: .continuous))

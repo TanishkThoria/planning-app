@@ -185,7 +185,7 @@ struct PlanWeekView: View {
                 apply()
             } label: {
                 Text("Add to Calendar")
-                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.bg)
+                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 16).padding(.vertical, 7)
                     .background(Theme.accentColor, in: Capsule())
             }

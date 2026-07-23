@@ -307,7 +307,7 @@ struct MorningPlanningView: View {
             } label: {
                 Text(step == .dump ? "Build My Day" : "Add \(proposals.count) to Calendar")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Theme.bg)
+                    .foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 8)
                     .background(Theme.accentColor, in: Capsule())

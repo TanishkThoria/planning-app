@@ -114,7 +114,7 @@ struct CalibrationView: View {
             } label: {
                 Text(step == .done ? "Start Planning" : (step == .welcome ? "Let's go" : "Continue"))
                     .font(.system(size: 14.5, weight: .semibold))
-                    .foregroundStyle(Theme.bg)
+                    .foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
                     .background(canAdvance ? Theme.accentColor : Theme.textTertiary, in: Capsule())

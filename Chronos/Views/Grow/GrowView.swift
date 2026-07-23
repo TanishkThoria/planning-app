@@ -85,7 +85,7 @@ struct GrowView: View {
             } label: {
                 Image(systemName: "plus")
                     .font(.system(size: 13.5, weight: .semibold))
-                    .foregroundStyle(Theme.bg)
+                    .foregroundStyle(Theme.onAccent)
                     .frame(width: 28, height: 26)
                     .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
             }

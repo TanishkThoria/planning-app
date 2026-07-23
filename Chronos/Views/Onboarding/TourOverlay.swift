@@ -122,7 +122,7 @@ struct TourOverlay: View {
                 Button { withAnimation(.snappy) { tour.next() } } label: {
                     Text(tour.isLast ? "Done" : "Next")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(Theme.bg)
+                        .foregroundStyle(Theme.onAccent)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))

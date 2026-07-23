@@ -99,7 +99,7 @@ struct RoutinesView: View {
             .fixedSize()
             Button { running = routine } label: {
                 Label("Start", systemImage: "play.fill")
-                    .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.bg)
+                    .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 16).padding(.vertical, 9)
                     .background(Theme.accentColor, in: Capsule())
             }

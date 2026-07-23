@@ -277,7 +277,7 @@ struct LMSSetupView: View {
                     if importing { ProgressView().controlSize(.small) }
                     Text(primaryTitle).font(.system(size: 15, weight: .semibold))
                 }
-                .foregroundStyle(Theme.bg)
+                .foregroundStyle(Theme.onAccent)
                 .frame(maxWidth: .infinity).padding(.vertical, 13)
                 .background(primaryEnabled ? Theme.accentColor : Theme.fill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }

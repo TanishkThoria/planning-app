@@ -148,7 +148,7 @@ struct MonthView: View {
                                    calendarID: defaultCalendarID.isEmpty ? nil : defaultCalendarID)
                 } label: {
                     Image(systemName: "plus").font(.system(size: 13.5, weight: .semibold))
-                        .foregroundStyle(Theme.bg).frame(width: 26, height: 24)
+                        .foregroundStyle(Theme.onAccent).frame(width: 26, height: 24)
                         .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                 }
                 .buttonStyle(.plain)

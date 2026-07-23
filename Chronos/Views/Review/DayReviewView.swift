@@ -258,7 +258,7 @@ struct DayReviewView: View {
             } label: {
                 Text("Done")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Theme.bg)
+                    .foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 7)
                     .background(Theme.accentColor, in: Capsule())

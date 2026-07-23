@@ -212,7 +212,7 @@ struct LMSManageView: View {
         } label: {
             Label(lms.sources.isEmpty ? "Connect a school" : "Add another school", systemImage: "plus")
                 .font(.system(size: 14.5, weight: .semibold))
-                .foregroundStyle(Theme.bg)
+                .foregroundStyle(Theme.onAccent)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
