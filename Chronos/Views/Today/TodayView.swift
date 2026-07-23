@@ -73,52 +73,59 @@ struct TodayView: View {
     /// week's day-dots — the positive anchor (the risk banner is the stick).
     private var momentumWidget: some View {
         let score = momentum.score(on: today)
-        let start = today.startOfWeek
-        let week = (0..<7).map { start.adding(days: $0) }
         return Button { model.momentumDetailPresented = true } label: {
-            HStack(spacing: 13) {
+            HStack(spacing: 18) {
                 ZStack {
-                    Circle().stroke(momentumTier(score).opacity(0.16), lineWidth: 5).frame(width: 48, height: 48)
+                    Circle().stroke(Color.white.opacity(0.25), lineWidth: 9)
                     Circle().trim(from: 0, to: max(0.02, Double(score) / 100))
-                        .stroke(momentumTier(score), style: StrokeStyle(lineWidth: 5, lineCap: .round))
-                        .rotationEffect(.degrees(-90)).frame(width: 48, height: 48)
-                    Text("\(score)").font(.system(size: 16, weight: .bold)).foregroundStyle(Theme.textPrimary)
+                        .stroke(Color.white, style: StrokeStyle(lineWidth: 9, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                    VStack(spacing: -2) {
+                        Text("\(score)").font(.system(size: 30, weight: .bold)).monospacedDigit()
+                        Text("TODAY").font(.system(size: 10, weight: .bold)).tracking(0.6).opacity(0.85)
+                    }
+                    .foregroundStyle(Color.white)
                 }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Lv \(momentum.level) · \(momentum.levelTitle)")
-                        .font(.system(size: 14.5, weight: .bold)).foregroundStyle(Theme.textPrimary)
+                .frame(width: 96, height: 96)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(heroHeadline(score))
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(Color.white)
+                    Text("Level \(momentum.level) · \(momentum.levelTitle)")
+                        .font(.system(size: 13.5, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.9))
+                        .lineLimit(2).minimumScaleFactor(0.85)
                     if momentum.streak() > 0 {
                         Label("\(momentum.streak())-day streak", systemImage: "flame.fill")
-                            .font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.warning)
-                    } else {
-                        Text("Keep the score up to start a streak")
-                            .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(Color.white)
+                            .padding(.horizontal, 11).padding(.vertical, 5)
+                            .background(Color.white.opacity(0.22), in: Capsule())
+                            .padding(.top, 3)
                     }
                 }
-                Spacer(minLength: 6)
-                HStack(spacing: 4) {
-                    ForEach(week, id: \.self) { day in
-                        let s = momentum.score(on: day)
-                        Circle()
-                            .fill(day > today ? Color.clear : momentumTier(s).opacity(s > 0 ? 1 : 0.25))
-                            .overlay(Circle().strokeBorder(day.isToday ? Theme.accentColor.opacity(0.8) : Theme.hairline,
-                                                           lineWidth: day.isToday ? 1.5 : 1))
-                            .frame(width: 11, height: 11)
-                    }
-                }
+                Spacer(minLength: 0)
             }
-            .padding(.horizontal, 13).padding(.vertical, 11)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 13, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                LinearGradient(colors: [Theme.accentColor, Theme.accentColor.opacity(0.72)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                in: RoundedRectangle(cornerRadius: 28, style: .continuous)
+            )
+            .shadow(color: Theme.accentColor.opacity(0.35), radius: 18, y: 10)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle())
+        .accessibilityLabel("Momentum \(score) today, level \(momentum.level), \(momentum.streak()) day streak")
     }
 
-    private func momentumTier(_ score: Int) -> Color {
-        if score >= 100 { return Color(hex: 0xF2C14E) }
-        if score >= 70 { return Theme.accentColor }
-        if score >= MomentumStore.solidThreshold { return Theme.success }
-        return Theme.textTertiary
+    private func heroHeadline(_ score: Int) -> String {
+        if score >= 100 { return "Perfect day! 🎉" }
+        if score >= 70 { return "You're on a roll" }
+        if score >= MomentumStore.solidThreshold { return "Nice momentum" }
+        if score > 0 { return "You've started" }
+        return "Let's get going"
     }
 
     private var streakRiskBanner: some View {
@@ -506,10 +513,10 @@ struct TodayView: View {
 
     private var greeting: String {
         switch Calendar.current.component(.hour, from: now) {
-        case 5..<12: return "Good morning"
-        case 12..<17: return "Good afternoon"
-        case 17..<22: return "Good evening"
-        default: return "Hello"
+        case 5..<12: return "Good morning ☀️"
+        case 12..<17: return "Good afternoon 🌤️"
+        case 17..<22: return "Good evening 🌙"
+        default: return "Hey there 👋"
         }
     }
 
@@ -548,32 +555,40 @@ struct TodayView: View {
     /// away in the ⌘K command bar.
     private var dayActionsRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                actionChip("Plan", "sunrise") { model.morningPlanningPresented = true }
-                actionChip("Reflow", "arrow.triangle.2.circlepath") { model.reflowPresented = true }
-                actionChip("Review", "checkmark.circle") { model.reviewPresented = true }
-                actionChip("Focus", "timer") { model.startFocus(taskID: nil, title: "Focus") }
-                actionChip("Now", "circle.circle") { model.nowModePresented = true }
+            HStack(spacing: 12) {
+                actionTile("Plan", "sun.max.fill", Theme.accentColor) { model.morningPlanningPresented = true }
+                actionTile("Focus", "timer", Color(hex: 0xFF7A59)) { model.startFocus(taskID: nil, title: "Focus") }
+                actionTile("Review", "checkmark.circle.fill", Color(hex: 0x3FC97A)) { model.reviewPresented = true }
+                actionTile("Reflow", "arrow.triangle.2.circlepath", Color(hex: 0x22C3C9)) { model.reflowPresented = true }
+                actionTile("Now", "circle.circle.fill", Color(hex: 0x9C7BFA)) { model.nowModePresented = true }
                 if coachEnabled, AssistantService.shared.isReady {
-                    actionChip("Coach", "sparkles") { model.coachPresented = true }
+                    actionTile("Coach", "sparkles", Color(hex: 0xC86DD7)) { model.coachPresented = true }
                 }
             }
             .padding(.horizontal, 2)
-            .padding(.vertical, 2)
+            .padding(.vertical, 4)
         }
     }
 
-    private func actionChip(_ title: String, _ icon: String, action: @escaping () -> Void) -> some View {
+    private func actionTile(_ title: String, _ icon: String, _ color: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 5) {
-                Image(systemName: icon).font(.system(size: 13, weight: .semibold))
-                Text(title).font(.system(size: 14, weight: .semibold))
+            VStack(spacing: 9) {
+                Image(systemName: icon)
+                    .font(.system(size: 21, weight: .semibold))
+                    .foregroundStyle(Color.white)
+                    .frame(width: 56, height: 56)
+                    .background(
+                        LinearGradient(colors: [color, color.opacity(0.78)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing),
+                        in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    )
+                    .shadow(color: color.opacity(0.35), radius: 8, y: 4)
+                Text(title).font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
             }
-            .foregroundStyle(Theme.accentColor)
-            .padding(.horizontal, 12).padding(.vertical, 8)
-            .background(Theme.accentColor.opacity(0.12), in: Capsule())
+            .frame(width: 82)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle())
+        .accessibilityLabel(title)
     }
 
     /// The realistic-workload guardrail: how the time your due tasks need
