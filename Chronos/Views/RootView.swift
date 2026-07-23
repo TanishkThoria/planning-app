@@ -179,6 +179,11 @@ struct RootView: View {
                    life?.isDone(habit, on: Date()) == false {
                     life?.toggle(habit, on: Date())
                 }
+                // A project-tagged session banks its minutes on the project.
+                if let projectID = session.projectID, session.actualMinutes >= 1 {
+                    life?.logTime(to: projectID, minutes: session.actualMinutes,
+                                  note: session.taskTitle == "Focus" ? "Focus session" : session.taskTitle)
+                }
             }
             // Onboarding owns the first-run permission flow; only auto-request
             // here once it's been completed, so we never double-prompt.

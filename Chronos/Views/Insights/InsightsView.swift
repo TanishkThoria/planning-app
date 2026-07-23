@@ -35,6 +35,7 @@ struct InsightsView: View {
                     weekStrip
                     challengesCard
                     gamificationCard
+                    projectTimeCard
                     reportsSection
                     // Shown per-capability, so a build with Game Center (but not
                     // CloudKit yet) surfaces the leaderboard without advertising
@@ -207,6 +208,54 @@ struct InsightsView: View {
 
     private var recordDivider: some View {
         Rectangle().fill(Theme.hairline).frame(width: 1, height: 28)
+    }
+
+    // MARK: Project time
+
+    /// Time banked on long-term projects — logged by hand or auto-captured from
+    /// project-tagged focus sessions. Hidden until there's something to show.
+    @ViewBuilder
+    private var projectTimeCard: some View {
+        let ranked = life.activeProjects
+            .filter { $0.totalLoggedMinutes > 0 }
+            .sorted {
+                $0.loggedMinutes() == $1.loggedMinutes()
+                    ? $0.totalLoggedMinutes > $1.totalLoggedMinutes
+                    : $0.loggedMinutes() > $1.loggedMinutes()
+            }
+        if !ranked.isEmpty {
+            let weekTotal = ranked.reduce(0) { $0 + $1.loggedMinutes() }
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    SectionHeader(title: "Project time")
+                    Spacer()
+                    Text("\(Fmt.duration(minutes: weekTotal)) this week")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                VStack(spacing: 8) {
+                    ForEach(ranked.prefix(5)) { project in
+                        HStack(spacing: 10) {
+                            ProjectRing(progress: project.progress, color: project.color, emoji: project.emoji, size: 30)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(project.title.isEmpty ? "Untitled project" : project.title)
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundStyle(Theme.textPrimary).lineLimit(1)
+                                Text("\(Fmt.duration(minutes: project.totalLoggedMinutes)) total")
+                                    .font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
+                            }
+                            Spacer(minLength: 0)
+                            Text(Fmt.duration(minutes: project.loggedMinutes()))
+                                .font(.system(size: 13, weight: .semibold)).monospacedDigit()
+                                .foregroundStyle(project.loggedMinutes() > 0 ? project.color : Theme.textTertiary)
+                        }
+                    }
+                }
+            }
+            .padding(14)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+        }
     }
 
     // MARK: Reports

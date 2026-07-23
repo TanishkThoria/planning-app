@@ -15,6 +15,7 @@ struct FocusTimerView: View {
     @State private var selectedCategory: ActivityCategory?
     @State private var selectedHabitID: UUID?
     @State private var selectedGoalID: UUID?
+    @State private var selectedProjectID: UUID?
 
     /// Optional task to focus on (from a block or task context menu).
     var presetTaskID: String?
@@ -301,7 +302,8 @@ struct FocusTimerView: View {
                 timer.focusMinutes = focusMinutes
                 timer.breakMinutes = breakMinutes
                 timer.start(taskID: presetTaskID, title: presetTitle ?? "Focus", mode: selectedMode,
-                            category: selectedCategory, habitID: selectedHabitID, goalID: selectedGoalID)
+                            category: selectedCategory, habitID: selectedHabitID, goalID: selectedGoalID,
+                            projectID: selectedProjectID)
             } label: {
                 Text("Start")
                     .font(.system(size: 16, weight: .semibold))
@@ -360,6 +362,26 @@ struct FocusTimerView: View {
                     ForEach(life.activeGoals) { g in
                         Button { selectedGoalID = g.id } label: { Label(g.title, systemImage: g.kind.icon) }
                     }
+                }
+            }
+            if !life.activeProjects.isEmpty {
+                let project = life.activeProjects.first { $0.id == selectedProjectID }
+                tagMenu(
+                    label: "Project",
+                    valueText: project.map { "\($0.emoji) \($0.title)" } ?? "Optional",
+                    icon: "square.stack.3d.up",
+                    tint: project?.color ?? Theme.textTertiary
+                ) {
+                    Button { selectedProjectID = nil } label: { Label("None", systemImage: "xmark") }
+                    Divider()
+                    ForEach(life.activeProjects) { p in
+                        Button { selectedProjectID = p.id } label: { Label("\(p.emoji) \(p.title)", systemImage: "square.stack.3d.up") }
+                    }
+                }
+                if selectedProjectID != nil {
+                    Text("Time from this session logs to the project automatically.")
+                        .font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
         }

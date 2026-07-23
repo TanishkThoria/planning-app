@@ -361,8 +361,13 @@ struct ProjectDetailView: View {
                 ? "A reading you set by feel."
                 : "Custom reading — overriding the \(project.doneMilestoneCount)/\(project.milestones.count) milestones below."
         }
-        if project.milestones.isEmpty { return "Drag to set a reading, or add milestones below to track it by checklist." }
-        return "From \(project.doneMilestoneCount)/\(project.milestones.count) milestones. Drag to override with your own read."
+        if !project.milestones.isEmpty {
+            return "From \(project.doneMilestoneCount)/\(project.milestones.count) milestones. Drag to override with your own read."
+        }
+        if let target = project.targetHours, target > 0 {
+            return "From \(timeLabel(project.totalLoggedMinutes)) of \(Fmt.duration(minutes: Int(target * 60))) logged. Drag to override."
+        }
+        return "Drag to set a reading, or add milestones below to track it by checklist."
     }
 
     // MARK: Weekly objectives (week-by-week steering for open-ended work)
@@ -570,6 +575,11 @@ struct ProjectDetailView: View {
                     .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
+                if let readout = linkedReadout(tasks: tasks, habits: habits) {
+                    Text(readout)
+                        .font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.textSecondary)
+                        .padding(.horizontal, 2)
+                }
                 VStack(spacing: 8) {
                     ForEach(goals) { goal in
                         linkedRow(icon: goal.kind.icon, tint: goal.color, title: goal.title,
@@ -605,6 +615,21 @@ struct ProjectDetailView: View {
         .contextMenu {
             Button(role: .destructive, action: unlink) { Label("Unlink", systemImage: "link.badge.minus") }
         }
+    }
+
+    /// A compact "how are the linked pieces doing" line — task completion and
+    /// linked-habit consistency over the last week.
+    private func linkedReadout(tasks: [TaskItem], habits: [Habit]) -> String? {
+        var parts: [String] = []
+        if !tasks.isEmpty {
+            let done = tasks.filter(\.isCompleted).count
+            parts.append("\(done)/\(tasks.count) tasks done")
+        }
+        if !habits.isEmpty {
+            let did = habits.reduce(0) { $0 + life.completionCount($1, inLast: 7) }
+            parts.append("habits \(did)/\(habits.count * 7) this week")
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: "  ·  ")
     }
 
     // MARK: Milestones

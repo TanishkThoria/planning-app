@@ -20,6 +20,9 @@ struct FocusSession: Codable, Identifiable, Hashable {
     /// A habit or goal this session counts toward.
     var habitID: UUID? = nil
     var goalID: UUID? = nil
+    /// A project this session counts toward — its minutes auto-log to the
+    /// project's time total. Optional/defaulted so older sessions decode.
+    var projectID: UUID? = nil
 
     var start: Date { Date(timeIntervalSince1970: startEpoch) }
     var end: Date { Date(timeIntervalSince1970: endEpoch) }

@@ -167,12 +167,16 @@ struct Project: Codable, Identifiable, Hashable {
         return Double(doneMilestoneCount) / Double(milestones.count)
     }
 
-    /// The number shown in rings and bars: complete → 1, else the manual reading
-    /// if you set one, otherwise the milestone ratio.
+    /// The number shown in rings and bars, in priority order: complete → 1; a
+    /// manual reading you stamped; the milestone ratio; or — for an effort-based
+    /// project with an hours target and no milestones — the share of that target
+    /// you've logged (so tracked focus time visibly moves the ring).
     var progress: Double {
         if isComplete { return 1 }
         if let manual = manualProgress { return min(max(manual, 0), 1) }
-        return milestoneProgress
+        if !milestones.isEmpty { return milestoneProgress }
+        if let target = targetHours, target > 0 { return min(1, totalLoggedHours / target) }
+        return 0
     }
 
     var latestUpdate: ProjectUpdate? {
