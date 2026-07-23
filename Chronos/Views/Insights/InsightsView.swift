@@ -94,9 +94,12 @@ struct InsightsView: View {
             Text(value)
                 .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
             Text(label)
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
+                .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(11)

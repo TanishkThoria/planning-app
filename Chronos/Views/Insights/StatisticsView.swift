@@ -220,8 +220,10 @@ struct StatisticsView: View {
                 .minimumScaleFactor(0.6)
             Text(label.uppercased())
                 .font(.system(size: 10, weight: .semibold))
-                .tracking(1)
+                .tracking(0.8)
                 .foregroundStyle(Theme.textTertiary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .panel(padding: 12)
