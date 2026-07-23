@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
@@ -7,9 +8,31 @@ struct SettingsView: View {
     @EnvironmentObject private var notifications: NotificationService
     @EnvironmentObject private var life: LifeStore
 
-    @State private var restoring = false
-    @State private var restoreText = ""
-    @State private var restoreFailed = false
+    @State private var backupURL: URL?
+    @State private var importingBackup = false
+    @State private var restoreConfirming = false
+    @State private var pendingRestoreURL: URL?
+    @State private var restoreResult: RestoreResult?
+
+    private enum RestoreResult {
+        case success(Int)
+        case failure(String)
+
+        var title: String {
+            switch self {
+            case .success: return "Restored"
+            case .failure: return "Couldn't restore"
+            }
+        }
+        var message: String {
+            switch self {
+            case .success:
+                return "Everything's back. Restart Chronos to make sure every screen refreshes."
+            case .failure(let detail):
+                return detail
+            }
+        }
+    }
 
     @AppStorage(Prefs.morningReminderEnabled) private var morningReminderEnabled = false
     @AppStorage(Prefs.morningReminderMinutes) private var morningReminderMinutes = 8 * 60
@@ -437,16 +460,25 @@ struct SettingsView: View {
                     settingsSection("Backup") {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack(spacing: 10) {
-                                ShareLink(item: life.exportJSON()) {
-                                    Label("Back up Grow data", systemImage: "square.and.arrow.up")
+                                if let url = backupURL {
+                                    ShareLink(item: url) {
+                                        Label("Back up everything", systemImage: "square.and.arrow.up")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundStyle(Theme.accentColor)
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 10)
+                                            .background(Theme.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                    }
+                                } else {
+                                    Label("Preparing backup…", systemImage: "hourglass")
                                         .font(.system(size: 14, weight: .semibold))
-                                        .foregroundStyle(Theme.accentColor)
+                                        .foregroundStyle(Theme.textTertiary)
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 10)
-                                        .background(Theme.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                                 }
                                 Button {
-                                    restoreText = ""; restoring = true
+                                    importingBackup = true
                                 } label: {
                                     Label("Restore", systemImage: "square.and.arrow.down")
                                         .font(.system(size: 14, weight: .semibold))
@@ -457,7 +489,7 @@ struct SettingsView: View {
                                 }
                                 .buttonStyle(.plain)
                             }
-                            Text("Exports your goals, habits, journal, templates & budgets as JSON. Blocks and tasks already live in Apple Calendar & Reminders.")
+                            Text("Saves a single file with everything Chronos keeps — goals, projects, milestones, habits, routines, nice-to-haves, personal growth, journals, momentum & achievements, and settings. Keep it to move onto a new phone or after reinstalling. Your blocks and tasks already travel with your Apple ID in Calendar & Reminders.")
                                 .font(.system(size: 12.5))
                                 .foregroundStyle(Theme.textTertiary)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -492,19 +524,59 @@ struct SettingsView: View {
         .sheet(isPresented: $showingCalibration) {
             CalibrationView()
         }
-        .alert("Restore from backup", isPresented: $restoring) {
-            TextField("Paste backup JSON", text: $restoreText)
-            Button("Restore", role: .destructive) {
-                if life.importJSON(restoreText) { Haptics.success() } else { restoreFailed = true }
+        .onAppear { prepareBackup() }
+        .fileImporter(
+            isPresented: $importingBackup,
+            allowedContentTypes: [.data],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                if let url = urls.first { pendingRestoreURL = url; restoreConfirming = true }
+            case .failure(let error):
+                restoreResult = .failure(error.localizedDescription)
             }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("This replaces your current goals, habits, journal, templates & budgets.")
         }
-        .alert("Couldn't restore", isPresented: $restoreFailed) {
-            Button("OK", role: .cancel) {}
+        .confirmationDialog(
+            "Restore from this backup?",
+            isPresented: $restoreConfirming,
+            titleVisibility: .visible
+        ) {
+            Button("Replace my data", role: .destructive) { performRestore() }
+            Button("Cancel", role: .cancel) { pendingRestoreURL = nil }
         } message: {
-            Text("That doesn't look like a valid Chronos backup.")
+            Text("This replaces your current goals, projects, habits, routines, growth, journals, momentum & settings with the ones in the backup.")
+        }
+        .alert(
+            restoreResult?.title ?? "",
+            isPresented: Binding(
+                get: { restoreResult != nil },
+                set: { if !$0 { restoreResult = nil } }
+            ),
+            presenting: restoreResult
+        ) { _ in
+            Button("OK", role: .cancel) {}
+        } message: { result in
+            Text(result.message)
+        }
+    }
+
+    /// Regenerate the shareable backup file whenever Settings appears so the
+    /// export always reflects the latest state.
+    private func prepareBackup() {
+        backupURL = try? ChronosBackup.writeTempFile()
+    }
+
+    private func performRestore() {
+        guard let url = pendingRestoreURL else { return }
+        pendingRestoreURL = nil
+        do {
+            let count = try ChronosBackup.restore(from: url)
+            Haptics.success()
+            prepareBackup()
+            restoreResult = .success(count)
+        } catch {
+            restoreResult = .failure(error.localizedDescription)
         }
     }
 
