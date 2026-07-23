@@ -69,11 +69,14 @@ struct RoutinesView: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(routine.name).font(.system(size: 16, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                        .lineLimit(1)
                     if routine.tracked {
                         let streak = store.streak(routine)
                         Label(streak > 0 ? "\(streak)" : "Tracked", systemImage: streak > 0 ? "flame.fill" : "repeat")
                             .font(.system(size: 10.5, weight: .bold))
                             .foregroundStyle(streak > 0 ? Theme.warning : Theme.accentColor)
+                            .lineLimit(1)
+                            .fixedSize()
                             .padding(.horizontal, 6).padding(.vertical, 2)
                             .background((streak > 0 ? Theme.warning : Theme.accentColor).opacity(0.14), in: Capsule())
                     }
