@@ -308,6 +308,15 @@ final class AppModel: ObservableObject {
         focusTimerPresented = true
     }
 
+    /// Present another RootView sheet from *inside* a sheet that's dismissing.
+    /// SwiftUI can't have two sheets on the same anchor at once, so opening a new
+    /// sheet in the same runloop as `dismiss()` silently drops it (or shows it
+    /// behind). Call `dismiss()` first, then this, to open the target once the
+    /// current sheet has animated away.
+    func afterDismiss(_ action: @escaping () -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: action)
+    }
+
     /// Routes a `chronos://…` deep link from a widget, Live Activity, or
     /// Shortcut to the right place in the app.
     func handleDeepLink(_ url: URL) {

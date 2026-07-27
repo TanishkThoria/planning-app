@@ -106,8 +106,9 @@ struct SearchView: View {
 
     private func taskRow(_ task: TaskItem) -> some View {
         Button {
-            model.taskEditor = service.editorContext(for: task)
+            let ctx = service.editorContext(for: task)
             dismiss()
+            model.afterDismiss { model.taskEditor = ctx }
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
@@ -134,8 +135,9 @@ struct SearchView: View {
 
     private func blockRow(_ block: TimeBlock) -> some View {
         Button {
-            model.blockEditor = service.editorContext(for: block)
+            let ctx = service.editorContext(for: block)
             dismiss()
+            model.afterDismiss { model.blockEditor = ctx }
         } label: {
             HStack(spacing: 10) {
                 RoundedRectangle(cornerRadius: 2).fill(block.color).frame(width: 3, height: 30)

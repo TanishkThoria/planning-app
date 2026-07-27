@@ -236,7 +236,8 @@ struct WeeklyReviewView: View {
     private var footer: some View {
         HStack {
             Button {
-                model.eveningRitualPresented = true
+                dismiss()
+                model.afterDismiss { model.eveningRitualPresented = true }
             } label: {
                 Text("Reflect").font(.system(size: 14, weight: .medium)).foregroundStyle(Theme.textSecondary)
             }
@@ -245,7 +246,7 @@ struct WeeklyReviewView: View {
             Button {
                 model.selectedDate = Date().startOfDay.adding(days: 7).startOfWeek
                 dismiss()
-                model.planWeekPresented = true
+                model.afterDismiss { model.planWeekPresented = true }
             } label: {
                 Label("Plan Next Week", systemImage: "wand.and.stars")
                     .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.onAccent)

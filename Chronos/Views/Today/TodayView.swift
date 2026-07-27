@@ -635,7 +635,7 @@ struct TodayView: View {
                 actionTile("Review", "checkmark.circle.fill", Color(hex: 0x3FC97A)) { model.reviewPresented = true }
                 actionTile("Reflow", "arrow.triangle.2.circlepath", Color(hex: 0x22C3C9)) { model.reflowPresented = true }
                 actionTile("Now", "circle.circle.fill", Color(hex: 0x9C7BFA)) { model.nowModePresented = true }
-                if coachEnabled, AssistantService.shared.isReady {
+                if coachEnabled {
                     actionTile("Coach", "sparkles", Color(hex: 0xC86DD7)) { model.coachPresented = true }
                 }
             }

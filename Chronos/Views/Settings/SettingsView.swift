@@ -339,8 +339,8 @@ struct SettingsView: View {
                                     .toggleStyle(.switch)
                             }
                             Text(coachEnabled
-                                 ? "A private, on-device AI planner that knows your schedule, momentum, focus, and friends — open it from Today's action row or the ⌘K command bar. Requires Apple Intelligence (iOS 26 on a supported device); it stays hidden otherwise."
-                                 : "The Coach is off. Turn it back on to chat with your on-device planning companion from Today or the command bar.")
+                                 ? "A daily briefing that knows your schedule, momentum, focus, and identity pillars — open it from Today's action row or the ⌘K command bar. On a device with Apple Intelligence it becomes a full on-device chat companion."
+                                 : "The Coach is off. Turn it back on for your daily briefing and planning shortcuts from Today or the command bar.")
                                 .font(.system(size: 12.5))
                                 .foregroundStyle(Theme.textTertiary)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -381,7 +381,7 @@ struct SettingsView: View {
                     settingsSection("Chronos+") {
                         Button {
                             model.settingsPresented = false
-                            model.chronosPlusPresented = true
+                            model.afterDismiss { model.chronosPlusPresented = true }
                         } label: {
                             HStack(spacing: 11) {
                                 IconChip(icon: "sparkles", tint: Color(hex: 0x9C7BFA), size: 32)
@@ -410,12 +410,12 @@ struct SettingsView: View {
 
                     settingsSection("School") {
                         Button {
-                            if LMSStore.shared.isConfigured {
-                                model.lmsManagePresented = true
-                            } else {
-                                model.lmsSetupPresented = true
-                            }
+                            let configured = LMSStore.shared.isConfigured
                             model.settingsPresented = false
+                            model.afterDismiss {
+                                if configured { model.lmsManagePresented = true }
+                                else { model.lmsSetupPresented = true }
+                            }
                         } label: {
                             HStack(spacing: 11) {
                                 IconChip(icon: "graduationcap.fill", tint: Color(hex: 0x22C3C9), size: 32)

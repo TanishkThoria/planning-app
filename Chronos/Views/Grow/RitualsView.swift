@@ -196,7 +196,7 @@ struct MorningRitualView: View {
             Button {
                 life.upsert(entry)
                 model.morningRitualPresented = false
-                model.morningPlanningPresented = true
+                model.afterDismiss { model.morningPlanningPresented = true }
             } label: {
                 Label("Now plan the day", systemImage: "wand.and.stars")
                     .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.warning)

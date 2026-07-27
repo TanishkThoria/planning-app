@@ -6,7 +6,16 @@ struct FutureSelfEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var life: LifeStore
 
+    /// A stably-identified editable line, so deleting a middle row doesn't make
+    /// the text fields shuffle (which happens when ForEach keys on the index).
+    private struct Row: Identifiable, Hashable {
+        let id = UUID()
+        var text: String
+    }
+
     @State private var draft = FutureSelf()
+    @State private var attrRows: [Row] = []
+    @State private var actionRows: [Row] = []
     @State private var loaded = false
     @State private var newAttribute = ""
     @State private var newAction = ""
@@ -21,24 +30,21 @@ struct FutureSelfEditorView: View {
                 }
 
                 Section("Attributes") {
-                    ForEach(Array(draft.attributes.enumerated()), id: \.offset) { i, _ in
+                    ForEach($attrRows) { $row in
                         HStack {
-                            TextField("Attribute", text: Binding(
-                                get: { i < draft.attributes.count ? draft.attributes[i] : "" },
-                                set: { if i < draft.attributes.count { draft.attributes[i] = $0 } }
-                            ))
-                            Button {
-                                if i < draft.attributes.count { draft.attributes.remove(at: i) }
-                            } label: { Image(systemName: "minus.circle.fill").foregroundStyle(Theme.danger) }
+                            TextField("Attribute", text: $row.text)
+                            Button { attrRows.removeAll { $0.id == row.id } } label: {
+                                Image(systemName: "minus.circle.fill").foregroundStyle(Theme.danger)
+                            }
                             .buttonStyle(.plain)
                         }
                     }
                     HStack {
                         TextField("Add an attribute (\"Physically strong\")", text: $newAttribute)
-                        Button {
-                            let t = newAttribute.trimmingCharacters(in: .whitespaces)
-                            if !t.isEmpty { draft.attributes.append(t); newAttribute = "" }
-                        } label: { Image(systemName: "plus.circle.fill").foregroundStyle(Theme.accentColor) }
+                            .onSubmit(addAttribute)
+                        Button(action: addAttribute) {
+                            Image(systemName: "plus.circle.fill").foregroundStyle(Theme.accentColor)
+                        }
                         .buttonStyle(.plain)
                     }
                 }
@@ -50,24 +56,21 @@ struct FutureSelfEditorView: View {
                 }
 
                 Section("What that person does today") {
-                    ForEach(Array(draft.dailyActions.enumerated()), id: \.offset) { i, _ in
+                    ForEach($actionRows) { $row in
                         HStack {
-                            TextField("Daily action", text: Binding(
-                                get: { i < draft.dailyActions.count ? draft.dailyActions[i] : "" },
-                                set: { if i < draft.dailyActions.count { draft.dailyActions[i] = $0 } }
-                            ))
-                            Button {
-                                if i < draft.dailyActions.count { draft.dailyActions.remove(at: i) }
-                            } label: { Image(systemName: "minus.circle.fill").foregroundStyle(Theme.danger) }
+                            TextField("Daily action", text: $row.text)
+                            Button { actionRows.removeAll { $0.id == row.id } } label: {
+                                Image(systemName: "minus.circle.fill").foregroundStyle(Theme.danger)
+                            }
                             .buttonStyle(.plain)
                         }
                     }
                     HStack {
                         TextField("Add (\"90-minute deep work block\")", text: $newAction)
-                        Button {
-                            let t = newAction.trimmingCharacters(in: .whitespaces)
-                            if !t.isEmpty { draft.dailyActions.append(t); newAction = "" }
-                        } label: { Image(systemName: "plus.circle.fill").foregroundStyle(Theme.accentColor) }
+                            .onSubmit(addAction)
+                        Button(action: addAction) {
+                            Image(systemName: "plus.circle.fill").foregroundStyle(Theme.accentColor)
+                        }
                         .buttonStyle(.plain)
                     }
                 }
@@ -79,16 +82,39 @@ struct FutureSelfEditorView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        draft.attributes = draft.attributes.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
-                        draft.dailyActions = draft.dailyActions.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
-                        life.updateFutureSelf(draft)
-                        dismiss()
-                    }
+                    Button("Save") { save() }
                 }
             }
         }
-        .onAppear { if !loaded { draft = life.futureSelf; loaded = true } }
+        .onAppear {
+            if !loaded {
+                draft = life.futureSelf
+                attrRows = draft.attributes.map { Row(text: $0) }
+                actionRows = draft.dailyActions.map { Row(text: $0) }
+                loaded = true
+            }
+        }
+    }
+
+    private func addAttribute() {
+        let t = newAttribute.trimmingCharacters(in: .whitespaces)
+        guard !t.isEmpty else { return }
+        attrRows.append(Row(text: t)); newAttribute = ""
+    }
+
+    private func addAction() {
+        let t = newAction.trimmingCharacters(in: .whitespaces)
+        guard !t.isEmpty else { return }
+        actionRows.append(Row(text: t)); newAction = ""
+    }
+
+    private func save() {
+        draft.attributes = attrRows.map { $0.text.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        draft.dailyActions = actionRows.map { $0.text.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        life.updateFutureSelf(draft)
+        dismiss()
     }
 
     private func visionField(_ label: String, text: Binding<String>) -> some View {

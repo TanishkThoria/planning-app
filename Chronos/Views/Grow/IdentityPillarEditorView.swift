@@ -32,7 +32,7 @@ struct IdentityPillarEditorView: View {
                 Section("Look") {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 10) {
                         ForEach(icons, id: \.self) { icon in
-                            Button { draft.iconName = icon } label: {
+                            Button { draft.iconName = icon; Haptics.light() } label: {
                                 Image(systemName: icon)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundStyle(draft.iconName == icon ? Color.white : Theme.textSecondary)

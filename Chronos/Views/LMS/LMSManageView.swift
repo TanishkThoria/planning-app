@@ -201,7 +201,7 @@ struct LMSManageView: View {
     private var addButton: some View {
         Button {
             dismiss()
-            model.lmsSetupPresented = true
+            model.afterDismiss { model.lmsSetupPresented = true }
         } label: {
             Label(lms.sources.isEmpty ? "Connect a school" : "Add another school", systemImage: "plus")
                 .font(.system(size: 14.5, weight: .semibold))

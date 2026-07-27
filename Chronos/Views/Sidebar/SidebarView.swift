@@ -9,7 +9,7 @@ struct SidebarView: View {
 
     private var sidebarScreens: [AppModel.Screen] {
         AppModel.Screen.sidebarCases.filter {
-            $0 != .coach || (coachEnabled && AssistantService.shared.isReady)
+            $0 != .coach || coachEnabled
         }
     }
 

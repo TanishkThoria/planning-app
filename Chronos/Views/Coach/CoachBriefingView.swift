@@ -37,7 +37,10 @@ struct CoachBriefingView: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
-            HeaderIconButton(icon: "slider.horizontal.3") { model.calibrationPresented = true }
+            HeaderIconButton(icon: "slider.horizontal.3") {
+                if isPresented { dismiss(); model.afterDismiss { model.calibrationPresented = true } }
+                else { model.calibrationPresented = true }
+            }
             if isPresented {
                 HeaderIconButton(icon: "xmark") { dismiss() }
             }

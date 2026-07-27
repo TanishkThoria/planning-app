@@ -442,7 +442,7 @@ struct StatisticsView: View {
             HStack {
                 SectionHeader(title: "Time budgets")
                 Spacer(minLength: 8)
-                Button { model.budgetsPresented = true } label: {
+                Button { onClose?(); model.afterDismiss { model.budgetsPresented = true } } label: {
                     Text(budgeted.isEmpty ? "Set" : "Edit")
                         .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
                 }
@@ -498,7 +498,7 @@ struct StatisticsView: View {
             HStack {
                 SectionHeader(title: "Achievements", trailing: "\(unlocked.count)/\(achievements.count)")
                 Spacer(minLength: 8)
-                Button { model.achievementsPresented = true } label: {
+                Button { onClose?(); model.afterDismiss { model.achievementsPresented = true } } label: {
                     Text("See all").font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
                 }
                 .buttonStyle(.plain)

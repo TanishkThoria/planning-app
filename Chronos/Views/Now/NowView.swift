@@ -157,7 +157,7 @@ struct NowView: View {
                     .buttonStyle(.plain)
                 }
             } else {
-                Button { dismiss(); model.planDayPresented = true } label: {
+                Button { dismiss(); model.afterDismiss { model.planDayPresented = true } } label: {
                     actionPill("Plan my day", "wand.and.stars", filled: true)
                 }
                 .buttonStyle(.plain)

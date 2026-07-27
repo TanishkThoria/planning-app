@@ -7,56 +7,14 @@ struct CoachView: View {
     private let assistant = AssistantService.shared
 
     var body: some View {
+        // With on-device AI it's a full chat companion; otherwise it's the warm,
+        // grounded daily briefing (which also carries the identity-aware
+        // GrowthCoach suggestions) — never a dead-end.
         if assistant.isReady {
             CoachChatView()
         } else {
-            CoachUnavailableView()
+            CoachBriefingView()
         }
-    }
-}
-
-/// Shown only if the Coach is somehow opened on a device without on-device AI
-/// (its entry points are hidden there). Honest, not a dead chatbox.
-struct CoachUnavailableView: View {
-    @Environment(\.isPresented) private var isPresented
-    @Environment(\.dismiss) private var dismiss
-    private let assistant = AssistantService.shared
-
-    var body: some View {
-        VStack(spacing: 14) {
-            if isPresented {
-                HStack {
-                    Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark").font(.system(size: 14.5, weight: .semibold))
-                            .foregroundStyle(Theme.textSecondary)
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding([.top, .horizontal], 16)
-            }
-            Spacer()
-            Image(systemName: "sparkles").font(.system(size: 34)).foregroundStyle(Theme.accentColor)
-            Text("Coach needs Apple Intelligence")
-                .font(.system(size: 19, weight: .bold)).foregroundStyle(Theme.textPrimary)
-            Text(unavailableReason)
-                .font(.system(size: 14.5)).foregroundStyle(Theme.textSecondary)
-                .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: 320)
-            Text("Everything the Coach would do — planning, focus, momentum, insights — is already one tap away across the app.")
-                .font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
-                .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: 320)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.bg)
-        .chronosAppearance()
-    }
-
-    private var unavailableReason: String {
-        if case .unavailable(let msg) = assistant.status { return msg }
-        return "On-device AI isn't available on this device."
     }
 }
 
@@ -576,7 +534,14 @@ struct CoachChatView: View {
     }
 
     private func perform(_ action: QuickAction) {
-        performCoachAction(action, on: model)
+        route { performCoachAction(action, on: model) }
+    }
+
+    /// When the Coach is itself a sheet (iPhone), an action that opens another
+    /// RootView sheet must dismiss this one first, then present — otherwise the
+    /// target sheet opens behind the Coach. As a tab (iPad/Mac) it runs directly.
+    private func route(_ perform: @escaping () -> Void) {
+        if isPresented { dismiss(); model.afterDismiss(perform) } else { perform() }
     }
 
     /// Proactive, tap-to-act cards built live from the user's real situation —
@@ -589,7 +554,7 @@ struct CoachChatView: View {
             out.append(CoachInsight(icon: "person.2.fill", tint: 0x7C8CF8,
                 title: "\(f.presence.displayName) is focusing now",
                 detail: focusing.count > 1 ? "\(focusing.count) friends are heads-down — join them." : "Study alongside them for accountability.",
-                actionLabel: "Join") { model.startFocus(taskID: nil, title: "Focus") })
+                actionLabel: "Join") { route { model.startFocus(taskID: nil, title: "Focus") } })
         }
 
         let load = DayLoad.compute(tasks: service.tasks, events: todayBlocks, workStart: workStartMinutes, workEnd: workEndMinutes, now: now)
@@ -597,19 +562,19 @@ struct CoachChatView: View {
             out.append(CoachInsight(icon: "exclamationmark.triangle.fill", tint: 0xF2B95C,
                 title: "Today's a stretch",
                 detail: "Your due tasks need ~\(Fmt.duration(minutes: load.overBy)) more than the free time you have.",
-                actionLabel: "Auto-fit") { performCoachAction(.planDay, on: model) })
+                actionLabel: "Auto-fit") { perform(.planDay) })
         } else if todayBlocks.isEmpty, service.tasks.contains(where: { $0.isDueToday && !$0.isCompleted }) {
             out.append(CoachInsight(icon: "wand.and.stars", tint: 0x7C8CF8,
                 title: "Nothing scheduled yet",
                 detail: "Want me to lay your day out around what's due?",
-                actionLabel: "Plan") { performCoachAction(.planDay, on: model) })
+                actionLabel: "Plan") { perform(.planDay) })
         }
 
         if MomentumEngine.score(momentumInput) < 100, let boost = MomentumEngine.nextBestAction(momentumInput) {
             out.append(CoachInsight(icon: boost.icon, tint: 0x5BD899,
                 title: "Boost your momentum",
                 detail: boost.tip,
-                actionLabel: "Details") { model.momentumDetailPresented = true })
+                actionLabel: "Details") { route { model.momentumDetailPresented = true } })
         }
 
         if let loose = PlannerBrief.looseEnds(context) {
@@ -617,7 +582,7 @@ struct CoachChatView: View {
                 title: "Loose ends to tie up",
                 detail: loose.message,
                 actionLabel: loose.actionLabel ?? "Fix") {
-                    if let a = loose.action { performCoachAction(a, on: model) }
+                    if let a = loose.action { perform(a) }
                 })
         }
 
