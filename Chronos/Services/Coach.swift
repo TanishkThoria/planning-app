@@ -33,6 +33,7 @@ enum Coach {
     enum Action {
         case recalibrate, planDay, planWeek, reflow, openGrow, addHabit
         case morningRitual, eveningRitual, focusTimer, overdueSweep, openProjects
+        case openFutureSelf, openManual, dayIntent
     }
 
     struct Suggestion: Identifiable {

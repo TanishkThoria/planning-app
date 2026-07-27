@@ -464,6 +464,34 @@ struct CoachChatView: View {
             let p = profileStore.profile
             lines.append("Calibrated: best focus in the \(p.focus.rawValue.lowercased()), \(p.flexibility.rawValue.lowercased()) schedule — respect their energy patterns and meal times.")
         }
+
+        // Identity layer — who they're becoming, so advice is grounded in it.
+        if life.futureSelf.isDefined {
+            var fs = "Future self: \"\(life.futureSelf.name)\""
+            if !life.futureSelf.attributes.isEmpty {
+                fs += " (\(life.futureSelf.attributes.prefix(5).joined(separator: ", ")))"
+            }
+            lines.append(fs + ". Tie suggestions back to becoming this person, framed as evidence, never worth.")
+        }
+        if !life.activePillars.isEmpty {
+            let readings = EvidenceEngine.readings(
+                pillars: life.activePillars, life: life, focus: focusLog,
+                taskEvidence: [], goalProgress: [:])
+            let summary = readings.map { "\($0.pillar.name) \(Int(($0.score * 100).rounded()))%" }.joined(separator: ", ")
+            lines.append("Identity pillars (becoming, last 14d): \(summary). Nudge the quiet ones with one small, concrete proof.")
+        }
+        let patterns = life.notes(.pattern).prefix(3).map(\.text)
+        if !patterns.isEmpty {
+            lines.append("Patterns they've noted about themselves: \(patterns.joined(separator: "; ")). Use these to personalise advice (e.g. name the first physical step when a task is ambiguous).")
+        }
+        let rules = life.notes(.rule).prefix(3).map(\.text)
+        if !rules.isEmpty {
+            lines.append("Their own rules: \(rules.joined(separator: "; ")). Honour these.")
+        }
+        let ratio = ActionRatioEngine.reading(meter: PlanningMeter.shared, focus: focusLog, tasks: service.tasks)
+        if ratio.overPlanning {
+            lines.append("They are over-planning (planning is \(Int((ratio.ratio * 100).rounded()))% of deliberate time). Gently push execution over more planning.")
+        }
         return lines.joined(separator: "\n")
     }
 

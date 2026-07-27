@@ -228,13 +228,15 @@ struct BriefingContent: View {
     }
 
     private var suggestions: [Coach.Suggestion] {
-        Coach.suggestions(
+        let base = Coach.suggestions(
             stats: stats,
             profile: profileStore.profile,
             tasks: service.tasks,
             signals: CoachInputs.signals(life: life, focusLog: focusLog),
             projects: life.activeProjects
         )
+        let growth = GrowthCoach.suggestions(life: life, focus: focusLog, tasks: service.tasks)
+        return (base + growth).sorted { $0.weight > $1.weight }
     }
 
     private func perform(_ action: Coach.Action) {
@@ -250,6 +252,9 @@ struct BriefingContent: View {
         case .focusTimer: model.startFocus(taskID: nil, title: "Focus")
         case .overdueSweep: model.overdueSweepPresented = true
         case .openProjects: model.projectsPresented = true
+        case .openFutureSelf: model.futureSelfPresented = true
+        case .openManual: model.manualPresented = true
+        case .dayIntent: model.dayIntentPresented = true
         }
     }
 }
