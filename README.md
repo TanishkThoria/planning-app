@@ -10,6 +10,8 @@ A minimalist, dark-mode timeblocking planner for iOS and macOS that uses **Apple
 
 Built for power users and serious planners: fast, keyboard-driven, and designed around the daily ritual of turning a task list into a realistic schedule.
 
+**Chronos 2.0 — a Personal Growth Operating System.** On top of the planner, Chronos now helps you close the gap between who you are and who you want to become: identity **pillars** that fill with real **evidence** of who you're becoming, a **Future Self** with 1/5/10-year visions, daily **modes** and a **minimum-viable day**, an **action ratio** that catches planning-as-procrastination, a **recovery** score that rewards returning over never falling behind, a personal **operating manual**, an **aspiration vault**, and an identity-aware coach. See [`docs/GROWTH_OS.md`](docs/GROWTH_OS.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
 ## Navigation
 
 - **macOS / iPad** — a sidebar with Today, Calendar, Tasks, Matrix, Insights, Settings, a mini-month for jumping around, and per-calendar/list visibility toggles. Full menu-bar keyboard control.

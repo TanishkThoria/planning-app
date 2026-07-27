@@ -5,8 +5,15 @@
 > where it can go next. Read this and you should understand the app well enough
 > to extend it, hand it to a new engineer, pitch it, or pivot it — without
 > reading the source first. It reflects the codebase as of the current branch
-> (`claude/ios-macos-timeblocking-app-87vgpo`): ~123 Swift files, ~32k lines,
+> (`claude/ios-macos-timeblocking-app-87vgpo`): ~135 Swift files, ~34k lines,
 > plus a widget extension.
+>
+> **Chronos 2.0 note.** The app has evolved from a pure planner into a
+> *Personal Growth Operating System* built on top of the planner. The new
+> identity/evidence layer — pillars, the Future Self, daily modes, the action
+> ratio, recovery, the personal manual, and the aspiration vault — is documented
+> in full in [`docs/GROWTH_OS.md`](./GROWTH_OS.md). This file covers the planner
+> foundation everything sits on; read both for the complete picture.
 
 ---
 
@@ -32,12 +39,20 @@ achievements and challenges, deep statistics, an on-device AI coach, school
 
 ## 2. What it hopes to accomplish
 
-**The thesis.** Most people don't fail to be productive for lack of a to-do
-list — they fail at the translation step: turning a list of intentions into a
-*realistic plan for a real day* and then actually following it. Chronos is built
-around that daily ritual. It wants to move a user from *reacting* to their day to
-*designing* it, and to make the design effortless enough that they'll do it every
-morning.
+**The 2.0 thesis.** Chronos helps users **close the gap between who they are and
+who they want to become.** The fundamental problem was never time management —
+it's identity alignment. People have ambitions and ideal selves but lack
+systems, feedback loops, awareness, and *evidence* of progress. Chronos is the
+bridge, on the belief that you don't become an identity through goals — you
+become it through evidence, measured as momentum, never as worth. (See
+[`docs/GROWTH_OS.md`](./GROWTH_OS.md) for the full growth layer.)
+
+**The planner thesis it's built on.** Most people don't fail to be productive
+for lack of a to-do list — they fail at the translation step: turning a list of
+intentions into a *realistic plan for a real day* and then actually following it.
+Chronos is built around that daily ritual. It wants to move a user from
+*reacting* to their day to *designing* it, and to make the design effortless
+enough that they'll do it every morning.
 
 **Design values, in priority order:**
 
