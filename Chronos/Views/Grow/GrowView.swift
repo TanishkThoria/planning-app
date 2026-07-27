@@ -570,6 +570,12 @@ struct GrowView: View {
             hubRow("star.fill", "Nice-to-haves",
                    "Fun & downtime for when the work is done",
                    tint: Theme.warning) { model.niceToHavesPresented = true }
+            hubRow("book.pages.fill", "My Manual",
+                   "Your principles, rules, patterns & solutions",
+                   tint: Color(hex: 0x5B6CF0)) { model.manualPresented = true }
+            hubRow("sparkles", "Aspiration Vault",
+                   "Desires reframed as who you're becoming",
+                   tint: Color(hex: 0xFFB23E)) { model.aspirationsPresented = true }
         }
     }
 

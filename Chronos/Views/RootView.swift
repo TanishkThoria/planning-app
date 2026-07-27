@@ -531,6 +531,15 @@ struct RootView: View {
         .sheet(isPresented: $model.dayIntentPresented) {
             MinimumViableDayView()
         }
+        .sheet(isPresented: $model.manualPresented) {
+            MyManualView()
+        }
+        .sheet(isPresented: $model.aspirationsPresented) {
+            AspirationVaultView()
+        }
+        .sheet(item: $model.aspirationEditor) { context in
+            AspirationEditorView(context: context)
+        }
     }
 
     private func errorAlert<Content: View>(_ content: Content) -> some View {
