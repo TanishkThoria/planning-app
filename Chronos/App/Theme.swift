@@ -206,6 +206,9 @@ enum Prefs {
     static let startAlertsEnabled = "pref.startAlertsEnabled"     // "starting in 5 min" nudges
     static let blockLiveActivities = "pref.blockLiveActivities"   // current-block Live Activity
     static let routineVoiceEnabled = "pref.routineVoiceEnabled"   // speak guided routine steps aloud
+    /// Simple mode: pare Today down to the essentials (mode, momentum, what's
+    /// left) and let the power-user depth live one layer down.
+    static let simpleMode = "pref.simpleMode"
 
     // MARK: Chronos+ (paid-account features — all default OFF, all no-op until
     // the underlying Apple capability is present; see PaidFeatures + docs/CHRONOS_PLUS_SETUP.md)

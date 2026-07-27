@@ -36,6 +36,7 @@ struct WeeklyReviewView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     intro
                     statTiles
+                    if !life.activePillars.isEmpty { gapAnalysisSection }
                     goalsSection
                     habitsSection
                 }
@@ -102,6 +103,54 @@ struct WeeklyReviewView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .panel(padding: 12)
+    }
+
+    // MARK: Gap analysis — current self vs future self
+
+    private var gapAnalysisSection: some View {
+        let readings = EvidenceEngine.readings(
+            pillars: life.activePillars, life: life, focus: focusLog,
+            taskEvidence: [], goalProgress: [:])
+        let closed = readings.filter { $0.trend == .rising }
+        let widened = readings.filter { $0.trend == .quiet }
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                IconChip(icon: "arrow.left.and.right", tint: Theme.accentColor, size: 30)
+                Text("The gap this week").font(.system(size: 15, weight: .bold)).foregroundStyle(Theme.textPrimary)
+                Spacer()
+            }
+            Text("Closer to, or further from, the person you're becoming.")
+                .font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
+            if !closed.isEmpty {
+                gapRow(icon: "arrow.up.right", tint: Theme.success, label: "Closed the gap",
+                       names: closed.map(\.pillar.name))
+            }
+            if !widened.isEmpty {
+                gapRow(icon: "moon.zzz.fill", tint: Theme.warning, label: "Went quiet",
+                       names: widened.map(\.pillar.name))
+            }
+            if closed.isEmpty && widened.isEmpty {
+                Text("Held steady across your pillars. Steady is underrated.")
+                    .font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
+            }
+            Divider().overlay(Theme.hairline)
+            Text("Where did you close the gap? Where did you widen it? What one system needs changing next week?")
+                .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .panel()
+    }
+
+    private func gapRow(icon: String, tint: Color, label: String, names: [String]) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: icon).font(.system(size: 13, weight: .semibold)).foregroundStyle(tint).frame(width: 18)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label).font(.system(size: 12, weight: .semibold)).foregroundStyle(tint)
+                Text(names.joined(separator: ", ")).font(.system(size: 13.5)).foregroundStyle(Theme.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
     }
 
     private var goalsSection: some View {

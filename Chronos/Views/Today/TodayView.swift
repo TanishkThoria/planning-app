@@ -17,6 +17,7 @@ struct TodayView: View {
     @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
     @AppStorage(Prefs.workStartMinutes) private var workStartMinutes = 9 * 60
     @AppStorage(Prefs.workEndMinutes) private var workEndMinutes = 18 * 60
+    @AppStorage(Prefs.simpleMode) private var simpleMode = false
 
     private var today: Date { Date().startOfDay }
 
@@ -462,11 +463,13 @@ struct TodayView: View {
                     momentumWidget
                     intentCard
                     if streakAtRisk { streakRiskBanner }
-                    dayLoadBanner
-                    frogCard
-                    intentionsCard
-                    if !dueHabits.isEmpty { habitsStrip }
-                    projectNudge
+                    if !simpleMode {
+                        dayLoadBanner
+                        frogCard
+                        intentionsCard
+                        if !dueHabits.isEmpty { habitsStrip }
+                        projectNudge
+                    }
 
                     if remainingCount == 0 && upcomingBlocks.isEmpty {
                         EmptyStateView(

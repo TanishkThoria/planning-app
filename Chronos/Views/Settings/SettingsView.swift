@@ -53,6 +53,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.dimPastBlocks) private var dimPastBlocks = true
     @AppStorage(Prefs.colorByCategory) private var colorByCategory = true
     @AppStorage(Prefs.coachEnabled) private var coachEnabled = true
+    @AppStorage(Prefs.simpleMode) private var simpleMode = false
     @AppStorage(Prefs.startAlertsEnabled) private var startAlertsEnabled = true
     @AppStorage(Prefs.blockLiveActivities) private var blockLiveActivities = true
 
@@ -310,6 +311,23 @@ struct SettingsView: View {
                             CategoryLegend()
                                 .padding(.top, 2)
                                 .opacity(colorByCategory ? 1 : 0.5)
+                        }
+                    }
+
+                    settingsSection("Experience") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            FieldRow(label: "Simple mode") {
+                                Toggle("", isOn: $simpleMode)
+                                    .labelsHidden()
+                                    .toggleStyle(.switch)
+                            }
+                            Text(simpleMode
+                                 ? "Today shows just the essentials — your mode, momentum, and what's left. All the power-user depth is still one tap away."
+                                 : "Today shows the full command center. Turn on Simple mode to pare it down to the essentials.")
+                                .font(.system(size: 12.5))
+                                .foregroundStyle(Theme.textTertiary)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.horizontal, 2)
                         }
                     }
 

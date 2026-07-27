@@ -228,6 +228,8 @@ struct EveningRitualView: View {
 
     @State private var entry = JournalEntry(dayKey: Fmt.dayKey(Date()))
     @State private var tomorrow = ""
+    @State private var evidencePillar: UUID?
+    @State private var evidenceText = ""
 
     private var dueHabits: [Habit] { life.activeHabits.filter { $0.isDue(on: Date()) } }
 
@@ -270,14 +272,16 @@ struct EveningRitualView: View {
             }
 
             RitualSection(
-                title: "What went well?",
-                subtitle: "Name three wins, however small.",
+                title: "Where did you act like your future self?",
+                subtitle: "Name the wins — the moments you were the person you're becoming.",
                 note: "Recalling daily wins measurably lifts wellbeing (Seligman's ‘Three Good Things’)."
             ) {
                 RitualField(placeholder: "Today I'm proud that…", text: $entry.wins, minHeight: 64)
             }
 
-            RitualSection(title: "What could be better?", subtitle: "Curious, not critical. What would you adjust?") {
+            if !life.activePillars.isEmpty { evidenceSection }
+
+            RitualSection(title: "Where did you drift?", subtitle: "Curious, not critical. What pulled you off, and what will you adjust?") {
                 RitualField(placeholder: "Next time I'll…", text: $entry.improve)
             }
 
@@ -310,6 +314,52 @@ struct EveningRitualView: View {
         .onAppear {
             entry = life.entryOrNew(for: Date())
             tomorrow = firstIntention(for: Date().adding(days: 1))
+        }
+    }
+
+    private var selectedPillarName: String {
+        evidencePillar.flatMap { id in life.activePillars.first { $0.id == id }?.name } ?? "Pick a pillar"
+    }
+
+    private var evidenceSection: some View {
+        RitualSection(
+            title: "What evidence did you create today?",
+            subtitle: "One small proof that you're becoming who you want to be — it logs to that pillar.",
+            note: "You become an identity through evidence, not intentions."
+        ) {
+            VStack(spacing: 8) {
+                Menu {
+                    ForEach(life.activePillars) { p in
+                        Button(p.name) { evidencePillar = p.id }
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "figure.stand").font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Theme.accentColor)
+                        Text(selectedPillarName).font(.system(size: 14, weight: .medium)).foregroundStyle(Theme.textPrimary)
+                        Spacer()
+                        Image(systemName: "chevron.up.chevron.down").font(.system(size: 10)).foregroundStyle(Theme.textTertiary)
+                    }
+                    .padding(.horizontal, 12).padding(.vertical, 11)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                }
+                HStack(spacing: 8) {
+                    TextField("I proved it by…", text: $evidenceText)
+                        .textFieldStyle(.plain).font(.system(size: 14.5))
+                        .padding(.horizontal, 12).padding(.vertical, 11)
+                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                    Button {
+                        if let pid = evidencePillar {
+                            life.addEvidence(pillarID: pid, text: evidenceText, source: .reflection, strength: 2)
+                            evidenceText = ""; Haptics.success()
+                        }
+                    } label: {
+                        Image(systemName: "plus.circle.fill").font(.system(size: 24)).foregroundStyle(Theme.accentColor)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(evidencePillar == nil || evidenceText.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
         }
     }
 
