@@ -33,6 +33,7 @@ struct InsightsView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     MomentumCard()
                     weekStrip
+                    actionRatioCard
                     challengesCard
                     gamificationCard
                     projectTimeCard
@@ -115,6 +116,59 @@ struct InsightsView: View {
     }
 
     // MARK: Challenges
+
+    /// Planning-vs-doing balance — catches the "planning as procrastination"
+    /// failure mode with an honest nudge, only when there's real signal.
+    @ViewBuilder
+    private var actionRatioCard: some View {
+        let ratio = ActionRatioEngine.reading(
+            meter: PlanningMeter.shared, focus: focusLog, tasks: service.tasks)
+        if ratio.hasSignal && (ratio.overPlanning || ratio.churning) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
+                    IconChip(icon: "scalemass.fill", tint: Theme.warning, size: 34)
+                    Text(ratio.headline)
+                        .font(.system(size: 15, weight: .bold)).foregroundStyle(Theme.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                }
+                // Planning vs doing bar.
+                GeometryReader { geo in
+                    let total = max(1, ratio.planningMinutes + ratio.executionMinutes)
+                    let planW = geo.size.width * Double(ratio.planningMinutes) / Double(total)
+                    HStack(spacing: 2) {
+                        Capsule().fill(Theme.warning).frame(width: max(2, planW))
+                        Capsule().fill(Theme.success)
+                    }
+                }
+                .frame(height: 8)
+                HStack {
+                    Label("\(Fmt.duration(minutes: ratio.planningMinutes)) planning", systemImage: "square.and.pencil")
+                        .font(.system(size: 11.5, weight: .medium)).foregroundStyle(Theme.warning)
+                    Spacer()
+                    Label("\(Fmt.duration(minutes: ratio.executionMinutes)) doing", systemImage: "bolt.fill")
+                        .font(.system(size: 11.5, weight: .medium)).foregroundStyle(Theme.success)
+                }
+                Text(ratio.detail)
+                    .font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button {
+                    if let frog = service.tasks.first(where: { !$0.isCompleted && $0.isDueToday }) ?? service.tasks.first(where: { !$0.isCompleted }) {
+                        model.startFocus(taskID: frog.id, title: frog.title)
+                    } else {
+                        model.startFocus(taskID: nil, title: "Focus")
+                    }
+                } label: {
+                    Text("Start a focus block now")
+                        .font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Theme.onAccent)
+                        .frame(maxWidth: .infinity).padding(.vertical, 10)
+                        .background(Theme.accentColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+            .panel()
+        }
+    }
 
     private var challengesCard: some View {
         let m = ChallengeMetrics.live(service: service, life: life, focusLog: focusLog,

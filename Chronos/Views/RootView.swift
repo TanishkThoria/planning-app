@@ -389,21 +389,31 @@ struct RootView: View {
         }
         .sheet(isPresented: $model.planDayPresented) {
             PlanMyDayView()
+                .onAppear { PlanningMeter.shared.begin("planDay") }
+                .onDisappear { PlanningMeter.shared.end("planDay") }
         }
         .sheet(isPresented: $model.planWeekPresented) {
             PlanWeekView()
+                .onAppear { PlanningMeter.shared.begin("planWeek") }
+                .onDisappear { PlanningMeter.shared.end("planWeek") }
         }
         .sheet(isPresented: $model.calibrationPresented) {
             CalibrationView()
+                .onAppear { PlanningMeter.shared.begin("calibration") }
+                .onDisappear { PlanningMeter.shared.end("calibration") }
         }
         .sheet(isPresented: $model.morningPlanningPresented) {
             MorningPlanningView()
+                .onAppear { PlanningMeter.shared.begin("morningPlan") }
+                .onDisappear { PlanningMeter.shared.end("morningPlan") }
         }
         .sheet(isPresented: $model.reviewPresented) {
             DayReviewView(day: model.selectedDate.isToday ? model.selectedDate : Date().startOfDay)
         }
         .sheet(isPresented: $model.reflowPresented) {
             ReflowView()
+                .onAppear { PlanningMeter.shared.begin("reflow") }
+                .onDisappear { PlanningMeter.shared.end("reflow") }
         }
         .sheet(isPresented: $model.focusTimerPresented, onDismiss: { model.focusTimerContext = nil }) {
             FocusTimerView(
@@ -517,6 +527,9 @@ struct RootView: View {
         }
         .sheet(item: $model.pillarEditor) { context in
             IdentityPillarEditorView(context: context)
+        }
+        .sheet(isPresented: $model.dayIntentPresented) {
+            MinimumViableDayView()
         }
     }
 

@@ -186,6 +186,8 @@ final class AppModel: ObservableObject {
     @Published var aspirationEditor: AspirationEditContext?
     /// "Welcome back" (Day Zero) — a no-guilt re-entry after time away.
     @Published var welcomeBackPresented = false
+    /// Minimum Viable Day: today's mode + must-wins + bonus.
+    @Published var dayIntentPresented = false
     /// The routine currently being run (guided step-by-step).
     @Published var routineRunner: Routine?
     /// Chronos+ hub (iCloud sync, leaderboards, friends).

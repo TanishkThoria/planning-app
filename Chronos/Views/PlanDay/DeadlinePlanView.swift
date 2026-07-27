@@ -242,6 +242,7 @@ struct DeadlinePlanView: View {
     }
 
     private func apply() {
+        PlanningMeter.shared.recordPlanRun()
         for (_, proposals) in planByDay {
             for proposal in proposals {
                 service.scheduleTask(
