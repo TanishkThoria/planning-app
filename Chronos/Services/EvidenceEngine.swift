@@ -108,7 +108,7 @@ enum EvidenceEngine {
             trend = ageDays < 4 ? .fresh : .quiet
         } else if last7 == 0 {
             trend = .quiet
-        } else if last7 >= 2 && Double(last7) > Double(prev7) * 1.2 {
+        } else if last7 > prev7 {
             trend = .rising
         } else {
             trend = .steady
@@ -172,8 +172,13 @@ enum EvidenceEngine {
 
         // Focus sessions in a matching category.
         if !cats.isEmpty {
+            let linkedProjectSet = Set(pillar.linkedProjectIDs ?? [])
             for s in focus.sessions {
                 guard let cat = s.category, cats.contains(cat) else { continue }
+                // Skip sessions already counted as this pillar's project time
+                // (a focus session banks its minutes onto its project), so the
+                // same work isn't counted twice.
+                if let pid = s.projectID, linkedProjectSet.contains(pid) { continue }
                 let end = Date(timeIntervalSince1970: s.endEpoch)
                 guard end >= since else { continue }
                 out.append(IdentityEvidence(

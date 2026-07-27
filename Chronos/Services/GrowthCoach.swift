@@ -27,11 +27,29 @@ enum GrowthCoach {
                 action: .focusTimer, actionLabel: "Just start the smallest one"))
         }
 
-        // 2. A pillar that's gone quiet.
+        // 2. A pillar that's gone quiet. Build the SAME evidence inputs the
+        // Future Self screen uses (completed-task categories + non-time goal
+        // progress) so the coach never contradicts what the user sees there.
         if !life.activePillars.isEmpty {
+            let since = now.adding(days: -13).startOfDay
+            let taskEvidence: [TaskEvidence] = tasks.compactMap { t in
+                guard t.isCompleted, let d = t.completionDate, d >= since else { return nil }
+                return TaskEvidence(date: d, category: TagStore.shared.category(for: t), title: t.title)
+            }
+            var goalProgress: [UUID: Double] = [:]
+            for g in life.activeGoals {
+                switch g.kind {
+                case .milestone: goalProgress[g.id] = g.milestoneProgress
+                case .habitLink:
+                    if let hid = g.linkedHabitID, let h = life.habits.first(where: { $0.id == hid }) {
+                        goalProgress[g.id] = min(1, Double(life.completionCount(h, inLast: 7)) / 7)
+                    }
+                case .time: break   // needs the calendar, which the coach can't see here
+                }
+            }
             let readings = EvidenceEngine.readings(
                 pillars: life.activePillars, life: life, focus: focus,
-                taskEvidence: [], goalProgress: [:])
+                taskEvidence: taskEvidence, goalProgress: goalProgress)
             if let quiet = readings
                 .filter({ $0.trend == .quiet || $0.score < 0.2 })
                 .min(by: { $0.score < $1.score }) {

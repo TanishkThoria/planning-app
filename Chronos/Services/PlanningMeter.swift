@@ -81,15 +81,15 @@ struct ActionRatio {
     let executionMinutes: Int
     /// Planning as a share of all deliberate time, 0…1.
     let ratio: Double
-    let rescheduleCount: Int      // total task punts (repeated rescheduling)
+    let rescheduleCount: Int      // number of tasks punted 2+ times (real churn)
     let planRuns: Int
 
     /// Enough signal to judge? (Avoids scolding on a quiet week.)
     var hasSignal: Bool { planningMinutes + executionMinutes >= 30 }
     /// Tilted too far into designing rather than doing.
     var overPlanning: Bool { hasSignal && ratio >= 0.4 }
-    /// A busy rescheduler — moving work around instead of doing it.
-    var churning: Bool { rescheduleCount >= 6 }
+    /// Several distinct tasks keep slipping — moving work around, not doing it.
+    var churning: Bool { rescheduleCount >= 3 }
 
     var headline: String {
         if overPlanning { return "You've designed enough — time to build" }
@@ -101,7 +101,7 @@ struct ActionRatio {
             return "Planning is \(Int((ratio * 100).rounded()))% of your deliberate time this week. Your system is good enough. Your next upgrade is execution — start the smallest block now."
         }
         if churning {
-            return "You've moved tasks \(rescheduleCount) times. When something keeps slipping, the fix is usually a smaller first step, not a better time."
+            return "\(rescheduleCount) tasks keep slipping. When something won't stick, the fix is usually a smaller first step, not a better time."
         }
         return "Planning \(Fmt.duration(minutes: planningMinutes)), doing \(Fmt.duration(minutes: executionMinutes)) this week. Keep it up."
     }
@@ -115,7 +115,8 @@ enum ActionRatioEngine {
         let execution = focus.totalMinutes(inLast: days)
         let total = planning + execution
         let ratio = total <= 0 ? 0 : Double(planning) / Double(total)
-        let reschedules = tasks.filter { !$0.isCompleted }.reduce(0) { $0 + $1.puntCount }
+        // Real churn = distinct tasks that keep being moved, not one busy backlog.
+        let reschedules = tasks.filter { !$0.isCompleted && $0.puntCount >= 2 }.count
         return ActionRatio(planningMinutes: planning, executionMinutes: execution,
                            ratio: ratio, rescheduleCount: reschedules,
                            planRuns: meter.planRuns(inLast: days, now: now))

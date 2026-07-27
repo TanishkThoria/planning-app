@@ -20,6 +20,11 @@ struct BriefingContent: View {
 
     @State private var now = Date()
     private let clock = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
+    /// When this briefing is itself hosted in a sheet (the iPhone Coach), an
+    /// action that opens another RootView sheet must dismiss this one first, or
+    /// the new sheet presents behind it.
+    @Environment(\.isPresented) private var isPresented
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -240,6 +245,17 @@ struct BriefingContent: View {
     }
 
     private func perform(_ action: Coach.Action) {
+        // If we're inside a sheet, close it first and open the target on the next
+        // runloop so the two RootView sheets don't collide.
+        if isPresented {
+            dismiss()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { runAction(action) }
+        } else {
+            runAction(action)
+        }
+    }
+
+    private func runAction(_ action: Coach.Action) {
         switch action {
         case .recalibrate: model.calibrationPresented = true
         case .planDay: model.planDayPresented = true

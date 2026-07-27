@@ -22,14 +22,17 @@ struct FutureSelfView: View {
     private var today: Date { Date().startOfDay }
 
     var body: some View {
-        NavigationStack {
+        // Compute the (relatively expensive) evidence readings ONCE per render
+        // and hand them to the subviews that need them.
+        let readings = computedReadings
+        return NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
-                    hero
+                    hero(readings)
                     if life.activePillars.isEmpty {
                         seedCard
                     } else {
-                        pillarsSection
+                        pillarsSection(readings)
                     }
                     futureSelfSection
                     visionsSection
@@ -85,7 +88,7 @@ struct FutureSelfView: View {
 
     // MARK: Hero
 
-    private var hero: some View {
+    private func hero(_ readings: [PillarReading]) -> some View {
         let overall = readings.isEmpty ? 0 : readings.map(\.score).reduce(0, +) / Double(readings.count)
         return VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
@@ -137,7 +140,7 @@ struct FutureSelfView: View {
 
     // MARK: Pillars
 
-    private var pillarsSection: some View {
+    private func pillarsSection(_ readings: [PillarReading]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 SectionHeader(title: "Identity pillars", trailing: "\(life.activePillars.count)")
@@ -348,7 +351,7 @@ struct FutureSelfView: View {
 
     // MARK: Derived data
 
-    private var readings: [PillarReading] {
+    private var computedReadings: [PillarReading] {
         EvidenceEngine.readings(
             pillars: life.activePillars, life: life, focus: focusLog,
             taskEvidence: taskEvidence, goalProgress: goalProgress, windowDays: windowDays)
