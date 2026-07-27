@@ -20,6 +20,9 @@ struct RootView: View {
     /// Calibration has been offered once — completed or skipped — so we stop
     /// re-presenting it on every launch.
     @AppStorage("chronos.calibrationOffered") private var calibrationOffered = false
+    /// The last day the app was opened — powers the no-guilt "welcome back" after
+    /// time away (Day Zero).
+    @AppStorage("chronos.lastOpenDay") private var lastOpenDay = ""
     @AppStorage(Prefs.morningReminderEnabled) private var morningReminderEnabled = false
     @AppStorage(Prefs.morningReminderMinutes) private var morningReminderMinutes = 8 * 60
     @AppStorage(Prefs.eveningReminderEnabled) private var eveningReminderEnabled = false
@@ -213,6 +216,22 @@ struct RootView: View {
             SocialService.shared.authenticateGameCenter()
             syncSocialPresence()
             submitLeaderboards()
+            checkDayZero()
+        }
+    }
+
+    /// Show the no-guilt "welcome back" screen for an established user returning
+    /// after a few days away — never during onboarding, calibration, or the tour.
+    private func checkDayZero() {
+        let todayKey = Fmt.dayKey(Date())
+        defer { lastOpenDay = todayKey }
+        guard onboardingComplete, service.hasFullAccess,
+              profileStore.profile.isCalibrated, !tour.isActive,
+              !lastOpenDay.isEmpty, lastOpenDay != todayKey,
+              let last = Fmt.day(fromKey: lastOpenDay) else { return }
+        let gap = Calendar.current.dateComponents([.day], from: last, to: Date().startOfDay).day ?? 0
+        if gap >= 3 {
+            DispatchQueue.main.async { model.welcomeBackPresented = true }
         }
     }
 
@@ -539,6 +558,9 @@ struct RootView: View {
         }
         .sheet(item: $model.aspirationEditor) { context in
             AspirationEditorView(context: context)
+        }
+        .sheet(isPresented: $model.welcomeBackPresented) {
+            WelcomeBackView()
         }
     }
 

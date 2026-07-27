@@ -33,6 +33,7 @@ struct InsightsView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     MomentumCard()
                     weekStrip
+                    recoveryCard
                     actionRatioCard
                     challengesCard
                     gamificationCard
@@ -116,6 +117,26 @@ struct InsightsView: View {
     }
 
     // MARK: Challenges
+
+    /// Resilience, not perfection — surfaces comebacks and softens gaps. Shown
+    /// only when there's a return worth naming or a gap worth softening.
+    @ViewBuilder
+    private var recoveryCard: some View {
+        let r = RecoveryEngine.reading(life: life, focus: focusLog)
+        if r.justReturned || r.currentGapDays >= 2 || r.comebacks > 0 {
+            HStack(spacing: 12) {
+                IconChip(icon: r.justReturned ? "arrow.uturn.up" : "figure.walk",
+                         tint: r.justReturned ? Theme.success : Theme.accentColor, size: 40)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(r.headline).font(.system(size: 15, weight: .bold)).foregroundStyle(Theme.textPrimary)
+                    Text(r.message).font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+            }
+            .panel()
+        }
+    }
 
     /// Planning-vs-doing balance — catches the "planning as procrastination"
     /// failure mode with an honest nudge, only when there's real signal.
