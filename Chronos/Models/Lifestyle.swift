@@ -210,6 +210,13 @@ private struct LifeData: Codable {
     var selfTraits: [SelfTrait]? = nil
     var niceToHaves: [NiceToHave]? = nil
     var categoryBudgets: [CategoryBudget]? = nil
+    // Identity / growth-OS layer (see Identity.swift, GrowthOS.swift). Optional.
+    var identityPillars: [IdentityPillar]? = nil
+    var identityEvidence: [IdentityEvidence]? = nil
+    var futureSelf: FutureSelf? = nil
+    var dayIntents: [DayIntent]? = nil
+    var manualNotes: [ManualNote]? = nil
+    var aspirations: [Aspiration]? = nil
 }
 
 /// One local store for the whole lifestyle layer — goals, habits, journal,
@@ -232,6 +239,12 @@ final class LifeStore: ObservableObject {
     @Published var selfTraits: [SelfTrait] { didSet { save() } }
     @Published var niceToHaves: [NiceToHave] { didSet { save() } }
     @Published var categoryBudgets: [CategoryBudget] { didSet { save() } }
+    @Published var identityPillars: [IdentityPillar] { didSet { save() } }
+    @Published var identityEvidence: [IdentityEvidence] { didSet { save() } }
+    @Published var futureSelf: FutureSelf { didSet { save() } }
+    @Published var dayIntents: [DayIntent] { didSet { save() } }
+    @Published var manualNotes: [ManualNote] { didSet { save() } }
+    @Published var aspirations: [Aspiration] { didSet { save() } }
 
     init() {
         if let data = UserDefaults.standard.data(forKey: Self.key),
@@ -248,6 +261,12 @@ final class LifeStore: ObservableObject {
             selfTraits = decoded.selfTraits ?? []
             niceToHaves = decoded.niceToHaves ?? []
             categoryBudgets = decoded.categoryBudgets ?? []
+            identityPillars = decoded.identityPillars ?? []
+            identityEvidence = decoded.identityEvidence ?? []
+            futureSelf = decoded.futureSelf ?? FutureSelf()
+            dayIntents = decoded.dayIntents ?? []
+            manualNotes = decoded.manualNotes ?? []
+            aspirations = decoded.aspirations ?? []
         } else {
             goals = []
             habits = []
@@ -261,6 +280,12 @@ final class LifeStore: ObservableObject {
             selfTraits = []
             niceToHaves = []
             categoryBudgets = []
+            identityPillars = []
+            identityEvidence = []
+            futureSelf = FutureSelf()
+            dayIntents = []
+            manualNotes = []
+            aspirations = []
         }
         observeCloudPulls()
     }
@@ -281,6 +306,12 @@ final class LifeStore: ObservableObject {
         selfTraits = decoded.selfTraits ?? []
         niceToHaves = decoded.niceToHaves ?? []
         categoryBudgets = decoded.categoryBudgets ?? []
+        identityPillars = decoded.identityPillars ?? []
+        identityEvidence = decoded.identityEvidence ?? []
+        futureSelf = decoded.futureSelf ?? FutureSelf()
+        dayIntents = decoded.dayIntents ?? []
+        manualNotes = decoded.manualNotes ?? []
+        aspirations = decoded.aspirations ?? []
     }
 
     private func observeCloudPulls() {
@@ -305,7 +336,10 @@ final class LifeStore: ObservableObject {
             habitFreezes: Array(habitFreezes),
             projects: projects, growthItems: growthItems,
             selfTraits: selfTraits, niceToHaves: niceToHaves,
-            categoryBudgets: categoryBudgets
+            categoryBudgets: categoryBudgets,
+            identityPillars: identityPillars, identityEvidence: identityEvidence,
+            futureSelf: futureSelf, dayIntents: dayIntents,
+            manualNotes: manualNotes, aspirations: aspirations
         )
     }
 
@@ -334,6 +368,12 @@ final class LifeStore: ObservableObject {
         selfTraits = decoded.selfTraits ?? []
         niceToHaves = decoded.niceToHaves ?? []
         categoryBudgets = decoded.categoryBudgets ?? []
+        identityPillars = decoded.identityPillars ?? []
+        identityEvidence = decoded.identityEvidence ?? []
+        futureSelf = decoded.futureSelf ?? FutureSelf()
+        dayIntents = decoded.dayIntents ?? []
+        manualNotes = decoded.manualNotes ?? []
+        aspirations = decoded.aspirations ?? []
         return true
     }
 
@@ -697,5 +737,138 @@ final class LifeStore: ObservableObject {
     func markEnjoyed(_ id: UUID) {
         guard let idx = niceToHaves.firstIndex(where: { $0.id == id }) else { return }
         niceToHaves[idx].lastEnjoyedEpoch = Date().timeIntervalSince1970
+    }
+
+    // MARK: Identity pillars
+
+    var activePillars: [IdentityPillar] {
+        identityPillars.filter { !$0.isArchived }.sorted { $0.sortIndex < $1.sortIndex }
+    }
+    var hasPillars: Bool { !activePillars.isEmpty }
+
+    func upsert(_ pillar: IdentityPillar) {
+        if let idx = identityPillars.firstIndex(where: { $0.id == pillar.id }) {
+            identityPillars[idx] = pillar
+        } else {
+            var p = pillar
+            if p.createdEpoch == 0 { p.createdEpoch = Date().timeIntervalSince1970 }
+            p.sortIndex = (identityPillars.map(\.sortIndex).max() ?? -1) + 1
+            identityPillars.append(p)
+        }
+    }
+    func deletePillar(_ id: UUID) {
+        identityPillars.removeAll { $0.id == id }
+        identityEvidence.removeAll { $0.pillarID == id }
+        // Detach the vault items that pointed at it.
+        for i in aspirations.indices where aspirations[i].linkedPillarID == id {
+            aspirations[i].linkedPillarID = nil
+        }
+    }
+    func pillar(_ id: UUID) -> IdentityPillar? { identityPillars.first { $0.id == id } }
+
+    /// Seed the eight starter pillars (only when the user has none yet).
+    func seedDefaultPillars() {
+        guard identityPillars.isEmpty else { return }
+        for (i, preset) in IdentityPillar.presets.enumerated() {
+            var p = preset
+            p.createdEpoch = Date().timeIntervalSince1970
+            p.sortIndex = i
+            identityPillars.append(p)
+        }
+    }
+
+    // MARK: Identity evidence (user-authored only; auto-evidence is computed live)
+
+    func addEvidence(pillarID: UUID, text: String, source: EvidenceSource = .manual, strength: Int = 2) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        identityEvidence.append(IdentityEvidence(
+            epoch: Date().timeIntervalSince1970, pillarID: pillarID,
+            source: source, text: trimmed, strength: min(max(strength, 1), 3)))
+    }
+    func deleteEvidence(_ id: UUID) { identityEvidence.removeAll { $0.id == id } }
+
+    // MARK: Future self
+
+    func updateFutureSelf(_ next: FutureSelf) {
+        var f = next
+        f.updatedEpoch = Date().timeIntervalSince1970
+        futureSelf = f
+    }
+
+    // MARK: Day intents (mode + minimum-viable day)
+
+    func intent(for day: Date) -> DayIntent? {
+        dayIntents.first { $0.dayKey == Fmt.dayKey(day) }
+    }
+    func intentOrNew(for day: Date) -> DayIntent {
+        intent(for: day) ?? DayIntent(dayKey: Fmt.dayKey(day))
+    }
+    func upsert(_ intent: DayIntent) {
+        var e = intent
+        e.updatedEpoch = Date().timeIntervalSince1970
+        if let idx = dayIntents.firstIndex(where: { $0.dayKey == e.dayKey }) { dayIntents[idx] = e }
+        else { dayIntents.append(e) }
+    }
+    func setMode(_ mode: DailyMode, for day: Date = Date()) {
+        var e = intentOrNew(for: day)
+        e.modeRaw = mode.rawValue
+        upsert(e)
+    }
+    /// Toggle a must-win / bonus item done, stamping the moment.
+    func toggleIntentItem(_ itemID: UUID, for day: Date = Date()) {
+        guard var e = intent(for: day) else { return }
+        if let i = e.mustWins.firstIndex(where: { $0.id == itemID }) {
+            e.mustWins[i].isDone.toggle()
+            e.mustWins[i].doneEpoch = e.mustWins[i].isDone ? Date().timeIntervalSince1970 : nil
+        } else if let i = e.bonuses.firstIndex(where: { $0.id == itemID }) {
+            e.bonuses[i].isDone.toggle()
+            e.bonuses[i].doneEpoch = e.bonuses[i].isDone ? Date().timeIntervalSince1970 : nil
+        }
+        upsert(e)
+    }
+
+    // MARK: My Manual
+
+    func notes(_ category: ManualCategory) -> [ManualNote] {
+        manualNotes.filter { !$0.isArchived && $0.category == category }
+            .sorted { $0.createdEpoch < $1.createdEpoch }
+    }
+    var manualIsEmpty: Bool { manualNotes.allSatisfy(\.isArchived) }
+
+    func upsert(_ note: ManualNote) {
+        if let idx = manualNotes.firstIndex(where: { $0.id == note.id }) {
+            var n = note
+            n.updatedEpoch = Date().timeIntervalSince1970
+            manualNotes[idx] = n
+        } else {
+            var n = note
+            if n.createdEpoch == 0 { n.createdEpoch = Date().timeIntervalSince1970 }
+            manualNotes.append(n)
+        }
+    }
+    func deleteManualNote(_ id: UUID) { manualNotes.removeAll { $0.id == id } }
+
+    // MARK: Aspiration vault
+
+    var activeAspirations: [Aspiration] {
+        aspirations.filter { !$0.isArchived }.sorted {
+            if $0.isAcquired != $1.isAcquired { return !$0.isAcquired && $1.isAcquired }
+            return $0.savedEpoch > $1.savedEpoch
+        }
+    }
+    func upsert(_ aspiration: Aspiration) {
+        if let idx = aspirations.firstIndex(where: { $0.id == aspiration.id }) {
+            aspirations[idx] = aspiration
+        } else {
+            var a = aspiration
+            if a.savedEpoch == 0 { a.savedEpoch = Date().timeIntervalSince1970 }
+            aspirations.append(a)
+        }
+    }
+    func deleteAspiration(_ id: UUID) { aspirations.removeAll { $0.id == id } }
+    func toggleAcquired(_ id: UUID) {
+        guard let idx = aspirations.firstIndex(where: { $0.id == id }) else { return }
+        aspirations[idx].acquiredEpoch = aspirations[idx].isAcquired ? nil : Date().timeIntervalSince1970
     }
 }

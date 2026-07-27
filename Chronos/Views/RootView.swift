@@ -512,6 +512,12 @@ struct RootView: View {
         .sheet(isPresented: $model.niceToHavesPresented) {
             NiceToHavesView()
         }
+        .sheet(isPresented: $model.futureSelfPresented) {
+            FutureSelfView()
+        }
+        .sheet(item: $model.pillarEditor) { context in
+            IdentityPillarEditorView(context: context)
+        }
     }
 
     private func errorAlert<Content: View>(_ content: Content) -> some View {

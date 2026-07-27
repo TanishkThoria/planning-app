@@ -174,6 +174,18 @@ final class AppModel: ObservableObject {
     @Published var personalGrowthPresented = false
     /// Nice-to-haves: downtime & rewards for when there's extra time.
     @Published var niceToHavesPresented = false
+    /// Future Self: identity pillars, evidence, visions — the growth-OS spine.
+    @Published var futureSelfPresented = false
+    /// Identity-pillar create/edit sheet.
+    @Published var pillarEditor: PillarEditContext?
+    /// My Manual: principles, rules, patterns, solutions.
+    @Published var manualPresented = false
+    /// Aspiration Vault: desires reframed as identity + evidence.
+    @Published var aspirationsPresented = false
+    /// Aspiration create/edit sheet.
+    @Published var aspirationEditor: AspirationEditContext?
+    /// "Welcome back" (Day Zero) — a no-guilt re-entry after time away.
+    @Published var welcomeBackPresented = false
     /// The routine currently being run (guided step-by-step).
     @Published var routineRunner: Routine?
     /// Chronos+ hub (iCloud sync, leaderboards, friends).
@@ -340,5 +352,17 @@ struct GoalEditContext: Identifiable {
 struct HabitEditContext: Identifiable {
     let id = UUID()
     var habit: Habit
+    var isNew: Bool
+}
+
+struct PillarEditContext: Identifiable {
+    let id = UUID()
+    var pillar: IdentityPillar
+    var isNew: Bool
+}
+
+struct AspirationEditContext: Identifiable {
+    let id = UUID()
+    var aspiration: Aspiration
     var isNew: Bool
 }

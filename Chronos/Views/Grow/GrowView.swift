@@ -27,6 +27,7 @@ struct GrowView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
+                    futureSelfCard
                     journalCard
                     goalsSection
                     habitsSection
@@ -69,6 +70,9 @@ struct GrowView: View {
                     Label("Guided Routines", systemImage: "figure.walk.motion")
                 }
                 Divider()
+                Button { model.futureSelfPresented = true } label: {
+                    Label("Future Self", systemImage: "figure.stand")
+                }
                 Button { model.projectsInitialID = nil; model.projectsPresented = true } label: {
                     Label("New Project", systemImage: "square.stack.3d.up")
                 }
@@ -91,6 +95,50 @@ struct GrowView: View {
             }
             .menuIndicator(.hidden)
         }
+    }
+
+    // MARK: Future Self card (the identity spine)
+
+    private var futureSelfCard: some View {
+        let pillars = life.activePillars
+        return Button { model.futureSelfPresented = true } label: {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 12) {
+                    IconChip(icon: "figure.stand", tint: Theme.accentColor, size: 38)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Future Self")
+                            .font(.system(size: 16, weight: .bold)).foregroundStyle(Theme.textPrimary)
+                        Text(pillars.isEmpty ? "Name who you're becoming" : "Evidence you're becoming that person")
+                            .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary).lineLimit(1)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right").font(.system(size: 12.5, weight: .semibold))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                if !pillars.isEmpty {
+                    HStack(spacing: 6) {
+                        ForEach(pillars.prefix(6)) { pillar in
+                            Circle().fill(pillar.color).frame(width: 10, height: 10)
+                        }
+                        if pillars.count > 6 {
+                            Text("+\(pillars.count - 6)").font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(Theme.textTertiary)
+                        }
+                        Spacer()
+                    }
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                LinearGradient(colors: [Theme.accentColor.opacity(0.14), Theme.surface],
+                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous)
+            )
+            .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous)
+                .strokeBorder(Theme.hairline, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: Journal card
