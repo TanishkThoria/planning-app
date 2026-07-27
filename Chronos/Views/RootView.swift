@@ -542,10 +542,9 @@ struct RootView: View {
             NiceToHavesView()
         }
         .sheet(isPresented: $model.futureSelfPresented) {
+            // FutureSelfView presents the pillar editor itself (a sheet within a
+            // sheet must be owned by the presenting sheet, not RootView).
             FutureSelfView()
-        }
-        .sheet(item: $model.pillarEditor) { context in
-            IdentityPillarEditorView(context: context)
         }
         .sheet(isPresented: $model.dayIntentPresented) {
             MinimumViableDayView()
@@ -554,10 +553,8 @@ struct RootView: View {
             MyManualView()
         }
         .sheet(isPresented: $model.aspirationsPresented) {
+            // AspirationVaultView owns its own editor sheet, for the same reason.
             AspirationVaultView()
-        }
-        .sheet(item: $model.aspirationEditor) { context in
-            AspirationEditorView(context: context)
         }
         .sheet(isPresented: $model.welcomeBackPresented) {
             WelcomeBackView()

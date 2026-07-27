@@ -56,7 +56,7 @@ struct IdentityPillarEditorView: View {
                 }
 
                 Section {
-                    FlowLayout(spacing: 8, lineSpacing: 8) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                         ForEach(ActivityCategory.allCases) { cat in
                             let on = draft.categoryList.contains(cat)
                             Button {
@@ -64,15 +64,21 @@ struct IdentityPillarEditorView: View {
                                 if on { cats.removeAll { $0 == cat } } else { cats.append(cat) }
                                 draft.categories = cats.isEmpty ? nil : cats
                             } label: {
-                                Label(cat.title, systemImage: cat.icon)
-                                    .font(.system(size: 12.5, weight: .medium))
-                                    .foregroundStyle(on ? Color.white : Theme.textSecondary)
-                                    .padding(.horizontal, 10).padding(.vertical, 6)
-                                    .background(on ? cat.color : Theme.fill, in: Capsule())
+                                HStack(spacing: 5) {
+                                    Image(systemName: cat.icon).font(.system(size: 11, weight: .semibold))
+                                    Text(cat.title).font(.system(size: 12, weight: .medium))
+                                        .lineLimit(1).minimumScaleFactor(0.8)
+                                }
+                                .foregroundStyle(on ? Color.white : Theme.textSecondary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8)
+                                .background(on ? cat.color : Theme.fill,
+                                            in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                             }
                             .buttonStyle(.plain)
                         }
                     }
+                    .padding(.vertical, 2)
                 } header: {
                     Text("Counts as evidence")
                 } footer: {

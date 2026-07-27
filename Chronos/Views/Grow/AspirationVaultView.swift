@@ -47,6 +47,9 @@ struct AspirationVaultView: View {
             }
         }
         .chronosAppearance()
+        .sheet(item: $model.aspirationEditor) { context in
+            AspirationEditorView(context: context)
+        }
     }
 
     private var intro: some View {

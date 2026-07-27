@@ -81,11 +81,18 @@ struct WelcomeBackView: View {
             ChronosPrimaryButton("Start with 10 minutes", icon: "play.fill") {
                 timer.focusMinutes = 10
                 timer.start(taskID: nil, title: "Ease back in", mode: .pomodoro)
-                model.focusTimerPresented = true
                 dismiss()
+                // Present the timer sheet only after this one has animated away,
+                // so the two RootView sheets don't collide.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                    model.focusTimerPresented = true
+                }
             }
             Button {
-                dismiss(); model.dayIntentPresented = true
+                dismiss()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                    model.dayIntentPresented = true
+                }
             } label: {
                 Text("Set today's minimum instead")
                     .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.accentColor)

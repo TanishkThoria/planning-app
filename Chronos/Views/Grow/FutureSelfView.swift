@@ -62,6 +62,9 @@ struct FutureSelfView: View {
         }
         .chronosAppearance()
         .sheet(isPresented: $editingFutureSelf) { FutureSelfEditorView() }
+        .sheet(item: $model.pillarEditor) { context in
+            IdentityPillarEditorView(context: context)
+        }
         .alert("Note evidence", isPresented: Binding(
             get: { evidencePillarID != nil },
             set: { if !$0 { evidencePillarID = nil; evidenceText = "" } }
@@ -202,6 +205,14 @@ struct FutureSelfView: View {
             }
         }
         .panel(padding: 14)
+        .contextMenu {
+            Button { model.pillarEditor = PillarEditContext(pillar: pillar, isNew: false) } label: {
+                Label("Edit pillar", systemImage: "slider.horizontal.3")
+            }
+            Button(role: .destructive) {
+                withAnimation(.snappy) { life.deletePillar(pillar.id) }
+            } label: { Label("Delete pillar", systemImage: "trash") }
+        }
     }
 
     private func evidenceRow(_ ev: IdentityEvidence) -> some View {
