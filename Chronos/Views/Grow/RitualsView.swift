@@ -161,10 +161,23 @@ struct MorningRitualView: View {
             onDone: { life.upsert(entry); Haptics.success() },
             doneLabel: "Start my day"
         ) {
+            if let past = pastReflection {
+                RitualSection(title: "A line from a past you",
+                              subtitle: Fmt.relativeDay(past.date)) {
+                    Text("“\(past.text)”")
+                        .font(.system(size: 14.5)).foregroundStyle(Theme.textPrimary)
+                        .italic().fixedSize(horizontal: false, vertical: true)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Theme.warning.opacity(0.10), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+            }
+
             RitualSection(title: "How are you arriving?", subtitle: "A quick honest check-in — no wrong answers.") {
                 VStack(spacing: 8) {
                     ratingControl("Mood", value: $entry.mood, symbols: ["😔", "😐", "🙂", "😄", "🤩"])
                     ratingControl("Energy", value: $entry.energy, symbols: ["🪫", "🔋", "⚡️", "🔥", "🚀"])
+                    ratingControl("Stress", value: $entry.stress, symbols: ["😌", "🙂", "😐", "😣", "🤯"])
                 }
             }
 
@@ -206,6 +219,21 @@ struct MorningRitualView: View {
             .buttonStyle(.plain)
         }
         .onAppear { entry = life.entryOrNew(for: Date()) }
+    }
+
+    /// A resurfaced line from a previous day's reflection — a small "on this day"
+    /// for the journal. Picked deterministically by day so it's stable per open.
+    private var pastReflection: (text: String, date: Date)? {
+        let todayKey = Fmt.dayKey(Date())
+        let candidates: [(String, Date)] = life.journal.compactMap { e in
+            guard e.dayKey != todayKey, let d = Fmt.day(fromKey: e.dayKey) else { return nil }
+            let line = [e.gratitude, e.wins, e.notes]
+                .first { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+            return line.map { ($0, d) }
+        }
+        guard !candidates.isEmpty else { return nil }
+        let seed = Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 0
+        return candidates[seed % candidates.count]
     }
 
     private func intentionBinding(_ i: Int) -> Binding<String> {

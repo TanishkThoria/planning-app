@@ -727,6 +727,12 @@ struct RootView: View {
         )
         achievements.register(AchievementEngine.compute(inputs))
         achievements.registerLevel(momentum.level, title: momentum.levelTitle)
+        // Auto-capture level milestones onto the memory timeline (deduped).
+        if momentum.level >= 3 {
+            life.recordAutoEvent(key: "level-\(momentum.level)",
+                                 title: "Reached level \(momentum.level) · \(momentum.levelTitle)",
+                                 kind: .achievement, emoji: "⭐️")
+        }
         if momentum.score(on: today) >= 100 {
             achievements.registerMilestone(
                 id: "perfect-\(Fmt.dayKey(today))",

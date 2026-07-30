@@ -11,6 +11,13 @@ struct WeeklyReviewView: View {
     @EnvironmentObject private var life: LifeStore
     @Environment(\.dismiss) private var dismiss
 
+    // The weekly "CEO meeting" agenda — a conversation with yourself.
+    @State private var ceoWorked = ""
+    @State private var ceoDidnt = ""
+    @State private var ceoDrift = ""
+    @State private var ceoNext = ""
+    @State private var ceoSaved = false
+
     private var days: [Date] {
         let today = Date().startOfDay
         return (0..<7).map { today.adding(days: -6 + $0) }
@@ -37,6 +44,7 @@ struct WeeklyReviewView: View {
                     intro
                     statTiles
                     if !life.activePillars.isEmpty { gapAnalysisSection }
+                    ceoAgendaSection
                     goalsSection
                     habitsSection
                 }
@@ -106,6 +114,66 @@ struct WeeklyReviewView: View {
     }
 
     // MARK: Gap analysis — current self vs future self
+
+    /// The Sunday "CEO meeting" — four questions you'd ask of any operation you
+    /// were running. Saved to the memory timeline as a weekly reflection.
+    private var ceoAgendaSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                IconChip(icon: "person.crop.rectangle.stack.fill", tint: Color(hex: 0x5B6CF0), size: 32)
+                Text("CEO meeting").font(.system(size: 16, weight: .bold)).foregroundStyle(Theme.textPrimary)
+                Spacer()
+            }
+            Text("A five-minute conversation with yourself about the operation that is your life.")
+                .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            ceoField("What worked this week?", text: $ceoWorked)
+            ceoField("What didn't?", text: $ceoDidnt)
+            ceoField("Where am I drifting?", text: $ceoDrift)
+            ceoField("What matters most next week?", text: $ceoNext)
+
+            Button {
+                saveCEO()
+            } label: {
+                Label(ceoSaved ? "Saved to your timeline" : "Save this week's review",
+                      systemImage: ceoSaved ? "checkmark.circle.fill" : "square.and.arrow.down")
+                    .font(.system(size: 13.5, weight: .semibold))
+                    .foregroundStyle(ceoSaved ? Theme.success : Theme.accentColor)
+            }
+            .buttonStyle(.plain)
+            .disabled(ceoSaved || ceoIsEmpty)
+        }
+        .panel()
+    }
+
+    private func ceoField(_ prompt: String, text: Binding<String>) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(prompt).font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textSecondary)
+            TextField("…", text: text, axis: .vertical)
+                .font(.system(size: 14)).lineLimit(1...4)
+                .padding(10)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+    }
+
+    private var ceoIsEmpty: Bool {
+        [ceoWorked, ceoDidnt, ceoDrift, ceoNext].allSatisfy { $0.trimmingCharacters(in: .whitespaces).isEmpty }
+    }
+
+    private func saveCEO() {
+        guard !ceoIsEmpty else { return }
+        var parts: [String] = []
+        if !ceoWorked.trimmingCharacters(in: .whitespaces).isEmpty { parts.append("Worked: \(ceoWorked)") }
+        if !ceoDidnt.trimmingCharacters(in: .whitespaces).isEmpty { parts.append("Didn't: \(ceoDidnt)") }
+        if !ceoDrift.trimmingCharacters(in: .whitespaces).isEmpty { parts.append("Drifting: \(ceoDrift)") }
+        if !ceoNext.trimmingCharacters(in: .whitespaces).isEmpty { parts.append("Next week: \(ceoNext)") }
+        life.addEvent(LifeEvent(epoch: Date().timeIntervalSince1970,
+                                title: "Weekly review", note: parts.joined(separator: "\n"),
+                                kind: .reflection, emoji: "🗓️"))
+        withAnimation(.snappy) { ceoSaved = true }
+        Haptics.success()
+    }
 
     private var gapAnalysisSection: some View {
         let readings = EvidenceEngine.readings(
