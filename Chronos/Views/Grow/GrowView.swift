@@ -70,6 +70,9 @@ struct GrowView: View {
                     Label("Guided Routines", systemImage: "figure.walk.motion")
                 }
                 Divider()
+                Button { model.identitySetupPresented = true } label: {
+                    Label("Identity Setup", systemImage: "wand.and.stars")
+                }
                 Button { model.futureSelfPresented = true } label: {
                     Label("Future Self", systemImage: "figure.stand")
                 }

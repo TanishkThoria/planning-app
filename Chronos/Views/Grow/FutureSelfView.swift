@@ -125,13 +125,21 @@ struct FutureSelfView: View {
             Text("Pillars are the facets of who you want to become — Health, Career, Discipline. Each one fills with evidence from the real things you do.")
                 .font(.system(size: 13.5)).foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
-            ChronosPrimaryButton("Start with 8 suggested pillars", icon: "sparkles") {
+            ChronosPrimaryButton("Guided setup", icon: "wand.and.stars") {
+                dismiss()
+                model.afterDismiss { model.identitySetupPresented = true }
+            }
+            Button {
                 withAnimation(.snappy) { life.seedDefaultPillars() }
                 Haptics.success()
+            } label: {
+                Text("Or start with 8 suggested pillars")
+                    .font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
             }
+            .buttonStyle(.plain)
             Button { model.pillarEditor = PillarEditContext(pillar: IdentityPillar(), isNew: true) } label: {
                 Text("Or create my own")
-                    .font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Theme.accentColor)
+                    .font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Theme.textSecondary)
             }
             .buttonStyle(.plain)
         }

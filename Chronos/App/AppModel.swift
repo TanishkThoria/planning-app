@@ -196,6 +196,8 @@ final class AppModel: ObservableObject {
     @Published var memoriesPresented = false
     /// Life-event create/edit sheet.
     @Published var memoryEditor: MemoryEditContext?
+    /// Identity-first guided setup (archetypes, satisfaction radar, big dream).
+    @Published var identitySetupPresented = false
     /// The routine currently being run (guided step-by-step).
     @Published var routineRunner: Routine?
     /// Chronos+ hub (iCloud sync, leaderboards, friends).

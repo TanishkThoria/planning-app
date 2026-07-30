@@ -569,6 +569,9 @@ struct RootView: View {
             // MemoriesView owns its own event-editor sheet.
             MemoriesView()
         }
+        .sheet(isPresented: $model.identitySetupPresented) {
+            IdentitySetupView()
+        }
     }
 
     private func errorAlert<Content: View>(_ content: Content) -> some View {

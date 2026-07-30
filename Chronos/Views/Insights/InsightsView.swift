@@ -226,14 +226,7 @@ struct InsightsView: View {
     /// Numbers translated into meaning — what the totals actually amount to.
     @ViewBuilder
     private var storyCard: some View {
-        let lifetimeFocus = focusLog.sessions.reduce(0) { $0 + $1.actualMinutes }
-        let stories = [NarrativeStats.focusLifetime(minutes: lifetimeFocus)].compactMap { $0 }
-            + NarrativeStats.week(
-                focusMinutes: focusLog.totalMinutes(inLast: 7),
-                tasksCompleted: service.completedTaskCount(since: Date().adding(days: -7)),
-                plannedMinutes: weekPlannedMinutes,
-                blockCount: 0,
-                streakDays: momentum.streak())
+        let stories = storyList
         if !stories.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 10) {
@@ -253,6 +246,23 @@ struct InsightsView: View {
             }
             .panel()
         }
+    }
+
+    private var storyList: [StatStory] {
+        let lifetimeFocus = focusLog.sessions.reduce(0) { $0 + $1.actualMinutes }
+        let weekAgo = Date().adding(days: -7)
+        let tasksWeek = service.tasks.filter {
+            $0.isCompleted && ($0.completionDate.map { $0 >= weekAgo } ?? false)
+        }.count
+        var out: [StatStory] = []
+        if let lifetime = NarrativeStats.focusLifetime(minutes: lifetimeFocus) { out.append(lifetime) }
+        out += NarrativeStats.week(
+            focusMinutes: focusLog.totalMinutes(inLast: 7),
+            tasksCompleted: tasksWeek,
+            plannedMinutes: weekPlannedMinutes,
+            blockCount: 0,
+            streakDays: momentum.streak())
+        return out
     }
 
     private var weekPlannedMinutes: Int {
