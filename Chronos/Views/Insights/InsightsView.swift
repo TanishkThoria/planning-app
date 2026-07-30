@@ -38,6 +38,8 @@ struct InsightsView: View {
                     challengesCard
                     gamificationCard
                     projectTimeCard
+                    patternsCard
+                    storyCard
                     reportsSection
                     // Shown per-capability, so a build with Game Center (but not
                     // CloudKit yet) surfaces the leaderboard without advertising
@@ -188,6 +190,79 @@ struct InsightsView: View {
                 .buttonStyle(.plain)
             }
             .panel()
+        }
+    }
+
+    /// Emotional-intelligence: patterns Chronos has discovered over time (best
+    /// focus window, energy/stress correlations, mood trend). Shown only when
+    /// there's enough data to be real.
+    @ViewBuilder
+    private var patternsCard: some View {
+        let insights = PatternEngine.insights(life: life, focus: focusLog)
+        if !insights.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    IconChip(icon: "brain.head.profile", tint: Color(hex: 0x9C7BFA), size: 34)
+                    Text("Patterns").font(.system(size: 15, weight: .bold)).foregroundStyle(Theme.textPrimary)
+                    Spacer(minLength: 0)
+                }
+                ForEach(insights) { p in
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: p.icon).font(.system(size: 14)).foregroundStyle(Color(hex: p.tintHex))
+                            .frame(width: 20)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(p.title).font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                            Text(p.detail).font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                }
+            }
+            .panel()
+        }
+    }
+
+    /// Numbers translated into meaning — what the totals actually amount to.
+    @ViewBuilder
+    private var storyCard: some View {
+        let lifetimeFocus = focusLog.sessions.reduce(0) { $0 + $1.actualMinutes }
+        let stories = [NarrativeStats.focusLifetime(minutes: lifetimeFocus)].compactMap { $0 }
+            + NarrativeStats.week(
+                focusMinutes: focusLog.totalMinutes(inLast: 7),
+                tasksCompleted: service.completedTaskCount(since: Date().adding(days: -7)),
+                plannedMinutes: weekPlannedMinutes,
+                blockCount: 0,
+                streakDays: momentum.streak())
+        if !stories.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    IconChip(icon: "text.book.closed.fill", tint: Color(hex: 0x22C3C9), size: 34)
+                    Text("Your story").font(.system(size: 15, weight: .bold)).foregroundStyle(Theme.textPrimary)
+                    Spacer(minLength: 0)
+                }
+                ForEach(stories) { s in
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: s.icon).font(.system(size: 14)).foregroundStyle(Color(hex: s.tintHex))
+                            .frame(width: 20)
+                        Text(s.text).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 0)
+                    }
+                }
+            }
+            .panel()
+        }
+    }
+
+    private var weekPlannedMinutes: Int {
+        let start = Date().startOfDay.startOfWeek
+        return (0..<7).reduce(0) { acc, offset in
+            let day = start.adding(days: offset)
+            return acc + service.blocks(on: day, hiddenCalendars: model.hiddenCalendarIDs)
+                .filter { !$0.isAllDay }
+                .compactMap { $0.clamped(to: day) }
+                .reduce(0) { $0 + Int($1.end.timeIntervalSince($1.start) / 60) }
         }
     }
 

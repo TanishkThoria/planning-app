@@ -9,10 +9,16 @@ struct MemoriesView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var life: LifeStore
 
-    private var grouped: [(year: Int, events: [LifeEvent])] {
+    private struct YearGroup: Identifiable {
+        let year: Int
+        let events: [LifeEvent]
+        var id: Int { year }
+    }
+
+    private var grouped: [YearGroup] {
         let cal = Calendar.current
         let byYear = Dictionary(grouping: life.timeline) { cal.component(.year, from: $0.date) }
-        return byYear.map { (year: $0.key, events: $0.value) }.sorted { $0.year > $1.year }
+        return byYear.map { YearGroup(year: $0.key, events: $0.value) }.sorted { $0.year > $1.year }
     }
 
     var body: some View {
@@ -32,7 +38,7 @@ struct MemoriesView: View {
                             model.memoryEditor = MemoryEditContext(event: LifeEvent(), isNew: true)
                         }
                     } else {
-                        ForEach(grouped, id: \.year) { group in
+                        ForEach(grouped) { group in
                             yearSection(group.year, group.events)
                         }
                     }

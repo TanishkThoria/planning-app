@@ -17,7 +17,7 @@ struct CharacterView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     hero
                     attributesSection(readings)
-                    if let note = growthNote(readings) { note }
+                    growthNote(readings)
                     footer
                 }
                 .padding(Theme.Metric.screen)
