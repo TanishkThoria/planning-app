@@ -139,12 +139,61 @@ day (execute) → evening (reflect), and everything else is depth.
 
 ---
 
+## Version 2.1 — the Master Plan additions
+
+A second wave deepened the identity thesis with the pieces the master plan asked
+for. All of it is evidence-driven, on-device, and rides the same
+`chronos.lifeData` blob.
+
+- **RPG character sheet** (`CharacterView`, `AttributeEngine`). Six attributes —
+  Discipline, Knowledge, Fitness, Creativity, Relationships, Organization — that
+  level up *only* from real focus time, finished work, and showing up. The
+  headline Level/XP reuses the momentum system so nothing double-counts.
+- **Life Map** (`LifeMapView`). One screen that threads a visible line from the
+  person you're becoming → your ten-year dream → your projects → your habits →
+  today's step, so purpose is concrete: "this task supports this project supports
+  this life."
+- **Memory Engine** (`MemoriesView`, `MemoryEditorView`, `LifeEvent`). A life
+  timeline of the moments that matter, with an editor, auto-capture (level
+  milestones; extensible via `LifeStore.recordAutoEvent`), and an "On this day…"
+  resurfacing. The Weekly CEO Meeting and the "started your journey" moment both
+  write here.
+- **Emotional intelligence** (`PatternEngine`, journal `stress`). Correlates
+  mood/energy/stress and the clock with what actually got done and surfaces the
+  real patterns — best focus window, best weekday, "you focus more on calm days,"
+  mood trend — as a Patterns card in Insights, only with enough data to be honest.
+- **Narrative statistics** (`NarrativeStats`). Translates raw totals into meaning
+  ("≈ six full work-weeks becoming who you want to be") in a "Your story" card.
+- **Identity-first onboarding** (`IdentitySetupView`). "Who do you want to
+  become?" → a life-satisfaction radar → your ten-year dream → how you
+  procrastinate → "this is where your story starts." Seeds matching pillars and
+  records the baseline. Reachable from the Future Self seed card (which now leads
+  with Guided setup) and the Grow menu.
+- **Weekly CEO Meeting** (`WeeklyReviewView`). Four questions — what worked, what
+  didn't, where am I drifting, what matters next week — saved to the memory
+  timeline as a weekly reflection.
+- **Morning journal quote** (`MorningRitualView`). Resurfaces "a line from a past
+  you" from an earlier reflection, and captures the day's stress reading.
+
+New models live in `GrowthRPG.swift` (`Attribute`, `LifeEvent`,
+`SatisfactionSnapshot`, `IdentityArchetype`, `ProcrastinationStyle`); new pure
+engines are `AttributeEngine`, `PatternEngine`, and `NarrativeStats`.
+
+### Still open (natural next steps)
+
+- **Deeper single-entry inference** (master plan Part II): the parser already
+  infers category, date, duration, estimate, and priority; energy and
+  project-linking inference are the remaining gap.
+- **Achievement expansion** (Part VIII): the six RPG attributes now cover the
+  "facet" spirit, but the badge set itself could grow story/hidden/lifetime tiers.
+
 ## Where it all lives
 
 Everything new is persisted in `LifeStore` (the `chronos.lifeData` UserDefaults
 blob) as optional fields, so old saved data decodes unchanged and the new layer
 is automatically captured by `ChronosBackup` and mirrored by `CloudSyncService`
 on Chronos+. New pure engines (`EvidenceEngine`, `PlanningMeter` /
-`ActionRatioEngine`, `RecoveryEngine`, `GrowthCoach`) follow the app's existing
-"pure, testable, on-device" pattern. No new servers, no new accounts, no
-tracking — the growth layer is as private as the planner underneath it.
+`ActionRatioEngine`, `RecoveryEngine`, `GrowthCoach`, `AttributeEngine`,
+`PatternEngine`, `NarrativeStats`) follow the app's existing "pure, testable,
+on-device" pattern. No new servers, no new accounts, no tracking — the growth
+layer is as private as the planner underneath it.
