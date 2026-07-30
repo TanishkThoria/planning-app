@@ -188,6 +188,14 @@ final class AppModel: ObservableObject {
     @Published var welcomeBackPresented = false
     /// Minimum Viable Day: today's mode + must-wins + bonus.
     @Published var dayIntentPresented = false
+    /// RPG character sheet: level + six attributes from evidence.
+    @Published var characterPresented = false
+    /// Life Map: age → dreams → projects → habits → today.
+    @Published var lifeMapPresented = false
+    /// Memory timeline (life archive + "on this day").
+    @Published var memoriesPresented = false
+    /// Life-event create/edit sheet.
+    @Published var memoryEditor: MemoryEditContext?
     /// The routine currently being run (guided step-by-step).
     @Published var routineRunner: Routine?
     /// Chronos+ hub (iCloud sync, leaderboards, friends).
@@ -375,5 +383,11 @@ struct PillarEditContext: Identifiable {
 struct AspirationEditContext: Identifiable {
     let id = UUID()
     var aspiration: Aspiration
+    var isNew: Bool
+}
+
+struct MemoryEditContext: Identifiable {
+    let id = UUID()
+    var event: LifeEvent
     var isNew: Bool
 }

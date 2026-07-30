@@ -559,6 +559,16 @@ struct RootView: View {
         .sheet(isPresented: $model.welcomeBackPresented) {
             WelcomeBackView()
         }
+        .sheet(isPresented: $model.characterPresented) {
+            CharacterView()
+        }
+        .sheet(isPresented: $model.lifeMapPresented) {
+            LifeMapView()
+        }
+        .sheet(isPresented: $model.memoriesPresented) {
+            // MemoriesView owns its own event-editor sheet.
+            MemoriesView()
+        }
     }
 
     private func errorAlert<Content: View>(_ content: Content) -> some View {

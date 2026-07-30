@@ -116,6 +116,7 @@ struct JournalEntry: Codable, Identifiable, Hashable {
     var intentions: [String] = ["", "", ""]
     var mood: Int?                         // 1…5
     var energy: Int?                       // 1…5
+    var stress: Int?                       // 1…5 (optional; older blobs decode)
     var wins: String = ""
     var improve: String = ""
     var gratitude: String = ""
@@ -217,6 +218,12 @@ private struct LifeData: Codable {
     var dayIntents: [DayIntent]? = nil
     var manualNotes: [ManualNote]? = nil
     var aspirations: [Aspiration]? = nil
+    // RPG / memory / onboarding layer (see GrowthRPG.swift). Optional.
+    var lifeEvents: [LifeEvent]? = nil
+    var satisfactionSnapshots: [SatisfactionSnapshot]? = nil
+    var identityArchetypes: [String]? = nil
+    var procrastinationStyles: [String]? = nil
+    var bigDream: String? = nil
 }
 
 /// One local store for the whole lifestyle layer — goals, habits, journal,
@@ -245,6 +252,11 @@ final class LifeStore: ObservableObject {
     @Published var dayIntents: [DayIntent] { didSet { save() } }
     @Published var manualNotes: [ManualNote] { didSet { save() } }
     @Published var aspirations: [Aspiration] { didSet { save() } }
+    @Published var lifeEvents: [LifeEvent] { didSet { save() } }
+    @Published var satisfactionSnapshots: [SatisfactionSnapshot] { didSet { save() } }
+    @Published var identityArchetypes: [String] { didSet { save() } }
+    @Published var procrastinationStyles: [String] { didSet { save() } }
+    @Published var bigDream: String { didSet { save() } }
 
     init() {
         if let data = UserDefaults.standard.data(forKey: Self.key),
@@ -267,6 +279,11 @@ final class LifeStore: ObservableObject {
             dayIntents = decoded.dayIntents ?? []
             manualNotes = decoded.manualNotes ?? []
             aspirations = decoded.aspirations ?? []
+            lifeEvents = decoded.lifeEvents ?? []
+            satisfactionSnapshots = decoded.satisfactionSnapshots ?? []
+            identityArchetypes = decoded.identityArchetypes ?? []
+            procrastinationStyles = decoded.procrastinationStyles ?? []
+            bigDream = decoded.bigDream ?? ""
         } else {
             goals = []
             habits = []
@@ -286,6 +303,11 @@ final class LifeStore: ObservableObject {
             dayIntents = []
             manualNotes = []
             aspirations = []
+            lifeEvents = []
+            satisfactionSnapshots = []
+            identityArchetypes = []
+            procrastinationStyles = []
+            bigDream = ""
         }
         observeCloudPulls()
     }
@@ -312,6 +334,11 @@ final class LifeStore: ObservableObject {
         dayIntents = decoded.dayIntents ?? []
         manualNotes = decoded.manualNotes ?? []
         aspirations = decoded.aspirations ?? []
+        lifeEvents = decoded.lifeEvents ?? []
+        satisfactionSnapshots = decoded.satisfactionSnapshots ?? []
+        identityArchetypes = decoded.identityArchetypes ?? []
+        procrastinationStyles = decoded.procrastinationStyles ?? []
+        bigDream = decoded.bigDream ?? ""
     }
 
     private func observeCloudPulls() {
@@ -339,7 +366,10 @@ final class LifeStore: ObservableObject {
             categoryBudgets: categoryBudgets,
             identityPillars: identityPillars, identityEvidence: identityEvidence,
             futureSelf: futureSelf, dayIntents: dayIntents,
-            manualNotes: manualNotes, aspirations: aspirations
+            manualNotes: manualNotes, aspirations: aspirations,
+            lifeEvents: lifeEvents, satisfactionSnapshots: satisfactionSnapshots,
+            identityArchetypes: identityArchetypes,
+            procrastinationStyles: procrastinationStyles, bigDream: bigDream
         )
     }
 
@@ -374,6 +404,11 @@ final class LifeStore: ObservableObject {
         dayIntents = decoded.dayIntents ?? []
         manualNotes = decoded.manualNotes ?? []
         aspirations = decoded.aspirations ?? []
+        lifeEvents = decoded.lifeEvents ?? []
+        satisfactionSnapshots = decoded.satisfactionSnapshots ?? []
+        identityArchetypes = decoded.identityArchetypes ?? []
+        procrastinationStyles = decoded.procrastinationStyles ?? []
+        bigDream = decoded.bigDream ?? ""
         return true
     }
 
@@ -870,5 +905,62 @@ final class LifeStore: ObservableObject {
     func toggleAcquired(_ id: UUID) {
         guard let idx = aspirations.firstIndex(where: { $0.id == id }) else { return }
         aspirations[idx].acquiredEpoch = aspirations[idx].isAcquired ? nil : Date().timeIntervalSince1970
+    }
+
+    // MARK: Memory engine (life timeline)
+
+    /// Life events, most recent first.
+    var timeline: [LifeEvent] { lifeEvents.sorted { $0.epoch > $1.epoch } }
+
+    func addEvent(_ event: LifeEvent) {
+        var e = event
+        if e.createdEpoch == 0 { e.createdEpoch = Date().timeIntervalSince1970 }
+        if e.epoch == 0 { e.epoch = e.createdEpoch }
+        lifeEvents.append(e)
+    }
+    func updateEvent(_ event: LifeEvent) {
+        if let idx = lifeEvents.firstIndex(where: { $0.id == event.id }) { lifeEvents[idx] = event }
+    }
+    func deleteEvent(_ id: UUID) { lifeEvents.removeAll { $0.id == id } }
+
+    /// Record an auto-captured event once (project finished, level reached, …).
+    func recordAutoEvent(key: String, title: String, kind: LifeEventKind, emoji: String = "", on date: Date = Date()) {
+        guard !lifeEvents.contains(where: { $0.autoKey == key }) else { return }
+        addEvent(LifeEvent(epoch: date.timeIntervalSince1970, title: title, kind: kind,
+                           emoji: emoji, autoKey: key))
+    }
+
+    /// Events that happened on this calendar day in a previous year — the
+    /// "On this day…" resurfacing.
+    func onThisDay(_ reference: Date = Date()) -> [LifeEvent] {
+        let cal = Calendar.current
+        let m = cal.component(.month, from: reference)
+        let d = cal.component(.day, from: reference)
+        let y = cal.component(.year, from: reference)
+        return lifeEvents.filter {
+            let c = cal.dateComponents([.month, .day, .year], from: $0.date)
+            return c.month == m && c.day == d && (c.year ?? y) < y
+        }.sorted { $0.epoch > $1.epoch }
+    }
+
+    // MARK: Life-satisfaction radar
+
+    var latestSatisfaction: SatisfactionSnapshot? {
+        satisfactionSnapshots.max { $0.epoch < $1.epoch }
+    }
+    func recordSatisfaction(_ ratings: [LifeArea: Int]) {
+        var map: [String: Int] = [:]
+        for (area, value) in ratings { map[area.rawValue] = min(10, max(0, value)) }
+        satisfactionSnapshots.append(
+            SatisfactionSnapshot(epoch: Date().timeIntervalSince1970, ratings: map))
+    }
+
+    // MARK: Onboarding answers
+
+    var procrastinationStyleValues: [ProcrastinationStyle] {
+        procrastinationStyles.compactMap { ProcrastinationStyle(rawValue: $0) }
+    }
+    func setProcrastinationStyles(_ styles: [ProcrastinationStyle]) {
+        procrastinationStyles = styles.map(\.rawValue)
     }
 }

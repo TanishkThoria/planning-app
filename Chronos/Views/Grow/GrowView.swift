@@ -576,6 +576,17 @@ struct GrowView: View {
             hubRow("sparkles", "Aspiration Vault",
                    "Desires reframed as who you're becoming",
                    tint: Color(hex: 0xFFB23E)) { model.aspirationsPresented = true }
+
+            SectionHeader(title: "Journey").padding(.top, 8)
+            hubRow("shield.lefthalf.filled", "Character",
+                   "Your level & attributes, earned from evidence",
+                   tint: Color(hex: 0xFF7A59)) { model.characterPresented = true }
+            hubRow("map.fill", "Life Map",
+                   "How today connects to who you're becoming",
+                   tint: Color(hex: 0x5B6CF0)) { model.lifeMapPresented = true }
+            hubRow("clock.arrow.circlepath", "Memories",
+                   "Your life's timeline & 'on this day'",
+                   tint: Color(hex: 0x22C3C9)) { model.memoriesPresented = true }
         }
     }
 
