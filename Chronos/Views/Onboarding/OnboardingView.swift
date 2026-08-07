@@ -337,11 +337,11 @@ struct OnboardingPage {
         OnboardingPage(
             icon: "leaf",
             title: "Grow every day",
-            subtitle: "Build the person behind the schedule with habits, goals, and reflection.",
+            subtitle: "Build momentum with habits and goals that connect to your weeks.",
             bullets: [
                 .init(icon: "flame", text: "Habits with streaks and gentle nudges"),
                 .init(icon: "target", text: "Goals that connect to your weeks"),
-                .init(icon: "sunrise", text: "Morning and evening rituals, grounded in research")
+                .init(icon: "chart.line.uptrend.xyaxis", text: "Trends that show your trajectory over time")
             ]
         ),
         OnboardingPage(

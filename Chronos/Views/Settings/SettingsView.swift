@@ -339,7 +339,7 @@ struct SettingsView: View {
                                     .toggleStyle(.switch)
                             }
                             Text(coachEnabled
-                                 ? "A daily briefing that knows your schedule, momentum, focus, and identity pillars — open it from Today's action row or the ⌘K command bar. On a device with Apple Intelligence it becomes a full on-device chat companion."
+                                 ? "A daily briefing that knows your schedule, momentum, and focus — open it from Today's action row or the ⌘K command bar. On a device with Apple Intelligence it becomes a full on-device chat companion."
                                  : "The Coach is off. Turn it back on for your daily briefing and planning shortcuts from Today or the command bar.")
                                 .font(.system(size: 12.5))
                                 .foregroundStyle(Theme.textTertiary)

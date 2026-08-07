@@ -1,14 +1,15 @@
 import SwiftUI
 
-/// Long-horizon view of the growth data: mood & energy over the last month,
-/// per-habit consistency grids, goal progress, and a browsable archive of
-/// past reflections. The Grow tab shows today; this shows the trajectory.
+/// Long-horizon view of the plan: per-habit consistency grids and goal
+/// progress. The Grow tab shows today; this shows the trajectory.
 struct TrendsView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
     @EnvironmentObject private var life: LifeStore
     @Environment(\.dismiss) private var dismiss
 
+    /// Number of week-columns in each habit consistency grid.
+    private static let gridWeeks = 4
 
     private var today: Date { Date().startOfDay }
 
@@ -53,17 +54,6 @@ struct TrendsView: View {
             }
             .buttonStyle(.plain)
         }
-    }
-
-    // MARK: Mood & energy (last 30 days)
-
-    private var last30: [Date] {
-        (0..<30).reversed().map { today.adding(days: -$0) }
-    }
-
-    private func average(_ values: [Int]) -> Double? {
-        guard !values.isEmpty else { return nil }
-        return Double(values.reduce(0, +)) / Double(values.count)
     }
 
     private var habitsCard: some View {

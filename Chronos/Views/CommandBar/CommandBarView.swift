@@ -227,7 +227,7 @@ struct CommandBarView: View {
         // Grow
         add("weekly-review", "Weekly Review", "Zoom out on the week", "calendar.badge.checkmark", "Grow", "weekly review", { model.weeklyReviewPresented = true })
         add("routines", "Guided Routines", "Hands-free step-by-step timer", "figure.walk.motion", "Grow", "routine morning wind down voice guided steps", { model.routinesPresented = true })
-        add("trends", "Trends", "Mood, habits & goals over time", "chart.line.uptrend.xyaxis", "Grow", "mood habits history", { model.trendsPresented = true })
+        add("trends", "Trends", "Habits & goals over time", "chart.line.uptrend.xyaxis", "Grow", "habits goals history", { model.trendsPresented = true })
         add("new-goal", "New Goal", "", "target", "Grow", "goal create", { model.goalEditor = GoalEditContext(goal: Goal(), isNew: true) })
         add("new-habit", "New Habit", "", "repeat", "Grow", "habit streak create", { model.habitEditor = HabitEditContext(habit: Habit(), isNew: true) })
 

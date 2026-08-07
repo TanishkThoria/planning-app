@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// The personal-growth hub: long-term goals, daily habits with streaks, and
-/// the reflection journal — the "who am I becoming" counterpart to the
-/// calendar's "what am I doing today." All local, all yours.
+/// The Grow hub: long-term goals and daily habits with streaks — the
+/// trajectory counterpart to the calendar's "what am I doing today."
+/// All local, all yours.
 struct GrowView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var service: EventKitService
