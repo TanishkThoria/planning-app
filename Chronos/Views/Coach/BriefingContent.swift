@@ -240,8 +240,7 @@ struct BriefingContent: View {
             signals: CoachInputs.signals(life: life, focusLog: focusLog),
             projects: life.activeProjects
         )
-        let growth = GrowthCoach.suggestions(life: life, focus: focusLog, tasks: service.tasks)
-        return (base + growth).sorted { $0.weight > $1.weight }
+        return base.sorted { $0.weight > $1.weight }
     }
 
     private func perform(_ action: Coach.Action) {
@@ -263,14 +262,9 @@ struct BriefingContent: View {
         case .reflow: model.reflowPresented = true
         case .openGrow: model.screen = .grow
         case .addHabit: model.habitEditor = HabitEditContext(habit: Habit(), isNew: true)
-        case .morningRitual: model.morningRitualPresented = true
-        case .eveningRitual: model.eveningRitualPresented = true
         case .focusTimer: model.startFocus(taskID: nil, title: "Focus")
         case .overdueSweep: model.overdueSweepPresented = true
         case .openProjects: model.projectsPresented = true
-        case .openFutureSelf: model.futureSelfPresented = true
-        case .openManual: model.manualPresented = true
-        case .dayIntent: model.dayIntentPresented = true
         }
     }
 }

@@ -225,10 +225,7 @@ struct CommandBarView: View {
         })
 
         // Grow
-        add("morning-ritual", "Morning Ritual", "Set today's intentions", "sun.and.horizon", "Grow", "intentions morning", { model.morningRitualPresented = true })
-        add("evening-ritual", "Evening Ritual", "Reflect on the day", "moon.stars", "Grow", "reflection evening", { model.eveningRitualPresented = true })
         add("weekly-review", "Weekly Review", "Zoom out on the week", "calendar.badge.checkmark", "Grow", "weekly review", { model.weeklyReviewPresented = true })
-        add("journal", "Journal", "Open today's journal", "book.closed", "Grow", "journal write reflect", { model.journalPresented = true })
         add("routines", "Guided Routines", "Hands-free step-by-step timer", "figure.walk.motion", "Grow", "routine morning wind down voice guided steps", { model.routinesPresented = true })
         add("trends", "Trends", "Mood, habits & goals over time", "chart.line.uptrend.xyaxis", "Grow", "mood habits history", { model.trendsPresented = true })
         add("new-goal", "New Goal", "", "target", "Grow", "goal create", { model.goalEditor = GoalEditContext(goal: Goal(), isNew: true) })

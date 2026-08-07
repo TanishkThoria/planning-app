@@ -97,10 +97,10 @@ struct TourStep: Identifiable {
         TourStep(
             screen: .grow,
             icon: "leaf.fill",
-            title: "Grow every day",
-            message: "Habits, goals, a journal, and morning & evening rituals — the part of you behind the schedule.",
-            demoLabel: "Try a morning ritual",
-            demo: .morningRitual
+            title: "Habits, goals & projects",
+            message: "Track habits and their streaks, set goals, and log long-term projects — everything that spans more than a single day.",
+            demoLabel: nil,
+            demo: nil
         ),
         TourStep(
             screen: .insights,
@@ -138,5 +138,5 @@ struct TourStep: Identifiable {
 }
 
 enum TourDemo {
-    case quickAdd, planDay, focusTimer, morningRitual, search, stats, coach, commandBar
+    case quickAdd, planDay, focusTimer, search, stats, coach, commandBar
 }

@@ -17,17 +17,14 @@ struct MomentumCard: View {
     private var input: MomentumEngine.Input {
         let blocks = service.blocks(on: today, hiddenCalendars: model.hiddenCalendarIDs)
             .filter { !$0.isAllDay }
-        let entry = life.entry(for: today)
         let habitsDue = life.activeHabits.filter { $0.isDue(on: today) }
         let frog = model.frogTaskID.flatMap { service.task(withID: $0) }
         return MomentumEngine.Input(
             plannedBlocks: blocks.count,
-            didMorningPlan: entry?.hasMorning ?? false,
             tasksCompletedToday: service.tasks.filter { $0.isCompleted && ($0.completionDate?.isToday ?? false) }.count,
             focusMinutesToday: focusLog.sessions(on: today).reduce(0) { $0 + $1.actualMinutes },
             habitsDue: habitsDue.count,
             habitsDone: habitsDue.filter { life.isDone($0, on: today) }.count,
-            journaledEvening: entry?.hasEvening ?? false,
             frogEaten: frog?.isCompleted ?? false
         )
     }

@@ -378,7 +378,6 @@ struct PlanMyDayView: View {
     }
 
     private func apply() {
-        PlanningMeter.shared.recordPlanRun()
         // Snapshot both lists first: creating ritual blocks refreshes the
         // service, and re-computing `proposals` afterwards could shift or
         // drop task slots the user just confirmed.

@@ -124,9 +124,6 @@ final class AppModel: ObservableObject {
     // Lifestyle sheets
     @Published var goalEditor: GoalEditContext?
     @Published var habitEditor: HabitEditContext?
-    @Published var journalPresented = false
-    @Published var morningRitualPresented = false
-    @Published var eveningRitualPresented = false
     @Published var weeklyReviewPresented = false
     @Published var templatesPresented = false
     @Published var budgetsPresented = false
@@ -170,34 +167,6 @@ final class AppModel: ObservableObject {
     @Published var projectsPresented = false
     /// When set, the projects hub opens focused on this project.
     var projectsInitialID: UUID?
-    /// Personal growth: start/stop commitments + the self-mirror.
-    @Published var personalGrowthPresented = false
-    /// Nice-to-haves: downtime & rewards for when there's extra time.
-    @Published var niceToHavesPresented = false
-    /// Future Self: identity pillars, evidence, visions — the growth-OS spine.
-    @Published var futureSelfPresented = false
-    /// Identity-pillar create/edit sheet.
-    @Published var pillarEditor: PillarEditContext?
-    /// My Manual: principles, rules, patterns, solutions.
-    @Published var manualPresented = false
-    /// Aspiration Vault: desires reframed as identity + evidence.
-    @Published var aspirationsPresented = false
-    /// Aspiration create/edit sheet.
-    @Published var aspirationEditor: AspirationEditContext?
-    /// "Welcome back" (Day Zero) — a no-guilt re-entry after time away.
-    @Published var welcomeBackPresented = false
-    /// Minimum Viable Day: today's mode + must-wins + bonus.
-    @Published var dayIntentPresented = false
-    /// RPG character sheet: level + six attributes from evidence.
-    @Published var characterPresented = false
-    /// Life Map: age → dreams → projects → habits → today.
-    @Published var lifeMapPresented = false
-    /// Memory timeline (life archive + "on this day").
-    @Published var memoriesPresented = false
-    /// Life-event create/edit sheet.
-    @Published var memoryEditor: MemoryEditContext?
-    /// Identity-first guided setup (archetypes, satisfaction radar, big dream).
-    @Published var identitySetupPresented = false
     /// The routine currently being run (guided step-by-step).
     @Published var routineRunner: Routine?
     /// Chronos+ hub (iCloud sync, leaderboards, friends).
@@ -373,23 +342,5 @@ struct GoalEditContext: Identifiable {
 struct HabitEditContext: Identifiable {
     let id = UUID()
     var habit: Habit
-    var isNew: Bool
-}
-
-struct PillarEditContext: Identifiable {
-    let id = UUID()
-    var pillar: IdentityPillar
-    var isNew: Bool
-}
-
-struct AspirationEditContext: Identifiable {
-    let id = UUID()
-    var aspiration: Aspiration
-    var isNew: Bool
-}
-
-struct MemoryEditContext: Identifiable {
-    let id = UUID()
-    var event: LifeEvent
     var isNew: Bool
 }

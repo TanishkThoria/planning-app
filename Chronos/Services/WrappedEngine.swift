@@ -23,7 +23,6 @@ enum WrappedEngine {
         var tasksCompleted: Int
         var topCalendars: [TopCalendar]
         var bestHabitStreak: Int
-        var journalEntries: Int
         var mostProductiveWeekday: String?
         var deepHours: Int
         var hasEnoughData: Bool
@@ -72,10 +71,6 @@ enum WrappedEngine {
 
         let tasksCompleted = await service.completedTaskCount(since: yearStart)
         let bestStreak = life.activeHabits.map { life.streak($0) }.max() ?? 0
-        let yearPrefix = String(year)
-        let journalCount = life.journal.filter {
-            $0.dayKey.hasPrefix(yearPrefix) && ($0.hasMorning || $0.hasEvening)
-        }.count
 
         let enough = focusMinutes > 0 || blocks.count > 5 || tasksCompleted > 5
 
@@ -89,7 +84,6 @@ enum WrappedEngine {
             tasksCompleted: tasksCompleted,
             topCalendars: Array(top),
             bestHabitStreak: bestStreak,
-            journalEntries: journalCount,
             mostProductiveWeekday: mostProductiveWeekday,
             deepHours: deepMinutes / 60,
             hasEnoughData: enough

@@ -34,7 +34,6 @@ struct StatisticsView: View {
             onTimeRate: stats.onTimeRate,
             datedCompleted: stats.datedCompleted,
             bestHabitStreak: bestHabitStreak,
-            journalStreak: life.journalStreak,
             templatesSaved: life.templates.count,
             weekBlockCount: stats.blockCount,
             momentumLevel: momentum.level,

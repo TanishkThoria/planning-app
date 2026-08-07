@@ -27,13 +27,10 @@ struct GrowView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
-                    futureSelfCard
-                    journalCard
                     goalsSection
                     habitsSection
                     routinesSection
                     projectsSection
-                    selfSection
                 }
                 .padding(18)
             }
@@ -48,7 +45,7 @@ struct GrowView: View {
                 Text("Grow")
                     .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(Theme.textPrimary)
-                Text("Goals, habits & reflection")
+                Text("Goals, habits, routines & projects")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
             }
@@ -63,27 +60,11 @@ struct GrowView: View {
                 Button { model.habitEditor = HabitEditContext(habit: Habit(), isNew: true) } label: {
                     Label("New Habit", systemImage: "repeat")
                 }
-                Button { model.journalPresented = true } label: {
-                    Label("Open Journal", systemImage: "book.closed")
-                }
                 Button { model.routinesPresented = true } label: {
                     Label("Guided Routines", systemImage: "figure.walk.motion")
                 }
-                Divider()
-                Button { model.identitySetupPresented = true } label: {
-                    Label("Identity Setup", systemImage: "wand.and.stars")
-                }
-                Button { model.futureSelfPresented = true } label: {
-                    Label("Future Self", systemImage: "figure.stand")
-                }
                 Button { model.projectsInitialID = nil; model.projectsPresented = true } label: {
                     Label("New Project", systemImage: "square.stack.3d.up")
-                }
-                Button { model.personalGrowthPresented = true } label: {
-                    Label("Personal Growth", systemImage: "arrow.up.heart")
-                }
-                Button { model.niceToHavesPresented = true } label: {
-                    Label("Nice-to-haves", systemImage: "star")
                 }
                 Divider()
                 Button { model.weeklyReviewPresented = true } label: {
@@ -98,101 +79,6 @@ struct GrowView: View {
             }
             .menuIndicator(.hidden)
         }
-    }
-
-    // MARK: Future Self card (the identity spine)
-
-    private var futureSelfCard: some View {
-        let pillars = life.activePillars
-        return Button { model.futureSelfPresented = true } label: {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 12) {
-                    IconChip(icon: "figure.stand", tint: Theme.accentColor, size: 38)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Future Self")
-                            .font(.system(size: 16, weight: .bold)).foregroundStyle(Theme.textPrimary)
-                        Text(pillars.isEmpty ? "Name who you're becoming" : "Evidence you're becoming that person")
-                            .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary).lineLimit(1)
-                    }
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.right").font(.system(size: 12.5, weight: .semibold))
-                        .foregroundStyle(Theme.textTertiary)
-                }
-                if !pillars.isEmpty {
-                    HStack(spacing: 6) {
-                        ForEach(pillars.prefix(6)) { pillar in
-                            Circle().fill(pillar.color).frame(width: 10, height: 10)
-                        }
-                        if pillars.count > 6 {
-                            Text("+\(pillars.count - 6)").font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(Theme.textTertiary)
-                        }
-                        Spacer()
-                    }
-                }
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                LinearGradient(colors: [Theme.accentColor.opacity(0.14), Theme.surface],
-                               startPoint: .topLeading, endPoint: .bottomTrailing),
-                in: RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous)
-            )
-            .overlay(RoundedRectangle(cornerRadius: Theme.Metric.radius, style: .continuous)
-                .strokeBorder(Theme.hairline, lineWidth: 1))
-        }
-        .buttonStyle(.plain)
-    }
-
-    // MARK: Journal card
-
-    private var journalCard: some View {
-        let entry = life.entry(for: today)
-        let morning = entry?.hasMorning ?? false
-        let evening = entry?.hasEvening ?? false
-        return VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Label("Daily rituals", systemImage: "sparkles")
-                    .font(.system(size: 14.5, weight: .semibold))
-                    .foregroundStyle(Theme.textPrimary)
-                Spacer()
-                if life.journalStreak > 0 {
-                    Label("\(life.journalStreak)d", systemImage: "flame.fill")
-                        .font(.system(size: 12.5, weight: .semibold))
-                        .foregroundStyle(Theme.warning)
-                }
-                Button { model.journalPresented = true } label: {
-                    Text("History").font(.system(size: 12.5, weight: .medium)).foregroundStyle(Theme.accentColor)
-                }
-                .buttonStyle(.plain)
-            }
-            HStack(spacing: 10) {
-                ritualButton("Morning", subtitle: "Set intentions", done: morning,
-                             icon: "sunrise.fill", tint: Theme.warning) { model.morningRitualPresented = true }
-                ritualButton("Evening", subtitle: "Reflect", done: evening,
-                             icon: "moon.stars.fill", tint: Theme.accentChoices[0].color) { model.eveningRitualPresented = true }
-            }
-        }
-        .panel()
-    }
-
-    private func ritualButton(_ label: String, subtitle: String, done: Bool, icon: String, tint: Color, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 9) {
-                Image(systemName: done ? "checkmark.circle.fill" : icon)
-                    .font(.system(size: 16))
-                    .foregroundStyle(done ? Theme.success : tint)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(label).font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.textPrimary)
-                    Text(done ? "Done" : subtitle).font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, 11).padding(.vertical, 9)
-            .frame(maxWidth: .infinity)
-            .background(done ? tint.opacity(0.1) : Theme.fill, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-        }
-        .buttonStyle(.plain)
     }
 
     // MARK: Goals
@@ -560,54 +446,6 @@ struct GrowView: View {
             return days < 0 ? "\(-days)d past target" : "\(days) days left"
         }
         return "In progress"
-    }
-
-    // MARK: Self (personal growth + nice-to-haves)
-
-    private var selfSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "Self")
-            hubRow("arrow.up.heart.fill", "Personal growth",
-                   "Start & stop doing, and the things you like about yourself",
-                   tint: Color(hex: 0x5BD899)) { model.personalGrowthPresented = true }
-            hubRow("star.fill", "Nice-to-haves",
-                   "Fun & downtime for when the work is done",
-                   tint: Theme.warning) { model.niceToHavesPresented = true }
-            hubRow("book.pages.fill", "My Manual",
-                   "Your principles, rules, patterns & solutions",
-                   tint: Color(hex: 0x5B6CF0)) { model.manualPresented = true }
-            hubRow("sparkles", "Aspiration Vault",
-                   "Desires reframed as who you're becoming",
-                   tint: Color(hex: 0xFFB23E)) { model.aspirationsPresented = true }
-
-            SectionHeader(title: "Journey").padding(.top, 8)
-            hubRow("shield.lefthalf.filled", "Character",
-                   "Your level & attributes, earned from evidence",
-                   tint: Color(hex: 0xFF7A59)) { model.characterPresented = true }
-            hubRow("map.fill", "Life Map",
-                   "How today connects to who you're becoming",
-                   tint: Color(hex: 0x5B6CF0)) { model.lifeMapPresented = true }
-            hubRow("clock.arrow.circlepath", "Memories",
-                   "Your life's timeline & 'on this day'",
-                   tint: Color(hex: 0x22C3C9)) { model.memoriesPresented = true }
-        }
-    }
-
-    private func hubRow(_ icon: String, _ title: String, _ subtitle: String, tint: Color, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 12) {
-                IconChip(icon: icon, tint: tint, size: 34)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
-                    Text(subtitle).font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right").font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.textTertiary)
-            }
-            .panel(padding: 12)
-        }
-        .buttonStyle(.plain)
     }
 
     private func emptyRow(_ icon: String, _ title: String, _ message: String) -> some View {

@@ -108,31 +108,6 @@ struct Habit: Codable, Identifiable, Hashable {
     }
 }
 
-// MARK: - Journal (daily intentions + reflection)
-
-struct JournalEntry: Codable, Identifiable, Hashable {
-    var id = UUID()
-    var dayKey: String                     // yyyy-MM-dd
-    var intentions: [String] = ["", "", ""]
-    var mood: Int?                         // 1…5
-    var energy: Int?                       // 1…5
-    var stress: Int?                       // 1…5 (optional; older blobs decode)
-    var wins: String = ""
-    var improve: String = ""
-    var gratitude: String = ""
-    var notes: String = ""
-    var updatedEpoch: TimeInterval = 0
-
-    var hasMorning: Bool { intentions.contains { !$0.trimmingCharacters(in: .whitespaces).isEmpty } }
-    /// Evening completion is defined by the evening-only reflection fields.
-    /// Mood/energy are deliberately excluded: the morning ritual also records
-    /// them, so counting them here marked the evening done as soon as you did
-    /// the morning.
-    var hasEvening: Bool {
-        [wins, improve, gratitude].contains { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
-    }
-}
-
 // MARK: - Day templates
 
 struct TemplateBlock: Codable, Hashable {
@@ -199,7 +174,6 @@ private struct LifeData: Codable {
     var goals: [Goal] = []
     var habits: [Habit] = []
     var habitCompletions: [String] = []    // "habitID#yyyy-MM-dd"
-    var journal: [JournalEntry] = []
     var templates: [DayTemplate] = []
     var budgets: [TimeBudget] = []
     /// "habitID#yyyy-MM-dd" days preserved by a streak freeze. Optional so
@@ -207,23 +181,9 @@ private struct LifeData: Codable {
     var habitFreezes: [String]? = nil
     // Self-growth layer (see Growth.swift). All optional so older blobs decode.
     var projects: [Project]? = nil
-    var growthItems: [GrowthItem]? = nil
-    var selfTraits: [SelfTrait]? = nil
-    var niceToHaves: [NiceToHave]? = nil
     var categoryBudgets: [CategoryBudget]? = nil
     // Identity / growth-OS layer (see Identity.swift, GrowthOS.swift). Optional.
-    var identityPillars: [IdentityPillar]? = nil
-    var identityEvidence: [IdentityEvidence]? = nil
-    var futureSelf: FutureSelf? = nil
-    var dayIntents: [DayIntent]? = nil
-    var manualNotes: [ManualNote]? = nil
-    var aspirations: [Aspiration]? = nil
     // RPG / memory / onboarding layer (see GrowthRPG.swift). Optional.
-    var lifeEvents: [LifeEvent]? = nil
-    var satisfactionSnapshots: [SatisfactionSnapshot]? = nil
-    var identityArchetypes: [String]? = nil
-    var procrastinationStyles: [String]? = nil
-    var bigDream: String? = nil
 }
 
 /// One local store for the whole lifestyle layer — goals, habits, journal,
@@ -238,25 +198,10 @@ final class LifeStore: ObservableObject {
     @Published var habits: [Habit] { didSet { save() } }
     @Published private(set) var habitCompletions: Set<String> { didSet { save() } }
     @Published private(set) var habitFreezes: Set<String> { didSet { save() } }
-    @Published var journal: [JournalEntry] { didSet { save() } }
     @Published var templates: [DayTemplate] { didSet { save() } }
     @Published var budgets: [TimeBudget] { didSet { save() } }
     @Published var projects: [Project] { didSet { save() } }
-    @Published var growthItems: [GrowthItem] { didSet { save() } }
-    @Published var selfTraits: [SelfTrait] { didSet { save() } }
-    @Published var niceToHaves: [NiceToHave] { didSet { save() } }
     @Published var categoryBudgets: [CategoryBudget] { didSet { save() } }
-    @Published var identityPillars: [IdentityPillar] { didSet { save() } }
-    @Published var identityEvidence: [IdentityEvidence] { didSet { save() } }
-    @Published var futureSelf: FutureSelf { didSet { save() } }
-    @Published var dayIntents: [DayIntent] { didSet { save() } }
-    @Published var manualNotes: [ManualNote] { didSet { save() } }
-    @Published var aspirations: [Aspiration] { didSet { save() } }
-    @Published var lifeEvents: [LifeEvent] { didSet { save() } }
-    @Published var satisfactionSnapshots: [SatisfactionSnapshot] { didSet { save() } }
-    @Published var identityArchetypes: [String] { didSet { save() } }
-    @Published var procrastinationStyles: [String] { didSet { save() } }
-    @Published var bigDream: String { didSet { save() } }
 
     init() {
         if let data = UserDefaults.standard.data(forKey: Self.key),
@@ -265,49 +210,19 @@ final class LifeStore: ObservableObject {
             habits = decoded.habits
             habitCompletions = Set(decoded.habitCompletions)
             habitFreezes = Set(decoded.habitFreezes ?? [])
-            journal = decoded.journal
             templates = decoded.templates
             budgets = decoded.budgets
             projects = decoded.projects ?? []
-            growthItems = decoded.growthItems ?? []
-            selfTraits = decoded.selfTraits ?? []
-            niceToHaves = decoded.niceToHaves ?? []
             categoryBudgets = decoded.categoryBudgets ?? []
-            identityPillars = decoded.identityPillars ?? []
-            identityEvidence = decoded.identityEvidence ?? []
-            futureSelf = decoded.futureSelf ?? FutureSelf()
-            dayIntents = decoded.dayIntents ?? []
-            manualNotes = decoded.manualNotes ?? []
-            aspirations = decoded.aspirations ?? []
-            lifeEvents = decoded.lifeEvents ?? []
-            satisfactionSnapshots = decoded.satisfactionSnapshots ?? []
-            identityArchetypes = decoded.identityArchetypes ?? []
-            procrastinationStyles = decoded.procrastinationStyles ?? []
-            bigDream = decoded.bigDream ?? ""
         } else {
             goals = []
             habits = []
             habitCompletions = []
             habitFreezes = []
-            journal = []
             templates = []
             budgets = []
             projects = []
-            growthItems = []
-            selfTraits = []
-            niceToHaves = []
             categoryBudgets = []
-            identityPillars = []
-            identityEvidence = []
-            futureSelf = FutureSelf()
-            dayIntents = []
-            manualNotes = []
-            aspirations = []
-            lifeEvents = []
-            satisfactionSnapshots = []
-            identityArchetypes = []
-            procrastinationStyles = []
-            bigDream = ""
         }
         observeCloudPulls()
     }
@@ -320,25 +235,10 @@ final class LifeStore: ObservableObject {
         habits = decoded.habits
         habitCompletions = Set(decoded.habitCompletions)
         habitFreezes = Set(decoded.habitFreezes ?? [])
-        journal = decoded.journal
         templates = decoded.templates
         budgets = decoded.budgets
         projects = decoded.projects ?? []
-        growthItems = decoded.growthItems ?? []
-        selfTraits = decoded.selfTraits ?? []
-        niceToHaves = decoded.niceToHaves ?? []
         categoryBudgets = decoded.categoryBudgets ?? []
-        identityPillars = decoded.identityPillars ?? []
-        identityEvidence = decoded.identityEvidence ?? []
-        futureSelf = decoded.futureSelf ?? FutureSelf()
-        dayIntents = decoded.dayIntents ?? []
-        manualNotes = decoded.manualNotes ?? []
-        aspirations = decoded.aspirations ?? []
-        lifeEvents = decoded.lifeEvents ?? []
-        satisfactionSnapshots = decoded.satisfactionSnapshots ?? []
-        identityArchetypes = decoded.identityArchetypes ?? []
-        procrastinationStyles = decoded.procrastinationStyles ?? []
-        bigDream = decoded.bigDream ?? ""
     }
 
     private func observeCloudPulls() {
@@ -359,17 +259,10 @@ final class LifeStore: ObservableObject {
         LifeData(
             goals: goals, habits: habits,
             habitCompletions: Array(habitCompletions),
-            journal: journal, templates: templates, budgets: budgets,
+            templates: templates, budgets: budgets,
             habitFreezes: Array(habitFreezes),
-            projects: projects, growthItems: growthItems,
-            selfTraits: selfTraits, niceToHaves: niceToHaves,
-            categoryBudgets: categoryBudgets,
-            identityPillars: identityPillars, identityEvidence: identityEvidence,
-            futureSelf: futureSelf, dayIntents: dayIntents,
-            manualNotes: manualNotes, aspirations: aspirations,
-            lifeEvents: lifeEvents, satisfactionSnapshots: satisfactionSnapshots,
-            identityArchetypes: identityArchetypes,
-            procrastinationStyles: procrastinationStyles, bigDream: bigDream
+            projects: projects,
+            categoryBudgets: categoryBudgets
         )
     }
 
@@ -389,26 +282,11 @@ final class LifeStore: ObservableObject {
         goals = decoded.goals
         habits = decoded.habits
         habitCompletions = Set(decoded.habitCompletions)
-        journal = decoded.journal
         templates = decoded.templates
         budgets = decoded.budgets
         habitFreezes = Set(decoded.habitFreezes ?? [])
         projects = decoded.projects ?? []
-        growthItems = decoded.growthItems ?? []
-        selfTraits = decoded.selfTraits ?? []
-        niceToHaves = decoded.niceToHaves ?? []
         categoryBudgets = decoded.categoryBudgets ?? []
-        identityPillars = decoded.identityPillars ?? []
-        identityEvidence = decoded.identityEvidence ?? []
-        futureSelf = decoded.futureSelf ?? FutureSelf()
-        dayIntents = decoded.dayIntents ?? []
-        manualNotes = decoded.manualNotes ?? []
-        aspirations = decoded.aspirations ?? []
-        lifeEvents = decoded.lifeEvents ?? []
-        satisfactionSnapshots = decoded.satisfactionSnapshots ?? []
-        identityArchetypes = decoded.identityArchetypes ?? []
-        procrastinationStyles = decoded.procrastinationStyles ?? []
-        bigDream = decoded.bigDream ?? ""
         return true
     }
 
@@ -506,36 +384,6 @@ final class LifeStore: ObservableObject {
     }
 
     func doneToday(_ habit: Habit, now: Date = Date()) -> Bool { isDone(habit, on: now) }
-
-    // MARK: Journal
-
-    func entry(for day: Date) -> JournalEntry? {
-        journal.first { $0.dayKey == Fmt.dayKey(day) }
-    }
-
-    func entryOrNew(for day: Date) -> JournalEntry {
-        entry(for: day) ?? JournalEntry(dayKey: Fmt.dayKey(day))
-    }
-
-    func upsert(_ entry: JournalEntry) {
-        var e = entry
-        e.updatedEpoch = Date().timeIntervalSince1970
-        if let idx = journal.firstIndex(where: { $0.dayKey == e.dayKey }) { journal[idx] = e }
-        else { journal.append(e) }
-    }
-
-    var journalStreak: Int {
-        var streak = 0
-        var cursor = Date().startOfDay
-        if entry(for: cursor)?.hasEvening != true { cursor = cursor.adding(days: -1) }
-        var guardCount = 0
-        while guardCount < 400, let e = entry(for: cursor), e.hasEvening {
-            streak += 1
-            cursor = cursor.adding(days: -1)
-            guardCount += 1
-        }
-        return streak
-    }
 
     // MARK: Templates
 
@@ -707,260 +555,4 @@ final class LifeStore: ObservableObject {
         (project.linkedHabitIDs ?? []).compactMap { id in habits.first { $0.id == id && !$0.isArchived } }
     }
 
-    // MARK: Growth commitments (start / stop doing)
-
-    var activeGrowthItems: [GrowthItem] { growthItems.filter { !$0.isArchived } }
-    func commitments(_ direction: GrowthDirection) -> [GrowthItem] {
-        activeGrowthItems.filter { $0.direction == direction }.sorted { $0.createdEpoch < $1.createdEpoch }
-    }
-
-    func upsert(_ item: GrowthItem) {
-        if let idx = growthItems.firstIndex(where: { $0.id == item.id }) {
-            growthItems[idx] = item
-        } else {
-            var g = item
-            if g.createdEpoch == 0 { g.createdEpoch = Date().timeIntervalSince1970 }
-            growthItems.append(g)
-        }
-    }
-    func deleteGrowthItem(_ id: UUID) { growthItems.removeAll { $0.id == id } }
-
-    // MARK: Self-mirror (like / dislike)
-
-    var likes: [SelfTrait] {
-        selfTraits.filter { !$0.isArchived && $0.side == .like }.sorted { $0.createdEpoch < $1.createdEpoch }
-    }
-    var dislikes: [SelfTrait] {
-        selfTraits.filter { !$0.isArchived && $0.side == .dislike }.sorted { $0.createdEpoch < $1.createdEpoch }
-    }
-    /// How many dislikes you've turned around into likes — the panel's score.
-    var improvedTraitCount: Int { selfTraits.filter { $0.wasImproved && $0.side == .like }.count }
-
-    func addTrait(_ text: String, side: SelfTraitSide) {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        selfTraits.append(SelfTrait(text: trimmed, side: side, createdEpoch: Date().timeIntervalSince1970))
-    }
-    func updateTrait(_ trait: SelfTrait) {
-        if let idx = selfTraits.firstIndex(where: { $0.id == trait.id }) { selfTraits[idx] = trait }
-    }
-    func deleteTrait(_ id: UUID) { selfTraits.removeAll { $0.id == id } }
-
-    /// Move a disliked trait over to the like side — the satisfying core gesture.
-    func moveTraitToLike(_ id: UUID) {
-        guard let idx = selfTraits.firstIndex(where: { $0.id == id }) else { return }
-        selfTraits[idx].side = .like
-        selfTraits[idx].movedEpoch = Date().timeIntervalSince1970
-    }
-
-    // MARK: Nice-to-haves (rewards)
-
-    var activeNiceToHaves: [NiceToHave] {
-        niceToHaves.filter { !$0.isArchived }.sorted { $0.createdEpoch < $1.createdEpoch }
-    }
-
-    func upsert(_ item: NiceToHave) {
-        if let idx = niceToHaves.firstIndex(where: { $0.id == item.id }) {
-            niceToHaves[idx] = item
-        } else {
-            var n = item
-            if n.createdEpoch == 0 { n.createdEpoch = Date().timeIntervalSince1970 }
-            niceToHaves.append(n)
-        }
-    }
-    func deleteNiceToHave(_ id: UUID) { niceToHaves.removeAll { $0.id == id } }
-    func markEnjoyed(_ id: UUID) {
-        guard let idx = niceToHaves.firstIndex(where: { $0.id == id }) else { return }
-        niceToHaves[idx].lastEnjoyedEpoch = Date().timeIntervalSince1970
-    }
-
-    // MARK: Identity pillars
-
-    var activePillars: [IdentityPillar] {
-        identityPillars.filter { !$0.isArchived }.sorted { $0.sortIndex < $1.sortIndex }
-    }
-    var hasPillars: Bool { !activePillars.isEmpty }
-
-    func upsert(_ pillar: IdentityPillar) {
-        if let idx = identityPillars.firstIndex(where: { $0.id == pillar.id }) {
-            identityPillars[idx] = pillar
-        } else {
-            var p = pillar
-            if p.createdEpoch == 0 { p.createdEpoch = Date().timeIntervalSince1970 }
-            p.sortIndex = (identityPillars.map(\.sortIndex).max() ?? -1) + 1
-            identityPillars.append(p)
-        }
-    }
-    func deletePillar(_ id: UUID) {
-        identityPillars.removeAll { $0.id == id }
-        identityEvidence.removeAll { $0.pillarID == id }
-        // Detach the vault items that pointed at it.
-        for i in aspirations.indices where aspirations[i].linkedPillarID == id {
-            aspirations[i].linkedPillarID = nil
-        }
-    }
-    func pillar(_ id: UUID) -> IdentityPillar? { identityPillars.first { $0.id == id } }
-
-    /// Seed the eight starter pillars (only when the user has none yet).
-    func seedDefaultPillars() {
-        guard identityPillars.isEmpty else { return }
-        for (i, preset) in IdentityPillar.presets.enumerated() {
-            var p = preset
-            p.createdEpoch = Date().timeIntervalSince1970
-            p.sortIndex = i
-            identityPillars.append(p)
-        }
-    }
-
-    // MARK: Identity evidence (user-authored only; auto-evidence is computed live)
-
-    func addEvidence(pillarID: UUID, text: String, source: EvidenceSource = .manual, strength: Int = 2) {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        identityEvidence.append(IdentityEvidence(
-            epoch: Date().timeIntervalSince1970, pillarID: pillarID,
-            source: source, text: trimmed, strength: min(max(strength, 1), 3)))
-    }
-    func deleteEvidence(_ id: UUID) { identityEvidence.removeAll { $0.id == id } }
-
-    // MARK: Future self
-
-    func updateFutureSelf(_ next: FutureSelf) {
-        var f = next
-        f.updatedEpoch = Date().timeIntervalSince1970
-        futureSelf = f
-    }
-
-    // MARK: Day intents (mode + minimum-viable day)
-
-    func intent(for day: Date) -> DayIntent? {
-        dayIntents.first { $0.dayKey == Fmt.dayKey(day) }
-    }
-    func intentOrNew(for day: Date) -> DayIntent {
-        intent(for: day) ?? DayIntent(dayKey: Fmt.dayKey(day))
-    }
-    func upsert(_ intent: DayIntent) {
-        var e = intent
-        e.updatedEpoch = Date().timeIntervalSince1970
-        if let idx = dayIntents.firstIndex(where: { $0.dayKey == e.dayKey }) { dayIntents[idx] = e }
-        else { dayIntents.append(e) }
-    }
-    func setMode(_ mode: DailyMode, for day: Date = Date()) {
-        var e = intentOrNew(for: day)
-        e.modeRaw = mode.rawValue
-        upsert(e)
-    }
-    /// Toggle a must-win / bonus item done, stamping the moment.
-    func toggleIntentItem(_ itemID: UUID, for day: Date = Date()) {
-        guard var e = intent(for: day) else { return }
-        if let i = e.mustWins.firstIndex(where: { $0.id == itemID }) {
-            e.mustWins[i].isDone.toggle()
-            e.mustWins[i].doneEpoch = e.mustWins[i].isDone ? Date().timeIntervalSince1970 : nil
-        } else if let i = e.bonuses.firstIndex(where: { $0.id == itemID }) {
-            e.bonuses[i].isDone.toggle()
-            e.bonuses[i].doneEpoch = e.bonuses[i].isDone ? Date().timeIntervalSince1970 : nil
-        }
-        upsert(e)
-    }
-
-    // MARK: My Manual
-
-    func notes(_ category: ManualCategory) -> [ManualNote] {
-        manualNotes.filter { !$0.isArchived && $0.category == category }
-            .sorted { $0.createdEpoch < $1.createdEpoch }
-    }
-    var manualIsEmpty: Bool { manualNotes.allSatisfy(\.isArchived) }
-
-    func upsert(_ note: ManualNote) {
-        if let idx = manualNotes.firstIndex(where: { $0.id == note.id }) {
-            var n = note
-            n.updatedEpoch = Date().timeIntervalSince1970
-            manualNotes[idx] = n
-        } else {
-            var n = note
-            if n.createdEpoch == 0 { n.createdEpoch = Date().timeIntervalSince1970 }
-            manualNotes.append(n)
-        }
-    }
-    func deleteManualNote(_ id: UUID) { manualNotes.removeAll { $0.id == id } }
-
-    // MARK: Aspiration vault
-
-    var activeAspirations: [Aspiration] {
-        aspirations.filter { !$0.isArchived }.sorted {
-            if $0.isAcquired != $1.isAcquired { return !$0.isAcquired && $1.isAcquired }
-            return $0.savedEpoch > $1.savedEpoch
-        }
-    }
-    func upsert(_ aspiration: Aspiration) {
-        if let idx = aspirations.firstIndex(where: { $0.id == aspiration.id }) {
-            aspirations[idx] = aspiration
-        } else {
-            var a = aspiration
-            if a.savedEpoch == 0 { a.savedEpoch = Date().timeIntervalSince1970 }
-            aspirations.append(a)
-        }
-    }
-    func deleteAspiration(_ id: UUID) { aspirations.removeAll { $0.id == id } }
-    func toggleAcquired(_ id: UUID) {
-        guard let idx = aspirations.firstIndex(where: { $0.id == id }) else { return }
-        aspirations[idx].acquiredEpoch = aspirations[idx].isAcquired ? nil : Date().timeIntervalSince1970
-    }
-
-    // MARK: Memory engine (life timeline)
-
-    /// Life events, most recent first.
-    var timeline: [LifeEvent] { lifeEvents.sorted { $0.epoch > $1.epoch } }
-
-    func addEvent(_ event: LifeEvent) {
-        var e = event
-        if e.createdEpoch == 0 { e.createdEpoch = Date().timeIntervalSince1970 }
-        if e.epoch == 0 { e.epoch = e.createdEpoch }
-        lifeEvents.append(e)
-    }
-    func updateEvent(_ event: LifeEvent) {
-        if let idx = lifeEvents.firstIndex(where: { $0.id == event.id }) { lifeEvents[idx] = event }
-    }
-    func deleteEvent(_ id: UUID) { lifeEvents.removeAll { $0.id == id } }
-
-    /// Record an auto-captured event once (project finished, level reached, …).
-    func recordAutoEvent(key: String, title: String, kind: LifeEventKind, emoji: String = "", on date: Date = Date()) {
-        guard !lifeEvents.contains(where: { $0.autoKey == key }) else { return }
-        addEvent(LifeEvent(epoch: date.timeIntervalSince1970, title: title, kind: kind,
-                           emoji: emoji, autoKey: key))
-    }
-
-    /// Events that happened on this calendar day in a previous year — the
-    /// "On this day…" resurfacing.
-    func onThisDay(_ reference: Date = Date()) -> [LifeEvent] {
-        let cal = Calendar.current
-        let m = cal.component(.month, from: reference)
-        let d = cal.component(.day, from: reference)
-        let y = cal.component(.year, from: reference)
-        return lifeEvents.filter {
-            let c = cal.dateComponents([.month, .day, .year], from: $0.date)
-            return c.month == m && c.day == d && (c.year ?? y) < y
-        }.sorted { $0.epoch > $1.epoch }
-    }
-
-    // MARK: Life-satisfaction radar
-
-    var latestSatisfaction: SatisfactionSnapshot? {
-        satisfactionSnapshots.max { $0.epoch < $1.epoch }
-    }
-    func recordSatisfaction(_ ratings: [LifeArea: Int]) {
-        var map: [String: Int] = [:]
-        for (area, value) in ratings { map[area.rawValue] = min(10, max(0, value)) }
-        satisfactionSnapshots.append(
-            SatisfactionSnapshot(epoch: Date().timeIntervalSince1970, ratings: map))
-    }
-
-    // MARK: Onboarding answers
-
-    var procrastinationStyleValues: [ProcrastinationStyle] {
-        procrastinationStyles.compactMap { ProcrastinationStyle(rawValue: $0) }
-    }
-    func setProcrastinationStyles(_ styles: [ProcrastinationStyle]) {
-        procrastinationStyles = styles.map(\.rawValue)
-    }
 }

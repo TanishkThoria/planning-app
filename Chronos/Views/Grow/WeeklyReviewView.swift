@@ -11,12 +11,6 @@ struct WeeklyReviewView: View {
     @EnvironmentObject private var life: LifeStore
     @Environment(\.dismiss) private var dismiss
 
-    // The weekly "CEO meeting" agenda — a conversation with yourself.
-    @State private var ceoWorked = ""
-    @State private var ceoDidnt = ""
-    @State private var ceoDrift = ""
-    @State private var ceoNext = ""
-    @State private var ceoSaved = false
 
     private var days: [Date] {
         let today = Date().startOfDay
@@ -43,8 +37,6 @@ struct WeeklyReviewView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     intro
                     statTiles
-                    if !life.activePillars.isEmpty { gapAnalysisSection }
-                    ceoAgendaSection
                     goalsSection
                     habitsSection
                 }
@@ -111,114 +103,6 @@ struct WeeklyReviewView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .panel(padding: 12)
-    }
-
-    // MARK: Gap analysis — current self vs future self
-
-    /// The Sunday "CEO meeting" — four questions you'd ask of any operation you
-    /// were running. Saved to the memory timeline as a weekly reflection.
-    private var ceoAgendaSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                IconChip(icon: "person.crop.rectangle.stack.fill", tint: Color(hex: 0x5B6CF0), size: 32)
-                Text("CEO meeting").font(.system(size: 16, weight: .bold)).foregroundStyle(Theme.textPrimary)
-                Spacer()
-            }
-            Text("A five-minute conversation with yourself about the operation that is your life.")
-                .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            ceoField("What worked this week?", text: $ceoWorked)
-            ceoField("What didn't?", text: $ceoDidnt)
-            ceoField("Where am I drifting?", text: $ceoDrift)
-            ceoField("What matters most next week?", text: $ceoNext)
-
-            Button {
-                saveCEO()
-            } label: {
-                Label(ceoSaved ? "Saved to your timeline" : "Save this week's review",
-                      systemImage: ceoSaved ? "checkmark.circle.fill" : "square.and.arrow.down")
-                    .font(.system(size: 13.5, weight: .semibold))
-                    .foregroundStyle(ceoSaved ? Theme.success : Theme.accentColor)
-            }
-            .buttonStyle(.plain)
-            .disabled(ceoSaved || ceoIsEmpty)
-        }
-        .panel()
-    }
-
-    private func ceoField(_ prompt: String, text: Binding<String>) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(prompt).font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textSecondary)
-            TextField("…", text: text, axis: .vertical)
-                .font(.system(size: 14)).lineLimit(1...4)
-                .padding(10)
-                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        }
-    }
-
-    private var ceoIsEmpty: Bool {
-        [ceoWorked, ceoDidnt, ceoDrift, ceoNext].allSatisfy { $0.trimmingCharacters(in: .whitespaces).isEmpty }
-    }
-
-    private func saveCEO() {
-        guard !ceoIsEmpty else { return }
-        var parts: [String] = []
-        if !ceoWorked.trimmingCharacters(in: .whitespaces).isEmpty { parts.append("Worked: \(ceoWorked)") }
-        if !ceoDidnt.trimmingCharacters(in: .whitespaces).isEmpty { parts.append("Didn't: \(ceoDidnt)") }
-        if !ceoDrift.trimmingCharacters(in: .whitespaces).isEmpty { parts.append("Drifting: \(ceoDrift)") }
-        if !ceoNext.trimmingCharacters(in: .whitespaces).isEmpty { parts.append("Next week: \(ceoNext)") }
-        life.addEvent(LifeEvent(epoch: Date().timeIntervalSince1970,
-                                title: "Weekly review", note: parts.joined(separator: "\n"),
-                                kind: .reflection, emoji: "🗓️"))
-        withAnimation(.snappy) { ceoSaved = true }
-        Haptics.success()
-    }
-
-    private var gapAnalysisSection: some View {
-        let readings = EvidenceEngine.readings(
-            pillars: life.activePillars, life: life, focus: focusLog,
-            taskEvidence: [], goalProgress: [:])
-        let closed = readings.filter { $0.trend == .rising }
-        let widened = readings.filter { $0.trend == .quiet }
-        return VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                IconChip(icon: "arrow.left.and.right", tint: Theme.accentColor, size: 30)
-                Text("The gap this week").font(.system(size: 15, weight: .bold)).foregroundStyle(Theme.textPrimary)
-                Spacer()
-            }
-            Text("Closer to, or further from, the person you're becoming.")
-                .font(.system(size: 12.5)).foregroundStyle(Theme.textSecondary)
-            if !closed.isEmpty {
-                gapRow(icon: "arrow.up.right", tint: Theme.success, label: "Closed the gap",
-                       names: closed.map(\.pillar.name))
-            }
-            if !widened.isEmpty {
-                gapRow(icon: "moon.zzz.fill", tint: Theme.warning, label: "Went quiet",
-                       names: widened.map(\.pillar.name))
-            }
-            if closed.isEmpty && widened.isEmpty {
-                Text("Held steady across your pillars. Steady is underrated.")
-                    .font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
-            }
-            Divider().overlay(Theme.hairline)
-            Text("Where did you close the gap? Where did you widen it? What one system needs changing next week?")
-                .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .panel()
-    }
-
-    private func gapRow(icon: String, tint: Color, label: String, names: [String]) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: icon).font(.system(size: 13, weight: .semibold)).foregroundStyle(tint).frame(width: 18)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label).font(.system(size: 12, weight: .semibold)).foregroundStyle(tint)
-                Text(names.joined(separator: ", ")).font(.system(size: 13.5)).foregroundStyle(Theme.textPrimary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer(minLength: 0)
-        }
     }
 
     private var goalsSection: some View {
@@ -303,13 +187,6 @@ struct WeeklyReviewView: View {
 
     private var footer: some View {
         HStack {
-            Button {
-                dismiss()
-                model.afterDismiss { model.eveningRitualPresented = true }
-            } label: {
-                Text("Reflect").font(.system(size: 14, weight: .medium)).foregroundStyle(Theme.textSecondary)
-            }
-            .buttonStyle(.plain)
             Spacer()
             Button {
                 model.selectedDate = Date().startOfDay.adding(days: 7).startOfWeek

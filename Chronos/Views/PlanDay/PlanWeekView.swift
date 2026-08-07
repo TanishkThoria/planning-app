@@ -198,7 +198,6 @@ struct PlanWeekView: View {
     }
 
     private func apply() {
-        PlanningMeter.shared.recordPlanRun()
         let snapshot = planByDay
         for (_, proposals) in snapshot {
             for proposal in proposals {

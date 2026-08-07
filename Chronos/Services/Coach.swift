@@ -32,8 +32,7 @@ enum Coach {
     /// is a doorway to doing the thing, not just advice.
     enum Action {
         case recalibrate, planDay, planWeek, reflow, openGrow, addHabit
-        case morningRitual, eveningRitual, focusTimer, overdueSweep, openProjects
-        case openFutureSelf, openManual, dayIntent
+        case focusTimer, overdueSweep, openProjects
     }
 
     struct Suggestion: Identifiable {
@@ -54,7 +53,6 @@ enum Coach {
         var habitCount = 0
         var bestHabitStreak = 0
         var habitConsistency: Double = 0     // 0…1 over the last 7 due-days
-        var journalStreak = 0
         var avgEnergy7: Double?              // 1…5, last 7 journal days
         var avgMood7: Double?                // 1…5
         /// Focus period where the most timer minutes actually landed.
@@ -148,17 +146,6 @@ enum Coach {
                     weight: 46
                 ))
             }
-        }
-
-        // Reflection habit.
-        if signals.journalStreak == 0 && stats.blockCount >= 3 {
-            out.append(.init(
-                tone: .neutral,
-                title: "Try an evening reflection",
-                detail: "Two minutes naming what went well and setting tomorrow's intention meaningfully lifts follow-through — and it's the fastest way to make this coach smarter about you.",
-                weight: 52,
-                action: .eveningRitual, actionLabel: "Reflect Now"
-            ))
         }
 
         // Plan adherence

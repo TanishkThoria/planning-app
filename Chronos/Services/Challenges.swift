@@ -3,7 +3,7 @@ import Foundation
 /// What a challenge measures. Each maps to a value we can read from the live
 /// stores for a day or a week.
 enum ChallengeMetric: String, Codable {
-    case focusMinutes, tasks, momentum, habits, blocks, focusSessions, deepMinutes, journal, perfectDays, projectMinutes
+    case focusMinutes, tasks, momentum, habits, blocks, focusSessions, deepMinutes, perfectDays, projectMinutes
 }
 
 enum ChallengePeriod: String, Codable { case daily, weekly }
@@ -33,7 +33,6 @@ struct ChallengeMetrics {
     var blocksDay = 0, blocksWeek = 0
     var focusSessionsDay = 0, focusSessionsWeek = 0
     var deepMinutesWeek = 0
-    var journaledToday = false
     var perfectDaysWeek = 0
     var projectMinutesDay = 0, projectMinutesWeek = 0
 
@@ -71,7 +70,6 @@ struct ChallengeMetrics {
             focusSessionsDay: focusLog.sessions(on: day).count,
             focusSessionsWeek: stats.focusSessions,
             deepMinutesWeek: stats.deepMinutes,
-            journaledToday: life.entry(for: day)?.hasEvening ?? false,
             perfectDaysWeek: weekDays.filter { momentum.score(on: $0) >= 100 }.count,
             projectMinutesDay: projectDay,
             projectMinutesWeek: projectWeek
@@ -152,7 +150,6 @@ final class ChallengeStore: ObservableObject {
         case (.focusSessions, .daily): return m.focusSessionsDay
         case (.focusSessions, .weekly): return m.focusSessionsWeek
         case (.deepMinutes, _): return m.deepMinutesWeek
-        case (.journal, _): return m.journaledToday ? 1 : 0
         case (.perfectDays, _): return m.perfectDaysWeek
         case (.projectMinutes, .daily): return m.projectMinutesDay
         case (.projectMinutes, .weekly): return m.projectMinutesWeek
@@ -212,7 +209,6 @@ final class ChallengeStore: ObservableObject {
         c("d.habits2", "Habit Stacker", "Check off 2 habits today.", "leaf.fill", .habits, .daily, 2, 50, 0x5BD899),
         c("d.blocks4", "Blocked Out", "Plan 4 time blocks today.", "square.stack.3d.up", .blocks, .daily, 4, 40, 0x7C8CF8),
         c("d.sessions2", "Double Down", "Run 2 focus sessions today.", "repeat", .focusSessions, .daily, 2, 60, 0x2FA8BF),
-        c("d.journal", "Reflect", "Do your evening reflection.", "book.closed.fill", .journal, .daily, 1, 40, 0xE07BE0),
         c("d.project45", "Move the Needle", "Spend 45 focused minutes on a project today.", "square.stack.3d.up.fill", .projectMinutes, .daily, 45, 80, 0xF2994A),
     ]
 

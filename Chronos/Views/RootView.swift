@@ -216,22 +216,6 @@ struct RootView: View {
             SocialService.shared.authenticateGameCenter()
             syncSocialPresence()
             submitLeaderboards()
-            checkDayZero()
-        }
-    }
-
-    /// Show the no-guilt "welcome back" screen for an established user returning
-    /// after a few days away — never during onboarding, calibration, or the tour.
-    private func checkDayZero() {
-        let todayKey = Fmt.dayKey(Date())
-        defer { lastOpenDay = todayKey }
-        guard onboardingComplete, service.hasFullAccess,
-              profileStore.profile.isCalibrated, !tour.isActive,
-              !lastOpenDay.isEmpty, lastOpenDay != todayKey,
-              let last = Fmt.day(fromKey: lastOpenDay) else { return }
-        let gap = Calendar.current.dateComponents([.day], from: last, to: Date().startOfDay).day ?? 0
-        if gap >= 3 {
-            DispatchQueue.main.async { model.welcomeBackPresented = true }
         }
     }
 
@@ -376,7 +360,8 @@ struct RootView: View {
             model.screen = .today
             model.morningPlanningPresented = true
         case .reflectEvening:
-            model.eveningRitualPresented = true
+            model.screen = .today
+            model.reviewPresented = true
         case .grow:
             model.screen = .grow
         case .openToday:
@@ -408,31 +393,21 @@ struct RootView: View {
         }
         .sheet(isPresented: $model.planDayPresented) {
             PlanMyDayView()
-                .onAppear { PlanningMeter.shared.begin("planDay") }
-                .onDisappear { PlanningMeter.shared.end("planDay") }
         }
         .sheet(isPresented: $model.planWeekPresented) {
             PlanWeekView()
-                .onAppear { PlanningMeter.shared.begin("planWeek") }
-                .onDisappear { PlanningMeter.shared.end("planWeek") }
         }
         .sheet(isPresented: $model.calibrationPresented) {
             CalibrationView()
-                .onAppear { PlanningMeter.shared.begin("calibration") }
-                .onDisappear { PlanningMeter.shared.end("calibration") }
         }
         .sheet(isPresented: $model.morningPlanningPresented) {
             MorningPlanningView()
-                .onAppear { PlanningMeter.shared.begin("morningPlan") }
-                .onDisappear { PlanningMeter.shared.end("morningPlan") }
         }
         .sheet(isPresented: $model.reviewPresented) {
             DayReviewView(day: model.selectedDate.isToday ? model.selectedDate : Date().startOfDay)
         }
         .sheet(isPresented: $model.reflowPresented) {
             ReflowView()
-                .onAppear { PlanningMeter.shared.begin("reflow") }
-                .onDisappear { PlanningMeter.shared.end("reflow") }
         }
         .sheet(isPresented: $model.focusTimerPresented, onDismiss: { model.focusTimerContext = nil }) {
             FocusTimerView(
@@ -445,15 +420,6 @@ struct RootView: View {
         }
         .sheet(item: $model.habitEditor) { context in
             HabitEditorView(context: context)
-        }
-        .sheet(isPresented: $model.journalPresented) {
-            JournalView()
-        }
-        .sheet(isPresented: $model.morningRitualPresented) {
-            MorningRitualView()
-        }
-        .sheet(isPresented: $model.eveningRitualPresented) {
-            EveningRitualView()
         }
         .sheet(isPresented: $model.weeklyReviewPresented) {
             WeeklyReviewView()
@@ -534,43 +500,6 @@ struct RootView: View {
         }
         .sheet(isPresented: $model.projectsPresented) {
             ProjectsView()
-        }
-        .sheet(isPresented: $model.personalGrowthPresented) {
-            PersonalGrowthView()
-        }
-        .sheet(isPresented: $model.niceToHavesPresented) {
-            NiceToHavesView()
-        }
-        .sheet(isPresented: $model.futureSelfPresented) {
-            // FutureSelfView presents the pillar editor itself (a sheet within a
-            // sheet must be owned by the presenting sheet, not RootView).
-            FutureSelfView()
-        }
-        .sheet(isPresented: $model.dayIntentPresented) {
-            MinimumViableDayView()
-        }
-        .sheet(isPresented: $model.manualPresented) {
-            MyManualView()
-        }
-        .sheet(isPresented: $model.aspirationsPresented) {
-            // AspirationVaultView owns its own editor sheet, for the same reason.
-            AspirationVaultView()
-        }
-        .sheet(isPresented: $model.welcomeBackPresented) {
-            WelcomeBackView()
-        }
-        .sheet(isPresented: $model.characterPresented) {
-            CharacterView()
-        }
-        .sheet(isPresented: $model.lifeMapPresented) {
-            LifeMapView()
-        }
-        .sheet(isPresented: $model.memoriesPresented) {
-            // MemoriesView owns its own event-editor sheet.
-            MemoriesView()
-        }
-        .sheet(isPresented: $model.identitySetupPresented) {
-            IdentitySetupView()
         }
     }
 
@@ -716,7 +645,6 @@ struct RootView: View {
             onTimeRate: stats.onTimeRate,
             datedCompleted: stats.datedCompleted,
             bestHabitStreak: bestHabitStreak,
-            journalStreak: life.journalStreak,
             templatesSaved: life.templates.count,
             weekBlockCount: stats.blockCount,
             momentumLevel: momentum.level,
@@ -727,12 +655,6 @@ struct RootView: View {
         )
         achievements.register(AchievementEngine.compute(inputs))
         achievements.registerLevel(momentum.level, title: momentum.levelTitle)
-        // Auto-capture level milestones onto the memory timeline (deduped).
-        if momentum.level >= 3 {
-            life.recordAutoEvent(key: "level-\(momentum.level)",
-                                 title: "Reached level \(momentum.level) · \(momentum.levelTitle)",
-                                 kind: .achievement, emoji: "⭐️")
-        }
         if momentum.score(on: today) >= 100 {
             achievements.registerMilestone(
                 id: "perfect-\(Fmt.dayKey(today))",

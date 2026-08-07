@@ -41,7 +41,6 @@ enum AchievementEngine {
         var onTimeRate: Double
         var datedCompleted: Int
         var bestHabitStreak: Int
-        var journalStreak: Int
         var templatesSaved: Int
         var weekBlockCount: Int
         // Momentum & routines (gamification layer)
@@ -98,9 +97,7 @@ enum AchievementEngine {
                   .gold, Double(i.bestHabitStreak), 60, unit: "days"),
             badge("routine7", "Ritualist", "Run a tracked routine 7 days in a row.", "figure.walk.motion",
                   .silver, Double(i.bestRoutineStreak), 7, unit: "days"),
-            // Reflection & planning
-            badge("reflect5", "Reflective", "Journal 5 evenings in a row.", "book.closed.fill",
-                  .bronze, Double(i.journalStreak), 5, unit: "days"),
+            // Planning
             badge("architect", "Architect", "Save a reusable day template.", "square.grid.3x3.fill",
                   .bronze, Double(i.templatesSaved), 1),
             badge("builder", "Builder", "Plan 20 blocks in a single week.", "square.stack.3d.up.fill",
@@ -144,7 +141,6 @@ enum AchievementEngine {
             onTimeRate: stats.onTimeRate,
             datedCompleted: stats.datedCompleted,
             bestHabitStreak: bestHabitStreak,
-            journalStreak: life.journalStreak,
             templatesSaved: life.templates.count,
             weekBlockCount: stats.blockCount,
             momentumLevel: momentum.level,

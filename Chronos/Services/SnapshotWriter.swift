@@ -49,12 +49,10 @@ enum SnapshotWriter {
 
         let momentum = MomentumEngine.score(.init(
             plannedBlocks: dayBlocks.count,
-            didMorningPlan: life.entry(for: today)?.hasMorning ?? false,
             tasksCompletedToday: doneToday,
             focusMinutesToday: focusLog?.sessions(on: today).reduce(0) { $0 + $1.actualMinutes } ?? 0,
             habitsDue: habits.count,
             habitsDone: habits.filter(\.done).count,
-            journaledEvening: life.entry(for: today)?.hasEvening ?? false,
             frogEaten: false
         ))
 

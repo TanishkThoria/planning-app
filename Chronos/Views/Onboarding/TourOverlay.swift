@@ -143,7 +143,6 @@ struct TourOverlay: View {
         case .quickAdd: model.quickAddPresented = true
         case .planDay: model.planDayPresented = true
         case .focusTimer: model.startFocus(taskID: nil, title: "Focus")
-        case .morningRitual: model.morningRitualPresented = true
         case .search: model.searchPresented = true
         case .stats: model.statsPresented = true
         case .coach: model.coachPresented = true

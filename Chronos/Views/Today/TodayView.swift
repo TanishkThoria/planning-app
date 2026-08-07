@@ -371,41 +371,6 @@ struct TodayView: View {
         }
     }
 
-    // MARK: Intentions
-
-    private var intentionsCard: some View {
-        let entry = life.entry(for: today)
-        let intentions = (entry?.intentions ?? []).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
-        return Button {
-            model.morningRitualPresented = true
-        } label: {
-            VStack(alignment: .leading, spacing: intentions.isEmpty ? 0 : 8) {
-                HStack {
-                    Label("Today's intentions", systemImage: "sunrise.fill")
-                        .font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.textPrimary)
-                    Spacer()
-                    Image(systemName: "chevron.right").font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
-                }
-                if intentions.isEmpty {
-                    Text("Set your top three for the day →")
-                        .font(.system(size: 13)).foregroundStyle(Theme.textTertiary)
-                        .padding(.top, 4)
-                } else {
-                    ForEach(Array(intentions.enumerated()), id: \.offset) { idx, text in
-                        HStack(spacing: 8) {
-                            Text("\(idx + 1)").font(.system(size: 12.5, weight: .bold))
-                                .foregroundStyle(Theme.accentColor).frame(width: 14)
-                            Text(text).font(.system(size: 14)).foregroundStyle(Theme.textPrimary).lineLimit(1)
-                            Spacer(minLength: 0)
-                        }
-                    }
-                }
-            }
-            .panel(padding: 12)
-        }
-        .buttonStyle(.plain)
-    }
-
     // MARK: Habits strip
 
     private var habitsStrip: some View {
@@ -461,12 +426,10 @@ struct TodayView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     dayActionsRow
                     momentumWidget
-                    intentCard
                     if streakAtRisk { streakRiskBanner }
                     if !simpleMode {
                         dayLoadBanner
                         frogCard
-                        intentionsCard
                         if !dueHabits.isEmpty { habitsStrip }
                         projectNudge
                     }
@@ -513,76 +476,6 @@ struct TodayView: View {
         }
         .background(Theme.bg)
         .onReceive(clock) { now = $0 }
-    }
-
-    // MARK: Minimum Viable Day (mode + must-wins)
-
-    @ViewBuilder
-    private var intentCard: some View {
-        let intent = life.intent(for: today)
-        if let intent, !intent.mustWins.isEmpty {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 8) {
-                    if let mode = intent.mode {
-                        Label(mode.title, systemImage: mode.icon)
-                            .font(.system(size: 11.5, weight: .bold)).foregroundStyle(mode.color)
-                            .padding(.horizontal, 9).padding(.vertical, 4)
-                            .background(mode.color.opacity(0.14), in: Capsule())
-                    }
-                    Text("Must win").font(.system(size: 14.5, weight: .bold)).foregroundStyle(Theme.textPrimary)
-                    Spacer(minLength: 4)
-                    Text("\(intent.mustWinsDone)/\(intent.mustWins.count)")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundStyle(intent.floorCleared ? Theme.success : Theme.textSecondary)
-                        .monospacedDigit()
-                    Button { model.dayIntentPresented = true } label: {
-                        Image(systemName: "slider.horizontal.3").font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(Theme.textTertiary)
-                    }
-                    .buttonStyle(.plain)
-                }
-                ForEach(intent.mustWins) { item in
-                    Button {
-                        withAnimation(.snappy) { life.toggleIntentItem(item.id, for: today) }
-                        Haptics.success()
-                    } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: item.isDone ? "checkmark.circle.fill" : "circle")
-                                .font(.system(size: 19))
-                                .foregroundStyle(item.isDone ? Theme.success : Theme.textTertiary)
-                            Text(item.text)
-                                .font(.system(size: 14))
-                                .foregroundStyle(item.isDone ? Theme.textTertiary : Theme.textPrimary)
-                                .strikethrough(item.isDone, color: Theme.textTertiary)
-                            Spacer(minLength: 0)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
-                if intent.floorCleared {
-                    Text("Floor cleared — today counts. 🎉")
-                        .font(.system(size: 12.5, weight: .semibold)).foregroundStyle(Theme.success)
-                }
-            }
-            .panel()
-        } else {
-            Button { model.dayIntentPresented = true } label: {
-                HStack(spacing: 12) {
-                    IconChip(icon: "target", tint: Color(hex: 0x5B6CF0), size: 34)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Set today's minimum")
-                            .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
-                        Text("The smallest version of today that keeps you moving")
-                            .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary).lineLimit(1)
-                    }
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.right").font(.system(size: 12.5, weight: .semibold))
-                        .foregroundStyle(Theme.textTertiary)
-                }
-                .panel(padding: 12)
-            }
-            .buttonStyle(.plain)
-        }
     }
 
     private var greeting: String {

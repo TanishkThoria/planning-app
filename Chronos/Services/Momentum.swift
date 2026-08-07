@@ -8,19 +8,17 @@ enum MomentumEngine {
 
     struct Input {
         var plannedBlocks: Int
-        var didMorningPlan: Bool
         var tasksCompletedToday: Int
         var focusMinutesToday: Int
         var habitsDue: Int
         var habitsDone: Int
-        var journaledEvening: Bool
         var frogEaten: Bool
     }
 
     /// Which part of a good day a component rewards — lets the UI route the
     /// "boost this" tip to the right action.
     enum Factor: String {
-        case plan, complete, focus, habits, reflect, frog
+        case plan, complete, focus, habits, frog
     }
 
     struct Breakdown: Identifiable {
@@ -39,31 +37,27 @@ enum MomentumEngine {
     /// Component scores that sum to `score`, each with a plain-language tip for
     /// closing the gap.
     static func breakdown(_ input: Input) -> [Breakdown] {
-        let plan = (input.plannedBlocks >= 3 || input.didMorningPlan) ? 20
-            : min(20, input.plannedBlocks * 6)
-        let done = min(20, input.tasksCompletedToday * 5)
-        let focus = min(25, input.focusMinutesToday / 4)
+        let plan = input.plannedBlocks >= 3 ? 25 : min(25, input.plannedBlocks * 8)
+        let done = min(25, input.tasksCompletedToday * 5)
+        let focus = min(30, input.focusMinutesToday / 4)
         let habits = input.habitsDue > 0
-            ? Int((Double(input.habitsDone) / Double(input.habitsDue)) * 20)
-            : (input.habitsDone > 0 ? 20 : 10)
-        let reflect = input.journaledEvening ? 10 : 0
+            ? Int((Double(input.habitsDone) / Double(input.habitsDue)) * 15)
+            : (input.habitsDone > 0 ? 15 : 8)
         let frog = input.frogEaten ? 5 : 0
 
-        let tasksToFull = Int(ceil(Double(20 - done) / 5.0))
-        let minsToFull = (25 - focus) * 4
+        let tasksToFull = Int(ceil(Double(25 - done) / 5.0))
+        let minsToFull = (30 - focus) * 4
         let habitsLeft = max(0, input.habitsDue - input.habitsDone)
 
         return [
-            Breakdown(factor: .plan, label: "Planned", earned: plan, max: 20, icon: "wand.and.stars",
-                      tip: plan >= 20 ? "" : "Do your morning plan or block out 3+ things (+\(20 - plan))"),
-            Breakdown(factor: .complete, label: "Completed", earned: done, max: 20, icon: "checkmark.circle",
-                      tip: done >= 20 ? "" : "Check off \(tasksToFull) more task\(tasksToFull == 1 ? "" : "s") today (+\(20 - done))"),
-            Breakdown(factor: .focus, label: "Focused", earned: focus, max: 25, icon: "timer",
-                      tip: focus >= 25 ? "" : "Run a focus session — \(minsToFull) more min for full credit (+\(25 - focus))"),
-            Breakdown(factor: .habits, label: "Habits", earned: habits, max: 20, icon: "leaf",
-                      tip: habits >= 20 ? "" : (habitsLeft > 0 ? "Finish \(habitsLeft) more due habit\(habitsLeft == 1 ? "" : "s") (+\(20 - habits))" : "Add a habit to Grow (+\(20 - habits))")),
-            Breakdown(factor: .reflect, label: "Reflected", earned: reflect, max: 10, icon: "book.closed",
-                      tip: reflect >= 10 ? "" : "Do an evening reflection (+10)"),
+            Breakdown(factor: .plan, label: "Planned", earned: plan, max: 25, icon: "wand.and.stars",
+                      tip: plan >= 25 ? "" : "Block out 3+ things for today (+\(25 - plan))"),
+            Breakdown(factor: .complete, label: "Completed", earned: done, max: 25, icon: "checkmark.circle",
+                      tip: done >= 25 ? "" : "Check off \(tasksToFull) more task\(tasksToFull == 1 ? "" : "s") today (+\(25 - done))"),
+            Breakdown(factor: .focus, label: "Focused", earned: focus, max: 30, icon: "timer",
+                      tip: focus >= 30 ? "" : "Run a focus session — \(minsToFull) more min for full credit (+\(30 - focus))"),
+            Breakdown(factor: .habits, label: "Habits", earned: habits, max: 15, icon: "leaf",
+                      tip: habits >= 15 ? "" : (habitsLeft > 0 ? "Finish \(habitsLeft) more due habit\(habitsLeft == 1 ? "" : "s") (+\(15 - habits))" : "Add a habit (+\(15 - habits))")),
             Breakdown(factor: .frog, label: "Ate the frog", earned: frog, max: 5, icon: "bolt.fill",
                       tip: frog >= 5 ? "" : "Finish your \u{201C}frog\u{201D} — the task you're avoiding (+5)"),
         ]
@@ -80,17 +74,14 @@ enum MomentumEngine {
                            hiddenCalendars: Set<String>, frogTaskID: String?,
                            day: Date = Date().startOfDay) -> Input {
         let blocks = service.blocks(on: day, hiddenCalendars: hiddenCalendars).filter { !$0.isAllDay }
-        let entry = life.entry(for: day)
         let habitsDue = life.activeHabits.filter { $0.isDue(on: day) }
         let frog = frogTaskID.flatMap { service.task(withID: $0) }
         return Input(
             plannedBlocks: blocks.count,
-            didMorningPlan: entry?.hasMorning ?? false,
             tasksCompletedToday: service.tasks.filter { $0.isCompleted && ($0.completionDate?.isSameDay(as: day) ?? false) }.count,
             focusMinutesToday: focusLog.sessions(on: day).reduce(0) { $0 + $1.actualMinutes },
             habitsDue: habitsDue.count,
             habitsDone: habitsDue.filter { life.isDone($0, on: day) }.count,
-            journaledEvening: entry?.hasEvening ?? false,
             frogEaten: frog?.isCompleted ?? false
         )
     }

@@ -20,14 +20,6 @@ enum CoachInputs {
             }
         }
         s.habitConsistency = due == 0 ? 0 : Double(done) / Double(due)
-        s.journalStreak = life.journalStreak
-
-        // Average mood/energy from the last 7 journal entries.
-        let recent = (0..<7).compactMap { life.entry(for: now.adding(days: -$0)) }
-        let moods = recent.compactMap { $0.mood }
-        let energies = recent.compactMap { $0.energy }
-        if !moods.isEmpty { s.avgMood7 = Double(moods.reduce(0, +)) / Double(moods.count) }
-        if !energies.isEmpty { s.avgEnergy7 = Double(energies.reduce(0, +)) / Double(energies.count) }
 
         // Where timed focus actually lands, bucketed by period.
         var byPeriod: [FocusPeriod: Int] = [:]
