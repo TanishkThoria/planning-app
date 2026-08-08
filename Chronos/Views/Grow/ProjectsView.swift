@@ -69,6 +69,14 @@ struct ProjectsView: View {
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                 HStack(spacing: 8) {
+                    if project.isClockedIn {
+                        HStack(spacing: 4) {
+                            Image(systemName: "record.circle").font(.system(size: 10, weight: .semibold))
+                                .symbolEffect(.pulse, options: .repeating)
+                            Text("Clocked in").font(.system(size: 12, weight: .semibold))
+                        }
+                        .foregroundStyle(project.color)
+                    }
                     if !project.milestones.isEmpty {
                         metaChip("\(project.doneMilestoneCount)/\(project.milestones.count)", "flag.checkered")
                     }
@@ -457,6 +465,7 @@ struct ProjectDetailView: View {
     private func timeSection(_ project: Project) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionHeader(title: "Time", trailing: timeTrailing(project))
+            clockCard(project)
             HStack(spacing: 8) {
                 ForEach([15, 30, 60], id: \.self) { mins in
                     Button {
@@ -470,7 +479,7 @@ struct ProjectDetailView: View {
                     .buttonStyle(.plain)
                 }
                 Button { loggingTime = true } label: {
-                    Label("Custom", systemImage: "slider.horizontal.3")
+                    Label("Log past", systemImage: "clock.arrow.circlepath")
                         .font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textSecondary)
                         .frame(maxWidth: .infinity).padding(.vertical, 9)
                         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
@@ -485,11 +494,12 @@ struct ProjectDetailView: View {
                     .background(Theme.accentColor.opacity(0.10), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
             .buttonStyle(.plain)
+            monthlyRollup(project)
             let entries = project.timeEntries.sorted { $0.epoch > $1.epoch }
             if entries.isEmpty {
                 Text(project.targetHours != nil
-                     ? "Log the hours you put in — you'll watch them add up toward your target."
-                     : "Tap a chip after a work session to log time. Every bit builds the record.")
+                     ? "Clock in when you start, or log the hours you put in — you'll watch them add up toward your target."
+                     : "Clock in to time a session live, tap a chip to log a quick amount, or add a past session you forgot.")
                     .font(.system(size: 12.5)).foregroundStyle(Theme.textTertiary)
                     .fixedSize(horizontal: false, vertical: true).padding(.top, 2)
             } else {
@@ -501,6 +511,120 @@ struct ProjectDetailView: View {
                         .font(.system(size: 12)).foregroundStyle(Theme.textTertiary).padding(.leading, 2)
                 }
             }
+        }
+    }
+
+    // MARK: Clock in / out (live session timer)
+
+    @ViewBuilder
+    private func clockCard(_ project: Project) -> some View {
+        if project.isClockedIn, let start = project.clockInDate {
+            // Live session — tick the elapsed readout every second.
+            TimelineView(.periodic(from: start, by: 1)) { context in
+                let secs = max(0, Int(context.date.timeIntervalSince(start)))
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle().fill(project.color.opacity(0.16)).frame(width: 40, height: 40)
+                        Image(systemName: "record.circle")
+                            .font(.system(size: 19, weight: .semibold)).foregroundStyle(project.color)
+                            .symbolEffect(.pulse, options: .repeating)
+                    }
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(clockReadout(secs))
+                            .font(.system(size: 20, weight: .bold, design: .rounded)).monospacedDigit()
+                            .foregroundStyle(Theme.textPrimary)
+                        Text("Since \(Fmt.time.string(from: start))")
+                            .font(.system(size: 11.5)).foregroundStyle(Theme.textTertiary)
+                    }
+                    Spacer(minLength: 0)
+                    Button {
+                        let logged = life.clockOut(project.id); Haptics.success()
+                        if !logged { /* under a minute — nothing to log */ }
+                    } label: {
+                        Label("Clock out", systemImage: "stop.fill")
+                            .font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Theme.onAccent)
+                            .padding(.horizontal, 14).padding(.vertical, 9)
+                            .background(project.color, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(12)
+                .background(project.color.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(project.color.opacity(0.35), lineWidth: 1))
+                .contextMenu {
+                    Button(role: .destructive) { life.cancelClock(project.id); Haptics.light() } label: {
+                        Label("Discard session", systemImage: "trash")
+                    }
+                }
+            }
+        } else {
+            Button {
+                life.clockIn(project.id); Haptics.success()
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "play.circle.fill").font(.system(size: 20)).foregroundStyle(project.color)
+                    Text("Clock in")
+                        .font(.system(size: 14.5, weight: .semibold)).foregroundStyle(Theme.textPrimary)
+                    if let other = life.clockedInProject, other.id != project.id {
+                        Spacer(minLength: 0)
+                        Text("Stops \(other.emoji)")
+                            .font(.system(size: 11.5, weight: .medium)).foregroundStyle(Theme.textTertiary)
+                    } else {
+                        Spacer(minLength: 0)
+                        Text("Time a live session")
+                            .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                    }
+                }
+                .padding(.horizontal, 14).padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    /// H:MM:SS (or MM:SS under an hour) for the live clock.
+    private func clockReadout(_ seconds: Int) -> String {
+        let h = seconds / 3600, m = (seconds % 3600) / 60, s = seconds % 60
+        return h > 0
+            ? String(format: "%d:%02d:%02d", h, m, s)
+            : String(format: "%d:%02d", m, s)
+    }
+
+    // MARK: Monthly rollup (long-horizon record)
+
+    @ViewBuilder
+    private func monthlyRollup(_ project: Project) -> some View {
+        let months = project.monthlyLogs.prefix(4)
+        if months.count > 1 {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("BY MONTH")
+                    .font(.system(size: 10.5, weight: .semibold)).tracking(1).foregroundStyle(Theme.textTertiary)
+                let peak = max(months.map(\.minutes).max() ?? 1, 1)
+                ForEach(Array(months)) { month in
+                    HStack(spacing: 10) {
+                        Text(Fmt.monthYear.string(from: month.date))
+                            .font(.system(size: 12.5, weight: .medium)).foregroundStyle(Theme.textSecondary)
+                            .frame(width: 76, alignment: .leading)
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(Theme.fill)
+                                Capsule().fill(project.color.opacity(0.7))
+                                    .frame(width: max(4, geo.size.width * (Double(month.minutes) / Double(peak))))
+                            }
+                        }
+                        .frame(height: 7)
+                        Text(timeLabel(month.minutes))
+                            .font(.system(size: 12.5, weight: .semibold)).monospacedDigit()
+                            .foregroundStyle(Theme.textPrimary)
+                            .frame(width: 52, alignment: .trailing)
+                    }
+                }
+            }
+            .padding(12)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Theme.hairline, lineWidth: 1))
         }
     }
 

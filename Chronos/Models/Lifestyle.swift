@@ -58,14 +58,27 @@ struct Goal: Codable, Identifiable, Hashable {
 
 enum HabitCadence: String, Codable, CaseIterable, Identifiable {
     case daily, weekdays, weekly
+    // Richer, calendar-like cadences. Their parameters (interval, chosen
+    // weekdays, day-of-month) live on `Habit` so the enum stays a plain,
+    // decode-safe String. Cases added later so older saved blobs still decode.
+    case everyNDays, customDays, monthly
+
     var id: String { rawValue }
     var label: String {
         switch self {
         case .daily: return "Every day"
         case .weekdays: return "Weekdays"
         case .weekly: return "Weekly target"
+        case .everyNDays: return "Every few days"
+        case .customDays: return "Specific days"
+        case .monthly: return "Monthly"
         }
     }
+
+    /// The full set, offered to habits.
+    static var habitCases: [HabitCadence] { allCases }
+    /// The simple set routines use (they don't carry the extra parameters).
+    static var routineCases: [HabitCadence] { [.daily, .weekdays, .weekly] }
 }
 
 struct Habit: Codable, Identifiable, Hashable {
@@ -86,10 +99,24 @@ struct Habit: Codable, Identifiable, Hashable {
     /// How long the anchored occurrence lasts on the timeline (minutes).
     var durationMinutes: Int = 30
 
+    // Parameters for the richer cadences. All optional/defaulted so older
+    // saved habits decode unchanged.
+    /// For `.everyNDays`: repeat every N days from `createdEpoch`.
+    var intervalDays: Int = 2
+    /// For `.customDays`: weekdays it's due on (1 = Sunday … 7 = Saturday).
+    var customWeekdays: [Int] = [2, 4, 6]
+    /// For `.monthly`: day of the month it's due (1…31, clamped to short months).
+    var monthDay: Int = 1
+
     var color: Color { Palette.color(colorHex) }
 
     /// A habit that occupies a real slot on the day (anchored + has a time).
     var isTimeAnchored: Bool { anchored && reminderMinutes != nil }
+
+    /// The day the cadence counts from (for interval math).
+    var anchorDay: Date {
+        (createdEpoch > 0 ? Date(timeIntervalSince1970: createdEpoch) : Date()).startOfDay
+    }
 
     /// The anchored occurrence's start on a given day, if it has one.
     func anchorStart(on day: Date) -> Date? {
@@ -97,14 +124,85 @@ struct Habit: Codable, Identifiable, Hashable {
         return day.at(minutes: reminderMinutes)
     }
 
-    /// Is the habit expected on this weekday? (1 = Sunday … 7 = Saturday)
+    /// Is the habit expected on this day? (weekday: 1 = Sunday … 7 = Saturday)
     func isDue(on day: Date) -> Bool {
+        let cal = Calendar.current
         switch cadence {
-        case .daily, .weekly: return true
+        case .daily, .weekly:
+            return true
         case .weekdays:
-            let wd = Calendar.current.component(.weekday, from: day)
+            let wd = cal.component(.weekday, from: day)
             return (2...6).contains(wd)
+        case .everyNDays:
+            let n = max(1, intervalDays)
+            let delta = cal.dateComponents([.day], from: anchorDay, to: day.startOfDay).day ?? 0
+            return delta >= 0 && delta % n == 0
+        case .customDays:
+            let wd = cal.component(.weekday, from: day)
+            return customWeekdays.contains(wd)
+        case .monthly:
+            let dom = cal.component(.day, from: day)
+            let daysInMonth = cal.range(of: .day, in: .month, for: day)?.count ?? 31
+            return dom == min(max(1, monthDay), daysInMonth)
         }
+    }
+
+    /// A short, human description of when this habit recurs — for cards & lists.
+    var cadenceDescription: String {
+        switch cadence {
+        case .daily: return "Every day"
+        case .weekdays: return "Weekdays"
+        case .weekly: return "\(weeklyTarget)× per week"
+        case .everyNDays:
+            let n = max(1, intervalDays)
+            return n == 1 ? "Every day" : "Every \(n) days"
+        case .customDays:
+            return Habit.weekdaysLabel(customWeekdays)
+        case .monthly:
+            return "Monthly on the \(Habit.ordinal(monthDay))"
+        }
+    }
+
+    /// e.g. [2,4,6] → "Mon, Wed, Fri"; the full week → "Every day".
+    static func weekdaysLabel(_ weekdays: [Int]) -> String {
+        let sorted = weekdays.sorted()
+        if sorted.isEmpty { return "No days" }
+        if Set(sorted) == Set(1...7) { return "Every day" }
+        if Set(sorted) == Set([2, 3, 4, 5, 6]) { return "Weekdays" }
+        if Set(sorted) == Set([1, 7]) { return "Weekends" }
+        let symbols = Calendar.current.shortWeekdaySymbols   // Sun…Sat, index 0…6
+        return sorted.compactMap { wd in
+            (1...7).contains(wd) ? symbols[wd - 1] : nil
+        }.joined(separator: ", ")
+    }
+
+    static func ordinal(_ n: Int) -> String {
+        let suffix: String
+        switch (n % 100, n % 10) {
+        case (11, _), (12, _), (13, _): suffix = "th"
+        case (_, 1): suffix = "st"
+        case (_, 2): suffix = "nd"
+        case (_, 3): suffix = "rd"
+        default: suffix = "th"
+        }
+        return "\(n)\(suffix)"
+    }
+
+    /// A to-do draft for doing this habit on `day` — powers "add to my to-dos"
+    /// so a scheduled habit can live in the task list alongside everything else.
+    /// Due end-of-day by default, or at the reminder time when one is set.
+    func taskDraft(on day: Date = Date()) -> TaskDraft {
+        var draft = TaskDraft()
+        draft.title = title.trimmingCharacters(in: .whitespaces).isEmpty ? "Habit" : title
+        draft.hasDue = true
+        if let mins = reminderMinutes {
+            draft.hasTime = true
+            draft.due = day.startOfDay.at(minutes: mins)
+        } else {
+            draft.hasTime = false
+            draft.due = day.endOfDay
+        }
+        return draft
     }
 }
 
@@ -494,6 +592,42 @@ final class LifeStore: ObservableObject {
     func deleteTimeEntry(_ id: UUID, from projectID: UUID) {
         guard let pIdx = projects.firstIndex(where: { $0.id == projectID }) else { return }
         projects[pIdx].timeLogs?.removeAll { $0.id == id }
+    }
+
+    // MARK: Project clock (live clock-in / clock-out)
+
+    /// Any project with a live session currently running, if one exists.
+    var clockedInProject: Project? { projects.first(where: \.isClockedIn) }
+
+    /// Start a live work session on a project, stamped at `date`. Stops any other
+    /// running clock first, so at most one session runs at a time.
+    func clockIn(_ projectID: UUID, at date: Date = Date()) {
+        for idx in projects.indices where projects[idx].isClockedIn && projects[idx].id != projectID {
+            clockOut(projects[idx].id, at: date)
+        }
+        guard let idx = projects.firstIndex(where: { $0.id == projectID }) else { return }
+        projects[idx].activeClockInEpoch = date.timeIntervalSince1970
+    }
+
+    /// Stop the running session and log the elapsed time as an entry stamped at
+    /// its start. Sessions under a minute are dropped (no zero-length rows).
+    @discardableResult
+    func clockOut(_ projectID: UUID, note: String = "", at date: Date = Date()) -> Bool {
+        guard let idx = projects.firstIndex(where: { $0.id == projectID }),
+              let start = projects[idx].clockInDate else { return false }
+        let minutes = max(0, Int(date.timeIntervalSince(start) / 60))
+        projects[idx].activeClockInEpoch = nil
+        guard minutes >= 1 else { return false }
+        var logs = projects[idx].timeLogs ?? []
+        logs.append(ProjectTimeEntry(epoch: start.timeIntervalSince1970, minutes: minutes, note: note))
+        projects[idx].timeLogs = logs
+        return true
+    }
+
+    /// Stop the running session without logging anything.
+    func cancelClock(_ projectID: UUID) {
+        guard let idx = projects.firstIndex(where: { $0.id == projectID }) else { return }
+        projects[idx].activeClockInEpoch = nil
     }
 
     // MARK: Project weekly objectives

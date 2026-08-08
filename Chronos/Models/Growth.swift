@@ -113,6 +113,9 @@ struct Project: Codable, Identifiable, Hashable {
     var linkedTaskIDs: [String]? = nil     // EventKit reminder identifiers
     /// An optional running time target, in hours, for effort-based projects.
     var targetHours: Double? = nil
+    /// When a live work session is running, the epoch it was clocked in at.
+    /// nil means the clock is stopped. Optional/defaulted so older blobs decode.
+    var activeClockInEpoch: TimeInterval? = nil
 
     var color: Color { Palette.color(colorHex) }
 
@@ -128,6 +131,56 @@ struct Project: Codable, Identifiable, Hashable {
     func loggedMinutes(inWeekOf day: Date = Date()) -> Int {
         let key = Self.weekKey(for: day)
         return timeEntries.filter { Self.weekKey(for: $0.date) == key }.reduce(0) { $0 + $1.minutes }
+    }
+
+    /// Minutes logged within the calendar month containing `day`.
+    func loggedMinutes(inMonthOf day: Date = Date()) -> Int {
+        let cal = Calendar.current
+        return timeEntries
+            .filter { cal.isDate($0.date, equalTo: day, toGranularity: .month) }
+            .reduce(0) { $0 + $1.minutes }
+    }
+
+    // MARK: Clock
+
+    /// Whether a live work session is currently running.
+    var isClockedIn: Bool { activeClockInEpoch != nil }
+    /// When the running session started, if any.
+    var clockInDate: Date? { activeClockInEpoch.map { Date(timeIntervalSince1970: $0) } }
+    /// Whole minutes elapsed on the running session as of `now`.
+    func clockElapsedMinutes(now: Date = Date()) -> Int {
+        guard let start = clockInDate else { return 0 }
+        return max(0, Int(now.timeIntervalSince(start) / 60))
+    }
+
+    // MARK: Monthly rollup
+
+    /// A calendar month of logged time, for the long-horizon work record.
+    struct MonthlyLog: Identifiable, Hashable {
+        let key: String       // "yyyy-MM"
+        let date: Date        // first day of the month, for labels
+        let minutes: Int
+        let entryCount: Int
+        var id: String { key }
+    }
+
+    /// Logged time grouped by calendar month, newest first — the "how much have
+    /// I put into this over the last few months" record.
+    var monthlyLogs: [MonthlyLog] {
+        let cal = Calendar.current
+        var buckets: [String: (date: Date, minutes: Int, count: Int)] = [:]
+        for entry in timeEntries {
+            let comps = cal.dateComponents([.year, .month], from: entry.date)
+            let key = String(format: "%04d-%02d", comps.year ?? 0, comps.month ?? 0)
+            let monthStart = cal.date(from: comps) ?? entry.date
+            var bucket = buckets[key] ?? (monthStart, 0, 0)
+            bucket.minutes += entry.minutes
+            bucket.count += 1
+            buckets[key] = bucket
+        }
+        return buckets
+            .map { MonthlyLog(key: $0.key, date: $0.value.date, minutes: $0.value.minutes, entryCount: $0.value.count) }
+            .sorted { $0.key > $1.key }
     }
 
     // MARK: Weekly objectives

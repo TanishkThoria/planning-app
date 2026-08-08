@@ -249,6 +249,11 @@ struct GrowView: View {
             Button { model.habitEditor = HabitEditContext(habit: habit, isNew: false) } label: {
                 Label("Edit", systemImage: "pencil")
             }
+            Button {
+                service.createTask(habit.taskDraft()); Haptics.success()
+            } label: {
+                Label("Add to today's to-do", systemImage: "text.badge.plus")
+            }
             if life.canFreeze(habit, on: today.adding(days: -1)) {
                 Button {
                     withAnimation(.snappy) { life.freeze(habit, on: today.adding(days: -1)) }

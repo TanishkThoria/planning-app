@@ -118,6 +118,12 @@ enum Fmt {
         return f
     }()
 
+    static let monthYear: DateFormatter = {
+        let f = DateFormatter()
+        f.setLocalizedDateFormatFromTemplate("MMMyyyy")
+        return f
+    }()
+
     static let dayNumber: DateFormatter = {
         let f = DateFormatter()
         f.setLocalizedDateFormatFromTemplate("d")

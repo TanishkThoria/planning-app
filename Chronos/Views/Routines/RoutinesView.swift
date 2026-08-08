@@ -156,7 +156,7 @@ private struct RoutineEditorSheet: View {
                     Text("Cadence").font(.system(size: 14)).foregroundStyle(Theme.textSecondary)
                     Spacer()
                     Picker("", selection: $routine.cadence) {
-                        ForEach(HabitCadence.allCases) { c in Text(c.label).tag(c) }
+                        ForEach(HabitCadence.routineCases) { c in Text(c.label).tag(c) }
                     }
                     .labelsHidden().fixedSize()
                 }

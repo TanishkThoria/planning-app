@@ -38,13 +38,16 @@ struct Routine: Codable, Identifiable, Hashable {
     /// every step counts (each at least a minute), including check-off steps.
     var plannedMinutes: Int { max(1, steps.reduce(0) { $0 + max(1, $1.minutes) }) }
 
-    /// Is this tracked routine expected on the given weekday?
+    /// Is this tracked routine expected on the given weekday? Routines only use
+    /// the simple cadences (daily / weekdays / weekly); the richer habit-only
+    /// cadences fall back to "every day" here.
     func isDue(on day: Date) -> Bool {
         switch cadence {
-        case .daily, .weekly: return true
         case .weekdays:
             let wd = Calendar.current.component(.weekday, from: day)
             return (2...6).contains(wd)
+        case .daily, .weekly, .everyNDays, .customDays, .monthly:
+            return true
         }
     }
 }
