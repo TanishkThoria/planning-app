@@ -5,15 +5,19 @@
 > where it can go next. Read this and you should understand the app well enough
 > to extend it, hand it to a new engineer, pitch it, or pivot it — without
 > reading the source first. It reflects the codebase as of the current branch
-> (`claude/ios-macos-timeblocking-app-87vgpo`): ~135 Swift files, ~34k lines,
+> (`claude/ios-macos-timeblocking-app-87vgpo`): ~124 Swift files, ~32k lines,
 > plus a widget extension.
 >
-> **Chronos 2.0 note.** The app has evolved from a pure planner into a
-> *Personal Growth Operating System* built on top of the planner. The new
-> identity/evidence layer — pillars, the Future Self, daily modes, the action
-> ratio, recovery, the personal manual, and the aspiration vault — is documented
-> in full in [`docs/GROWTH_OS.md`](./GROWTH_OS.md). This file covers the planner
-> foundation everything sits on; read both for the complete picture.
+> **Refocus note.** Chronos briefly grew a "Personal Growth Operating System"
+> layer (identity pillars, a Future Self, character/RPG attributes, a life map,
+> a memory engine, an aspiration vault, journaling + mood/gratitude rituals, and
+> related engines). That layer has been **deliberately stripped out** to keep
+> Chronos a focused, supercharged planning-and-tasks app with a simple,
+> approachable surface. The removed code is preserved verbatim under
+> [`GrowthOS-Archive/`](../GrowthOS-Archive) (outside the build target) for a
+> future growth-focused app; it is **not** part of Chronos and not documented
+> here. What remains of "Grow" is goals, habits, projects, and routines — the
+> planning-adjacent trackers described in §12.
 
 ---
 
@@ -28,31 +32,26 @@ account, no server, no import/export, no sync to break. Edit anything in Apple's
 own apps (or via Siri, or on another device) and it appears in Chronos instantly,
 and vice-versa.
 
-On top of that calendar/reminders substrate it layers a full productivity and
-personal-development suite: automatic day/week planning, a focus timer, habits,
-goals, long-term projects, routines/rituals, journaling, a momentum score with
-achievements and challenges, deep statistics, an on-device AI coach, school
-(LMS) deadline import, and an optional social layer — all while keeping the
-"delete the app and lose nothing" guarantee intact.
+On top of that calendar/reminders substrate it layers a full productivity suite:
+automatic day/week planning (with an interactive drag-and-resize preview before
+anything is scheduled), a focus timer, habits (with calendar-like recurrence), a
+goals tracker, long-term projects with clock-in/out time tracking, guided
+routines, a momentum score with achievements and challenges, deep statistics, an
+on-device AI coach, school (LMS) deadline import, and an optional social layer —
+all while keeping the "delete the app and lose nothing" guarantee intact.
 
 ---
 
 ## 2. What it hopes to accomplish
 
-**The 2.0 thesis.** Chronos helps users **close the gap between who they are and
-who they want to become.** The fundamental problem was never time management —
-it's identity alignment. People have ambitions and ideal selves but lack
-systems, feedback loops, awareness, and *evidence* of progress. Chronos is the
-bridge, on the belief that you don't become an identity through goals — you
-become it through evidence, measured as momentum, never as worth. (See
-[`docs/GROWTH_OS.md`](./GROWTH_OS.md) for the full growth layer.)
-
-**The planner thesis it's built on.** Most people don't fail to be productive
-for lack of a to-do list — they fail at the translation step: turning a list of
-intentions into a *realistic plan for a real day* and then actually following it.
-Chronos is built around that daily ritual. It wants to move a user from
-*reacting* to their day to *designing* it, and to make the design effortless
-enough that they'll do it every morning.
+**The thesis.** Most people don't fail to be productive for lack of a to-do list
+— they fail at the translation step: turning a list of intentions into a
+*realistic plan for a real day* and then actually following it. Chronos is built
+around that daily ritual. It wants to move a user from *reacting* to their day to
+*designing* it, and to make the design effortless enough that they'll do it every
+morning. The recent refocus doubles down on exactly this: strip the introspective
+detours and make planning, tracking, and following through feel effortless and
+approachable.
 
 **Design values, in priority order:**
 
@@ -65,8 +64,8 @@ enough that they'll do it every morning.
    auto-scheduling, chunking, calibration — stays one layer down.
 3. **Honesty in gamification.** The momentum score, streaks, and achievements are
    *derived from real behavior*, never manually checked in, and only ratchet up
-   within a day. The app rewards genuinely planning, doing, focusing, and
-   reflecting — it can't be gamed by tapping a button.
+   within a day. The app rewards genuinely planning, doing, focusing, and keeping
+   habits — it can't be gamed by tapping a button.
 4. **Private by default.** No servers, no analytics, no tracking, no ads. The AI
    coach runs on-device. Even the optional social layer runs on the user's own
    private iCloud.
@@ -279,8 +278,8 @@ interpretation preview as you type.
   command bar; Settings is a gear. Nothing hides behind a "More" overflow.
 - **Full keyboard control on macOS**: ⌘K command bar, ⇧⌘K quick add, ⌘N/⇧⌘N new
   block/task, ⌘1–6 screens, ⌘T today, ⌘[ / ⌘] navigation, and a whole **Plan**
-  menu (⇧⌘M plan today, ⇧⌘P plan my day, ⇧⌘W plan my week, ⇧⌘R review, ⌥⌘R reflow,
-  ⇧⌘J journal, …).
+  menu (⇧⌘M plan today, ⇧⌘P plan my day, ⇧⌘W plan my week, ⇧⌘R review,
+  ⌥⌘R reflow, weekly review, …).
 
 ---
 
@@ -378,9 +377,13 @@ All planners compose the same pure, stateless primitives in `AutoScheduler`
 
 **End-to-end flows** built on these:
 
-- **Plan My Day** — opt-in Routine / Tasks / Projects sections; creates ritual
-  blocks, project work blocks, and linked task blocks on confirm; reports how many
-  didn't fit.
+- **Plan My Day** — opt-in Routine / Tasks / Projects sections feed an
+  **interactive review step**: the proposed blocks are laid on a real hour-by-hour
+  canvas (`PlanPreviewTimeline`, over draggable/resizable `PlanDraftBlock`s, with
+  existing blocks shown faded for context) where you can drag to move and pull a
+  handle to resize each one — snapping to the grid — before **Confirm & Schedule**
+  commits them (ritual blocks, project work blocks, and linked task blocks) or
+  **Back** returns to selection.
 - **Morning planning ("Plan Today")** — a guided brain-dump (each item becomes a
   due-today task with a rough energy tag) → auto-layout preview → schedule.
 - **Review Day** — walk each past, task-linked block: Did it / More time /
@@ -390,8 +393,7 @@ All planners compose the same pure, stateless primitives in `AutoScheduler`
   slot so moves don't collide.
 - **`DayLoad`** — a Sunsama-style overcommit guardrail: committed minutes (sum of
   due-today task estimates) vs free minutes left in the workday; surfaces an
-  "overcommitted / you have earned downtime" signal to Today, Coach, and
-  Nice-to-Haves.
+  "overcommitted / you have earned downtime" signal to Today and the Coach.
 
 ---
 
@@ -438,19 +440,26 @@ profile reloads on iCloud pull so it stays consistent across devices.
 
 ---
 
-## 12. Grow — the personal-development suite
+## 12. Grow — goals, habits, projects & routines
 
-Owned mostly by `LifeStore` (one `LifeData` Codable struct → UserDefaults key
-`chronos.lifeData`), plus `RoutineStore`. All on-device; reloads on iCloud pull;
-has portable `exportJSON`/`importJSON`.
+The planning-adjacent trackers, owned mostly by `LifeStore` (one `LifeData`
+Codable struct → UserDefaults key `chronos.lifeData`), plus `RoutineStore`. All
+on-device; reloads on iCloud pull; has portable `exportJSON`/`importJSON`. (This
+is what "Grow" means after the refocus — the introspective layer described in the
+header note is gone; see `GrowthOS-Archive/`.)
 
 - **Goals** (`.time` / `.milestone` / `.habitLink`): weekly-hours targets computed
   live from calendar minutes, a manual milestone slider, or a linked habit's
   streak.
 - **Projects** — the richest model, for long-horizon work, concrete *and* fuzzy:
   - **Milestones** (with target dates), **updates/logs** (edit/delete, optional
-    progress stamping), **time tracking** (`ProjectTimeEntry`, quick +15/+30/+60
-    chips, focus-timer auto-logging, "schedule a work session" into a free gap).
+    progress stamping).
+  - **Time tracking** built for months-long effort: a **live clock-in / clock-out**
+    session (one running clock at a time, logged as a `ProjectTimeEntry` on stop,
+    with discard), quick +15/+30/+60 chips, **back-dated manual entries** for
+    sessions you forgot, focus-timer auto-logging, "schedule a work session" into a
+    free gap, and a **by-month rollup** of hours banked. A live "clocked in"
+    indicator shows on the project card.
   - **Custom progress stamping**: a manual 0–100% slider that overrides milestone
     math (or reverts to it).
   - **Week-by-week goals** (`ProjectWeeklyGoal`, one aim per ISO week) for
@@ -458,28 +467,21 @@ has portable `exportJSON`/`importJSON`.
   - **Time targets** (`targetHours`) drive a progress ring for effort-based work.
   - **Links** to goals, habits, and tasks; a cadence nudge ("update due") per
     daily/weekly check-in.
-- **Habits**: daily / weekdays / weekly cadence, weekly targets, streaks with a
-  Duolingo-style **freeze** (2/month), reminders, optional time-anchoring (place
-  on the timeline), and an 11-week heatmap.
-- **Routines / rituals**: ordered steps (timed or check-off), a **guided runner**
-  with per-step countdown ring and optional **voice narration** (on-device TTS),
-  streak tracking, and **calendar placement** (one block or step-by-step
-  back-to-back events).
-- **Journal**: one entry/day — morning intentions (implementation-intention
-  framing), mood/energy check-ins, evening wins/improve/gratitude, a journaling
-  streak, and an **"On this day"** memory resurfacing feature.
-- **Morning & evening rituals**: research-cited guided flows (Gollwitzer, Clear,
-  Seligman, Emmons & McCullough) that hand off to planning / habit-closing.
-- **Personal growth**: **start/stop commitments** (with a days-held badge) and a
-  **self-mirror** (things you like about yourself vs things you're working on,
-  with a "turned it around" move that flips a trait to the like side).
-- **Nice-to-haves**: a downtime/reward list; when `DayLoad` shows earned free
-  time, drop one into the next free slot.
+- **Habits**: calendar-like recurrence — **every day / weekdays / weekly target /
+  every N days / specific weekdays / monthly** (parameters stored on `Habit`,
+  decode-safe), streaks with a Duolingo-style **freeze** (2/month), reminders,
+  optional time-anchoring (place on the timeline), an 11-week heatmap, and an
+  **"add to today's to-do"** action that drops a scheduled habit into Reminders as
+  a task (at its reminder time when one is set).
+- **Routines**: ordered steps (timed or check-off), a **guided runner** with
+  per-step countdown ring and optional **voice narration** (on-device TTS), streak
+  tracking, and **calendar placement** (one block or step-by-step back-to-back
+  events).
 - **Templates**: save a day's blocks as a reusable template (shareable via a
   `chronos-tpl:` code) and apply it to any day.
 - **Weekly Review**: a GTD-style look-back (tasks done, planned/focus minutes,
-  on-plan %, per-goal progress, habit completion) that hands off to the evening
-  ritual and next-week planning.
+  on-plan %, per-goal progress, habit completion) that hands off to next-week
+  planning. It can **surface itself** at the right moment (see §17).
 
 ---
 
@@ -489,16 +491,17 @@ Single wiring point: `RootView.checkGamification()`, run on launch, foreground,
 and after any task/habit/focus change. Everything is derived from real behavior;
 first-run **baselining** suppresses a flood of retroactive celebrations.
 
-- **Momentum** (`MomentumEngine` / `MomentumStore`): a 0–100 daily score from six
-  weighted components — plan (max 20), complete (20), **focus (25, the largest)**,
-  habits (20), reflect (10), frog (5). The score **only ratchets up within a day**.
+- **Momentum** (`MomentumEngine` / `MomentumStore`): a 0–100 daily score from five
+  weighted components — plan (max 25), complete (25), **focus (30, the largest)**,
+  habits (15), frog (5) — all derived from real behavior, journal-independent
+  after the refocus. The score **only ratchets up within a day**.
   `nextBestAction` surfaces the incomplete component with the biggest remaining
   gain. **Levels** every 500 lifetime points (with titles from "Getting Started"
   to "Legendary"), a 14-day sparkline, **streaks** (with earned freezes bridging
   missed days), and an honest freeze-free `bestStreak`.
-- **Achievements** (`AchievementEngine` / `AchievementStore`): 18 bronze/silver/
-  gold badges across consistency, focus, reliability, habits/routines, reflection,
-  and momentum — computed live, never stored, celebrated one at a time
+- **Achievements** (`AchievementEngine` / `AchievementStore`): bronze/silver/
+  gold badges across consistency, focus, reliability, habits/routines, and
+  momentum — computed live, never stored, celebrated one at a time
   (bronze→gold order) via a full-screen overlay, deduped so nothing re-fires.
 - **Challenges** (`ChallengeStore`): 3 daily + 3 weekly, deterministically rotated
   (djb2 seed of the day/week key, so everyone sees the same set that day; progress
@@ -520,7 +523,7 @@ first-run **baselining** suppresses a flood of retroactive celebrations.
   grid, and "texture" facts.
 - **Time Report** ("where did my time go"): allocation by category / calendar /
   energy with previous-period deltas over a week or month.
-- **Trends**: long-horizon mood / habit / goal / reflection trends.
+- **Trends**: long-horizon habit-consistency grids and goal-progress trends.
 - **Wrapped** (`WrappedEngine`): an on-device "Year in Review" — focus hours,
   scheduled hours, top calendars, best habit streak, most productive weekday,
   deep hours, a "Your Year in Projects" card, and a shareable recap.
@@ -582,8 +585,15 @@ Chronos uses the school's **public `.ics` calendar feed**:
   phrases.
 - **Notifications** (all **local**, no push server): block-start heads-ups and
   end-of-block "how did it go?" check-ins (task-linked blocks only), daily
-  morning/evening ritual nudges, and habit/routine reminders — all capped to stay
-  under the 64-pending limit, with tap-routing back into the right flow.
+  morning-planning and evening-review nudges, a **weekly-review** nudge (a
+  configurable day + time), and habit/routine reminders — all capped to stay under
+  the 64-pending limit, with tap-routing back into the right flow.
+- **Auto-surfacing** (`RootView.checkAutoSurface`, gated by an "Auto-open at the
+  right time" setting): beyond notifications, Chronos can **open the right sheet on
+  its own** when the app becomes active at the right moment — morning planning on an
+  otherwise-unplanned morning, the nightly review in the evening, the weekly review
+  on its day — each **once per period** (day/week guards in `@AppStorage`) and
+  never on top of an already-open sheet (`AppModel.isPresentingSheet`).
 - **Voice** (`RoutineSpeaker`): on-device TTS that ducks (not stops) music.
 - **Interactive tour** (`TourController`): a 10-step guided tour that navigates the
   *real* app and can fire actual features, offered on first run after calibration.
@@ -632,7 +642,7 @@ Gating funnels through `PaidFeatures.isReady(_:)`:
 
 - **`ChronosBackup`** — a portable `.chronosbackup` file (a self-describing binary
   plist) capturing *everything Chronos keeps that Apple apps don't sync* — goals,
-  projects, habits, routines, journals, momentum, achievements, challenges, tags,
+  projects, habits, routines, momentum, achievements, challenges, tags,
   and every setting — selected by key prefix (`chronos.`, `pref.`, `state.`) so
   any store added later is captured automatically. Export via `ShareLink`, import
   via file picker.
@@ -654,7 +664,7 @@ Gating funnels through `PaidFeatures.isReady(_:)`:
 | Chronos metadata (color, links, estimates) | notes/URL tokens on the above | rides the native sync |
 | Preferences | `UserDefaults` (`pref.*`) | ChronosBackup / iCloud KV |
 | Calibration profile | `UserDefaults` `chronos.plannerProfile` | Chronos+ CloudKit / KV |
-| Grow data (goals/habits/projects/journal/…) | `UserDefaults` `chronos.lifeData` | Chronos+ CloudKit / KV |
+| Grow data (goals/habits/projects/…) | `UserDefaults` `chronos.lifeData` | Chronos+ CloudKit / KV |
 | Routines | `UserDefaults` `chronos.routines.v1` | Chronos+ CloudKit / KV |
 | Momentum + XP | `chronos.momentum.v1` / `.bonusxp` | Chronos+ CloudKit / KV |
 | Focus sessions | `chronos.focusSessions` (cap 500) | Chronos+ CloudKit / KV |
@@ -685,8 +695,8 @@ friend presence when the full Chronos+ ships).
 Chronos/
 ├── App/            ChronosApp (scenes, ⌘ commands), AppModel (UI state), Theme
 ├── Models/         TimeBlock, TaskItem, CalendarInfo, Category, Profile,
-│                   Growth (projects/goals/growth items), Lifestyle (LifeStore),
-│                   Routine, FocusSession, LMSSource
+│                   Growth (projects + time entries), Lifestyle (LifeStore: goals,
+│                   habits, templates, budgets), Routine, FocusSession, LMSSource
 ├── Services/       EventKitService (data hub), AutoScheduler, DayLoad,
 │                   QuickAddParser, StatsEngine, WrappedEngine, Momentum,
 │                   Achievements(+Store), Challenges, Coach(+Store, Inputs),
@@ -702,6 +712,8 @@ Chronos/
                     Tasks, Grow, Insights, Coach, Timer, Social, LMS, Onboarding,
                     Settings, Editors, Components, …)
 ChronosWidget/      Widget bundle, Home/Lock widgets, Live Activity UI
+GrowthOS-Archive/   The stripped-out growth layer (views/models/services + its
+                    own doc), kept verbatim outside the build for a future app
 docs/               This file + App Store listing, publishing guide, Chronos+ setup,
                     widgets setup, privacy policy, screenshots guide
 Package.swift       ChronosCore (Linux-testable logic) — Xcode ignores this
@@ -714,12 +726,15 @@ Tests/              ChronosCoreTests
 
 **Shipping and working today on a free account:**
 
-- The full planner: Day/Week/Month/Agenda, drag-to-plan, Plan My Day/Week,
-  Deadline planner, Morning planning, Review, Reflow, calibration.
+- The full planner: Day/Week/Month/Agenda, drag-to-plan, Plan My Day (with the
+  interactive drag/resize preview) / Plan My Week, Deadline planner, Morning
+  planning, Review, Reflow, calibration.
 - Tasks, subtasks, matrix, chunking, quick add, command bar, search.
+- Cleaner, more Apple-like edit sheets (liquid-glass chrome, per-row icon chips).
 - Focus timer + Live Activity/Dynamic Island (widgets render if App Group set up).
-- The entire Grow suite (goals, projects, habits, routines, journal, rituals,
-  personal growth, nice-to-haves, templates, weekly review).
+- The Grow suite (goals, projects with clock-in/out time tracking, habits with
+  calendar-like cadences + add-to-todo, routines, templates, weekly review).
+- Auto-surfacing + notifications for morning planning, nightly review, weekly review.
 - Momentum, achievements, challenges, all of Insights (stats, time report, trends,
   Wrapped).
 - Coach heuristics + briefing everywhere; on-device AI chat on eligible hardware.
@@ -777,9 +792,10 @@ be repointed with surprisingly little churn:
   and the rest is largely reframing.
 - **Deep-work / focus app** — promote the focus timer, integrity sprout, momentum,
   and Now mode to the center; demote the calendar to a supporting view.
-- **Habit / self-improvement app** — the Grow suite (habits, routines, journal,
-  personal growth, rituals, trends, Wrapped) is a standalone product; the calendar
-  becomes optional scaffolding.
+- **Habit / self-improvement app** — the Grow suite (habits, routines, goals,
+  projects, trends, Wrapped) plus the archived growth layer under
+  `GrowthOS-Archive/` is the seed of a standalone product; the calendar becomes
+  optional scaffolding.
 - **Team / body-doubling social app** — the built-but-dormant SocialService
   (presence, duels, leaderboards, cheers) is the seed of a social productivity
   product; turning on the CloudKit layer and elevating the social surfaces is the
