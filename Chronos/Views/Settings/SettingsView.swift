@@ -38,6 +38,10 @@ struct SettingsView: View {
     @AppStorage(Prefs.morningReminderMinutes) private var morningReminderMinutes = 8 * 60
     @AppStorage(Prefs.eveningReminderEnabled) private var eveningReminderEnabled = false
     @AppStorage(Prefs.eveningReminderMinutes) private var eveningReminderMinutes = 21 * 60
+    @AppStorage(Prefs.weeklyReviewEnabled) private var weeklyReviewEnabled = true
+    @AppStorage(Prefs.weeklyReviewWeekday) private var weeklyReviewWeekday = 1
+    @AppStorage(Prefs.weeklyReviewMinutes) private var weeklyReviewMinutes = 18 * 60
+    @AppStorage(Prefs.autoSurfaceEnabled) private var autoSurfaceEnabled = true
 
     @State private var showingCalibration = false
 
@@ -230,7 +234,7 @@ struct SettingsView: View {
                                     Toggle("", isOn: $morningReminderEnabled).labelsHidden().toggleStyle(.switch)
                                 }
                             }
-                            FieldRow(label: "Evening reflection reminder") {
+                            FieldRow(label: "Evening review reminder") {
                                 HStack(spacing: 10) {
                                     if eveningReminderEnabled {
                                         DatePicker("", selection: minuteBinding($eveningReminderMinutes), displayedComponents: [.hourAndMinute])
@@ -239,6 +243,32 @@ struct SettingsView: View {
                                     Toggle("", isOn: $eveningReminderEnabled).labelsHidden().toggleStyle(.switch)
                                 }
                             }
+                            FieldRow(label: "Weekly review reminder") {
+                                HStack(spacing: 10) {
+                                    if weeklyReviewEnabled {
+                                        DatePicker("", selection: minuteBinding($weeklyReviewMinutes), displayedComponents: [.hourAndMinute])
+                                            .labelsHidden()
+                                    }
+                                    Toggle("", isOn: $weeklyReviewEnabled).labelsHidden().toggleStyle(.switch)
+                                }
+                            }
+                            if weeklyReviewEnabled {
+                                FieldRow(label: "Review day") {
+                                    Picker("", selection: $weeklyReviewWeekday) {
+                                        ForEach(1...7, id: \.self) { wd in
+                                            Text(Calendar.current.weekdaySymbols[wd - 1]).tag(wd)
+                                        }
+                                    }
+                                    .labelsHidden().fixedSize()
+                                }
+                            }
+                            FieldRow(label: "Auto-open at the right time") {
+                                Toggle("", isOn: $autoSurfaceEnabled).labelsHidden().toggleStyle(.switch)
+                            }
+                            Text("When on, Chronos opens morning planning, the nightly review, and the weekly review on their own at the right moment — once each.")
+                                .font(.system(size: 12.5))
+                                .foregroundStyle(Theme.textTertiary)
+                                .padding(.horizontal, 4)
                         }
                     }
 

@@ -27,6 +27,14 @@ struct RootView: View {
     @AppStorage(Prefs.morningReminderMinutes) private var morningReminderMinutes = 8 * 60
     @AppStorage(Prefs.eveningReminderEnabled) private var eveningReminderEnabled = false
     @AppStorage(Prefs.eveningReminderMinutes) private var eveningReminderMinutes = 21 * 60
+    @AppStorage(Prefs.weeklyReviewEnabled) private var weeklyReviewEnabled = true
+    @AppStorage(Prefs.weeklyReviewWeekday) private var weeklyReviewWeekday = 1   // Sunday
+    @AppStorage(Prefs.weeklyReviewMinutes) private var weeklyReviewMinutes = 18 * 60
+    @AppStorage(Prefs.autoSurfaceEnabled) private var autoSurfaceEnabled = true
+    /// Once-per-period guards so an auto-surfaced sheet never nags twice.
+    @AppStorage("chronos.autoSurface.lastMorning") private var autoMorningDay = ""
+    @AppStorage("chronos.autoSurface.lastReview") private var autoReviewDay = ""
+    @AppStorage("chronos.autoSurface.lastWeekly") private var autoWeeklyKey = ""
     @AppStorage(Prefs.startAlertsEnabled) private var startAlertsEnabled = true
     @AppStorage(Prefs.blockLiveActivities) private var blockLiveActivities = true
     @Environment(\.scenePhase) private var scenePhase
@@ -200,6 +208,7 @@ struct RootView: View {
             rescheduleRituals()
             rescheduleHabitReminders()
             checkGamification()
+            checkAutoSurface()
             LiveActivityController.shared.accentHex = Theme.accent(named: accentName).hexRGB
             refreshWidgetSnapshot()
             // Keep hidden assignment events hidden immediately, then pull any
@@ -251,6 +260,7 @@ struct RootView: View {
                 refreshWidgetSnapshot()
                 syncBlockActivity()
                 checkGamification()
+                checkAutoSurface()
                 PaidFeatures.shared.refresh()
                 CloudKeyValueBackup.shared.sync()
                 Task {
@@ -314,6 +324,9 @@ struct RootView: View {
         .onChange(of: morningReminderMinutes) { _, _ in rescheduleRituals() }
         .onChange(of: eveningReminderEnabled) { _, _ in rescheduleRituals() }
         .onChange(of: eveningReminderMinutes) { _, _ in rescheduleRituals() }
+        .onChange(of: weeklyReviewEnabled) { _, _ in rescheduleRituals() }
+        .onChange(of: weeklyReviewWeekday) { _, _ in rescheduleRituals() }
+        .onChange(of: weeklyReviewMinutes) { _, _ in rescheduleRituals() }
         .onChange(of: startAlertsEnabled) { _, on in
             notifications.rescheduleCheckIns(for: service.blocks, startAlerts: on)
         }
@@ -362,6 +375,8 @@ struct RootView: View {
         case .reflectEvening:
             model.screen = .today
             model.reviewPresented = true
+        case .weeklyReview:
+            model.weeklyReviewPresented = true
         case .grow:
             model.screen = .grow
         case .openToday:
@@ -599,6 +614,56 @@ struct RootView: View {
             morningMinutes: morningReminderEnabled ? morningReminderMinutes : nil,
             eveningMinutes: eveningReminderEnabled ? eveningReminderMinutes : nil
         )
+        notifications.scheduleWeeklyReview(
+            weekday: weeklyReviewEnabled ? weeklyReviewWeekday : nil,
+            minutes: weeklyReviewMinutes
+        )
+    }
+
+    /// Auto-open the right planning/review sheet when the moment is right — once
+    /// per period, never on top of an open sheet, and only with calendar access.
+    /// Weekly review wins, then morning planning, then the nightly review.
+    private func checkAutoSurface() {
+        guard onboardingComplete, autoSurfaceEnabled, service.hasFullAccess,
+              !tour.isActive, !model.isPresentingSheet else { return }
+        let now = Date()
+        let minutes = now.minutesSinceMidnight
+        let dayKey = Fmt.dayKey(now)
+        let weekday = Calendar.current.component(.weekday, from: now)
+
+        // Weekly review — on its day, from its time, once per ISO week.
+        let weekKey = Project.weekKey(for: now)
+        if weeklyReviewEnabled, weekday == weeklyReviewWeekday,
+           minutes >= weeklyReviewMinutes, autoWeeklyKey != weekKey {
+            autoWeeklyKey = weekKey
+            model.weeklyReviewPresented = true
+            return
+        }
+
+        // Morning planning — in the morning, once per day, only if today is
+        // still unplanned (nothing timed on the calendar yet).
+        if minutes >= morningReminderMinutes, minutes < 12 * 60, autoMorningDay != dayKey {
+            let planned = !service.blocks(on: now.startOfDay, hiddenCalendars: model.hiddenCalendarIDs)
+                .contains { !$0.isAllDay }
+            if !planned {
+                autoMorningDay = dayKey
+                model.screen = .today
+                model.morningPlanningPresented = true
+                return
+            }
+        }
+
+        // Nightly review — in the evening, once per day, if there's something to
+        // look back on (any timed block today).
+        if minutes >= eveningReminderMinutes, autoReviewDay != dayKey {
+            let hadBlocks = service.blocks(on: now.startOfDay, hiddenCalendars: model.hiddenCalendarIDs)
+                .contains { !$0.isAllDay }
+            if hadBlocks {
+                autoReviewDay = dayKey
+                model.screen = .today
+                model.reviewPresented = true
+            }
+        }
     }
 
     private func refreshWidgetSnapshot() {

@@ -19,6 +19,7 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
         case checkIn(blockID: String)
         case planMorning
         case reflectEvening
+        case weeklyReview
         case grow
         case openToday
     }
@@ -35,6 +36,7 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
     private static let checkInPrefix = "chronos.checkin."
     private static let startPrefix = "chronos.blockstart."
     private static let ritualPrefix = "chronos.ritual."
+    private static let weeklyPrefix = "chronos.weekly."
     private static let habitPrefix = "chronos.habit."
     private static let routinePrefix = "chronos.routine."
     private let center = UNUserNotificationCenter.current()
@@ -82,6 +84,7 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
         if identifier.hasPrefix(startPrefix) { return .openToday }
         if identifier == "\(ritualPrefix)morning" { return .planMorning }
         if identifier == "\(ritualPrefix)evening" { return .reflectEvening }
+        if identifier.hasPrefix(weeklyPrefix) { return .weeklyReview }
         return .grow
     }
 
@@ -214,6 +217,23 @@ final class NotificationService: NSObject, ObservableObject, UNUserNotificationC
                           body: "How did it go? Review what slipped and set tomorrow's intentions.",
                           minutes: e)
         }
+    }
+
+    /// A weekly review nudge on the given weekday (1 = Sunday … 7 = Saturday)
+    /// at a time-of-day. Pass a nil weekday to disable it.
+    func scheduleWeeklyReview(weekday: Int?, minutes: Int) {
+        clear(prefix: Self.weeklyPrefix)
+        guard enabled, authorization == .authorized, let weekday else { return }
+        let content = UNMutableNotificationContent()
+        content.title = "Weekly review"
+        content.body = "Look back on your week and set up the one ahead — it takes five minutes."
+        content.sound = .default
+        var comps = DateComponents()
+        comps.weekday = weekday
+        comps.hour = minutes / 60
+        comps.minute = minutes % 60
+        let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: true)
+        center.add(UNNotificationRequest(identifier: "\(Self.weeklyPrefix)review", content: content, trigger: trigger))
     }
 
     /// Per-habit reminders at their configured time-of-day. `anchored` habits

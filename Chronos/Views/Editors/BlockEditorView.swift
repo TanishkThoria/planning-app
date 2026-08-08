@@ -37,29 +37,29 @@ struct BlockEditorView: View {
             }
 
             VStack(spacing: 6) {
-                CalendarPickerRow(label: "Calendar", options: service.calendars, selection: $draft.calendarID)
+                CalendarPickerRow(label: "Calendar", options: service.calendars, selection: $draft.calendarID, icon: "calendar")
 
                 CategoryField(title: draft.title, override: $draft.categoryOverride)
 
                 colorRow
 
-                FieldRow(label: "All-day") {
+                FieldRow(label: "All-day", icon: "sun.max") {
                     Toggle("", isOn: $draft.isAllDay)
                         .labelsHidden()
                         .toggleStyle(.switch)
                 }
 
-                FieldRow(label: "Date") {
+                FieldRow(label: "Date", icon: "calendar") {
                     DatePicker("", selection: $draft.start, displayedComponents: [.date])
                         .labelsHidden()
                 }
 
                 if !draft.isAllDay {
-                    FieldRow(label: "Starts") {
+                    FieldRow(label: "Starts", icon: "clock") {
                         DatePicker("", selection: $draft.start, displayedComponents: [.hourAndMinute])
                             .labelsHidden()
                     }
-                    FieldRow(label: "Ends") {
+                    FieldRow(label: "Ends", icon: "clock.badge.checkmark") {
                         DatePicker(
                             "",
                             selection: $draft.end,
@@ -82,7 +82,7 @@ struct BlockEditorView: View {
             }
 
             VStack(spacing: 6) {
-                FieldRow(label: "Repeat") {
+                FieldRow(label: "Repeat", icon: "repeat") {
                     Picker("", selection: $draft.recurrence) {
                         if draft.originalRecurrence == .custom {
                             Text("Custom").tag(RecurrenceOption.custom)
@@ -94,7 +94,7 @@ struct BlockEditorView: View {
                     .labelsHidden()
                     .fixedSize()
                 }
-                FieldRow(label: "Alert") {
+                FieldRow(label: "Alert", icon: "bell") {
                     Picker("", selection: $draft.alarm) {
                         ForEach(AlarmOption.allCases) { option in
                             Text(option.label).tag(option)
@@ -104,7 +104,7 @@ struct BlockEditorView: View {
                     .fixedSize()
                 }
                 if draft.alarm != .none {
-                    FieldRow(label: "Second alert") {
+                    FieldRow(label: "Second alert", icon: "bell.badge") {
                         Picker("", selection: $draft.secondAlarm) {
                             ForEach(AlarmOption.allCases) { option in
                                 Text(option.label).tag(option)
@@ -115,7 +115,7 @@ struct BlockEditorView: View {
                     }
                 }
                 if !draft.isAllDay {
-                    FieldRow(label: "Show as") {
+                    FieldRow(label: "Show as", icon: "eye") {
                         Picker("", selection: $draft.availability) {
                             ForEach(EventAvailability.allCases) { option in
                                 Text(option.label).tag(option)
@@ -126,7 +126,7 @@ struct BlockEditorView: View {
                     }
                 }
                 if context.isRecurring {
-                    FieldRow(label: "Apply to future occurrences") {
+                    FieldRow(label: "Apply to future occurrences", icon: "calendar.badge.clock") {
                         Toggle("", isOn: $applyToFuture)
                             .labelsHidden()
                             .toggleStyle(.switch)
@@ -135,14 +135,14 @@ struct BlockEditorView: View {
             }
 
             VStack(spacing: 6) {
-                FieldRow(label: "Location") {
+                FieldRow(label: "Location", icon: "mappin.and.ellipse") {
                     TextField("None", text: $draft.location)
                         .textFieldStyle(.plain)
                         .font(.system(size: 14))
                         .multilineTextAlignment(.trailing)
                 }
                 if !draft.isAllDay {
-                    FieldRow(label: "Travel time") {
+                    FieldRow(label: "Travel time", icon: "car") {
                         Picker("", selection: $draft.travelMinutes) {
                             Text("None").tag(0)
                             ForEach([5, 10, 15, 30, 45, 60], id: \.self) { m in
@@ -159,7 +159,7 @@ struct BlockEditorView: View {
                     }
                 }
                 if draft.linkedTaskID == nil {
-                    FieldRow(label: "URL") {
+                    FieldRow(label: "URL", icon: "link") {
                         TextField("None", text: $draft.urlString)
                             .textFieldStyle(.plain)
                             .font(.system(size: 14))
@@ -233,7 +233,7 @@ struct BlockEditorView: View {
 
     /// Calendar-default color plus a palette of per-block overrides.
     private var colorRow: some View {
-        FieldRow(label: "Color") {
+        FieldRow(label: "Color", icon: "paintpalette") {
             HStack(spacing: 8) {
                 Button {
                     draft.colorHex = nil

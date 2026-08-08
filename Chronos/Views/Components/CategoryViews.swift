@@ -79,7 +79,7 @@ struct CategoryField: View {
     }
 
     var body: some View {
-        FieldRow(label: "Category") {
+        FieldRow(label: "Category", icon: "tag", iconTint: resolved.color) {
             Menu {
                 ForEach(ActivityCategory.allCases) { category in
                     Button {

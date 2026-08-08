@@ -147,7 +147,7 @@ final class AppModel: ObservableObject {
     @Published var deadlinePlanPresented = false
     /// "Copy availability" free-slot composer.
     @Published var availabilityPresented = false
-    /// Long-horizon growth trends (mood, habits, goals, reflections).
+    /// Long-horizon trends (habits & goals over time).
     @Published var trendsPresented = false
     /// Where-did-my-time-go report.
     @Published var timeReportPresented = false
@@ -183,6 +183,20 @@ final class AppModel: ObservableObject {
 
     /// Show/hide the backlog rail in the day planner (wide layouts).
     @Published var backlogVisible = true
+
+    /// Whether a modal sheet or editor is currently up — so auto-surfaced
+    /// planning/review prompts never stack on top of what the user is doing.
+    var isPresentingSheet: Bool {
+        quickAddPresented || planDayPresented || planWeekPresented || calibrationPresented
+            || morningPlanningPresented || reviewPresented || reflowPresented || settingsPresented
+            || focusTimerPresented || blockEditor != nil || taskEditor != nil
+            || goalEditor != nil || habitEditor != nil || weeklyReviewPresented
+            || templatesPresented || budgetsPresented || searchPresented || overdueSweepPresented
+            || statsPresented || commandBarPresented || deadlinePlanPresented || availabilityPresented
+            || trendsPresented || wrappedPresented || nowModePresented || momentumDetailPresented
+            || achievementsPresented || challengesPresented || routinesPresented || projectsPresented
+            || routineRunner != nil || coachPresented || quickAddPresented
+    }
 
     // MARK: Eat the frog (the one task you're most likely to avoid)
 

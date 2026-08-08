@@ -202,6 +202,11 @@ enum Prefs {
     static let morningReminderMinutes = "pref.morningReminderMinutes"
     static let eveningReminderEnabled = "pref.eveningReminderEnabled"
     static let eveningReminderMinutes = "pref.eveningReminderMinutes"
+    static let weeklyReviewEnabled = "pref.weeklyReviewEnabled"       // Sunday-evening review nudge
+    static let weeklyReviewWeekday = "pref.weeklyReviewWeekday"       // 1=Sun … 7=Sat
+    static let weeklyReviewMinutes = "pref.weeklyReviewMinutes"       // time-of-day
+    /// Auto-open planning/review sheets at the right moment (once each period).
+    static let autoSurfaceEnabled = "pref.autoSurfaceEnabled"
     static let coachEnabled = "pref.coachEnabled"                 // show the AI Coach tab
     static let startAlertsEnabled = "pref.startAlertsEnabled"     // "starting in 5 min" nudges
     static let blockLiveActivities = "pref.blockLiveActivities"   // current-block Live Activity

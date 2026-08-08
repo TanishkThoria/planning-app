@@ -35,12 +35,12 @@ struct TaskEditorView: View {
             TitleField(placeholder: "Task title", text: $draft.title)
 
             VStack(spacing: 6) {
-                CalendarPickerRow(label: "List", options: service.taskLists, selection: $draft.listID)
+                CalendarPickerRow(label: "List", options: service.taskLists, selection: $draft.listID, icon: "list.bullet")
 
                 CategoryField(title: draft.title, override: $draft.categoryOverride)
 
                 if !isNew {
-                    FieldRow(label: "Completed") {
+                    FieldRow(label: "Completed", icon: "checkmark.circle") {
                         Toggle("", isOn: $draft.isCompleted)
                             .labelsHidden()
                             .toggleStyle(.switch)
@@ -49,17 +49,17 @@ struct TaskEditorView: View {
             }
 
             VStack(spacing: 6) {
-                FieldRow(label: "Due date") {
+                FieldRow(label: "Due date", icon: "calendar") {
                     Toggle("", isOn: $draft.hasDue)
                         .labelsHidden()
                         .toggleStyle(.switch)
                 }
                 if draft.hasDue {
-                    FieldRow(label: "Date") {
+                    FieldRow(label: "Date", icon: "calendar") {
                         DatePicker("", selection: $draft.due, displayedComponents: [.date])
                             .labelsHidden()
                     }
-                    FieldRow(label: "Time") {
+                    FieldRow(label: "Time", icon: "clock") {
                         HStack(spacing: 10) {
                             if draft.hasTime {
                                 DatePicker("", selection: $draft.due, displayedComponents: [.hourAndMinute])
@@ -70,7 +70,7 @@ struct TaskEditorView: View {
                                 .toggleStyle(.switch)
                         }
                     }
-                    FieldRow(label: "Repeat") {
+                    FieldRow(label: "Repeat", icon: "repeat") {
                         Picker("", selection: $draft.recurrence) {
                             if draft.originalRecurrence == .custom {
                                 Text("Custom").tag(RecurrenceOption.custom)
@@ -86,7 +86,7 @@ struct TaskEditorView: View {
             }
 
             VStack(spacing: 6) {
-                FieldRow(label: "Priority") {
+                FieldRow(label: "Priority", icon: "exclamationmark.circle") {
                     Picker("", selection: $draft.priority) {
                         ForEach(TaskPriority.allCases) { priority in
                             Text(priority.label).tag(priority)
@@ -97,7 +97,7 @@ struct TaskEditorView: View {
                     .frame(maxWidth: 260)
                 }
 
-                FieldRow(label: "Effort") {
+                FieldRow(label: "Effort", icon: "bolt") {
                     Picker("", selection: $draft.energy) {
                         ForEach(TaskEnergy.allCases) { energy in
                             Label(energy.label, systemImage: energy.icon).tag(energy)

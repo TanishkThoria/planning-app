@@ -31,8 +31,8 @@ struct EditorSheet<Content: View>: View {
                     Text(confirmLabel)
                         .font(.system(size: 14.5, weight: .semibold))
                         .foregroundStyle(confirmDisabled ? Theme.textTertiary : Theme.onAccent)
-                        .padding(.horizontal, 15)
-                        .frame(height: 32)
+                        .padding(.horizontal, 16)
+                        .frame(height: 34)
                         .background(
                             confirmDisabled ? AnyShapeStyle(Theme.fill) : AnyShapeStyle(Theme.accentColor),
                             in: Capsule()
@@ -44,17 +44,23 @@ struct EditorSheet<Content: View>: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-
-            Rectangle().fill(Theme.hairline).frame(height: 1)
+            // Liquid-glass title bar that lifts off the content as it scrolls.
+            .background(.ultraThinMaterial)
+            .overlay(alignment: .bottom) { Rectangle().fill(Theme.hairline).frame(height: 1) }
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 18) {
                     content
                 }
                 .padding(16)
             }
             .scrollIndicators(.hidden)
         }
+        .background(
+            LinearGradient(colors: [Theme.accentColor.opacity(0.06), Theme.elevated],
+                           startPoint: .top, endPoint: .center)
+                .ignoresSafeArea()
+        )
         .background(Theme.elevated)
         .chronosAppearance()
         #if os(macOS)
@@ -63,13 +69,24 @@ struct EditorSheet<Content: View>: View {
     }
 }
 
-/// Labeled row container for editor fields.
+/// Labeled row container for editor fields. An optional leading icon renders a
+/// tinted rounded-square chip (Apple Calendar / Reminders style) so rows read
+/// at a glance.
 struct FieldRow<Content: View>: View {
     let label: String
+    var icon: String? = nil
+    var iconTint: Color = Theme.accentColor
     @ViewBuilder let content: Content
 
     var body: some View {
-        HStack {
+        HStack(spacing: 11) {
+            if let icon {
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 28, height: 28)
+                    .background(iconTint.gradient, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+            }
             Text(label)
                 .font(.system(size: 14))
                 .foregroundStyle(Theme.textSecondary)
@@ -77,8 +94,9 @@ struct FieldRow<Content: View>: View {
             content
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 9)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .padding(.vertical, icon == nil ? 9 : 8)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(Theme.hairline.opacity(0.6), lineWidth: 1))
     }
 }
 
@@ -130,13 +148,14 @@ struct CalendarPickerRow: View {
     let label: String
     let options: [CalendarInfo]
     @Binding var selection: String?
+    var icon: String? = nil
 
     private var selected: CalendarInfo? {
         options.first { $0.id == selection } ?? options.first
     }
 
     var body: some View {
-        FieldRow(label: label) {
+        FieldRow(label: label, icon: icon) {
             Menu {
                 ForEach(options.filter(\.isEditable)) { option in
                     Button {
