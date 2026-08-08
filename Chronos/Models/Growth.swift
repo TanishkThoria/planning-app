@@ -133,8 +133,9 @@ struct Project: Codable, Identifiable, Hashable {
         return timeEntries.filter { Self.weekKey(for: $0.date) == key }.reduce(0) { $0 + $1.minutes }
     }
 
-    /// Minutes logged within the calendar month containing `day`.
-    func loggedMinutes(inMonthOf day: Date = Date()) -> Int {
+    /// Minutes logged within the calendar month containing `day`. No default —
+    /// keeping `loggedMinutes()` (no args) unambiguously the weekly total.
+    func loggedMinutes(inMonthOf day: Date) -> Int {
         let cal = Calendar.current
         return timeEntries
             .filter { cal.isDate($0.date, equalTo: day, toGranularity: .month) }

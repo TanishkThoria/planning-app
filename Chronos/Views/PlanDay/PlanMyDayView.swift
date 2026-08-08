@@ -22,6 +22,12 @@ struct PlanMyDayView: View {
     @State private var includedProjects: Set<UUID> = []
     @State private var initialized = false
 
+    /// Two-step flow: pick what to schedule, then review it on a real timeline
+    /// (drag / resize) before it's committed to the calendar.
+    private enum Phase { case select, preview }
+    @State private var phase: Phase = .select
+    @State private var draftBlocks: [PlanDraftBlock] = []
+
     /// A suggested block of work toward a project's hours target.
     private struct ProjectSession: Identifiable {
         let project: Project
@@ -136,7 +142,15 @@ struct PlanMyDayView: View {
 
             Rectangle().fill(Theme.hairline).frame(height: 1)
 
-            if candidates.isEmpty && ritualCandidates.isEmpty && projectSessionCandidates.isEmpty {
+            if phase == .preview {
+                PlanPreviewTimeline(
+                    day: day,
+                    existing: service.blocks(on: day),
+                    drafts: $draftBlocks,
+                    snapMinutes: snapMinutes,
+                    focusHour: previewFocusHour
+                )
+            } else if candidates.isEmpty && ritualCandidates.isEmpty && projectSessionCandidates.isEmpty {
                 EmptyStateView(
                     icon: "checkmark.seal",
                     title: "Nothing to plan",
@@ -181,7 +195,7 @@ struct PlanMyDayView: View {
         .background(Theme.elevated)
         .chronosAppearance()
         #if os(macOS)
-        .frame(width: 480, height: 560)
+        .frame(width: 480, height: 620)
         #else
         .presentationDetents([.large])
         #endif
@@ -194,19 +208,36 @@ struct PlanMyDayView: View {
         }
     }
 
+    /// Hour to scroll the preview to — the earliest draft, or the workday start.
+    private var previewFocusHour: Int {
+        let earliest = draftBlocks.map(\.startMinutes).min() ?? workStartMinutes
+        return max(0, earliest / 60 - 1)
+    }
+
     private var headerBar: some View {
         HStack {
-            Button("Cancel") { dismiss() }
+            if phase == .preview {
+                Button {
+                    withAnimation(.snappy) { phase = .select }
+                } label: {
+                    Label("Back", systemImage: "chevron.left")
+                        .font(.system(size: 14.5))
+                        .foregroundStyle(Theme.accentColor)
+                }
                 .buttonStyle(.plain)
-                .font(.system(size: 14.5))
-                .foregroundStyle(Theme.textSecondary)
-                .keyboardShortcut(.cancelAction)
+            } else {
+                Button("Cancel") { dismiss() }
+                    .buttonStyle(.plain)
+                    .font(.system(size: 14.5))
+                    .foregroundStyle(Theme.textSecondary)
+                    .keyboardShortcut(.cancelAction)
+            }
             Spacer()
             VStack(spacing: 1) {
-                Text("Plan My Day")
+                Text(phase == .preview ? "Review Your Day" : "Plan My Day")
                     .font(.system(size: 14.5, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
-                Text(Fmt.relativeDay(day))
+                Text(phase == .preview ? "Drag to move · pull the handle to resize" : Fmt.relativeDay(day))
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.textTertiary)
             }
@@ -342,14 +373,23 @@ struct PlanMyDayView: View {
         .buttonStyle(.plain)
     }
 
+    @ViewBuilder
     private var footer: some View {
+        if phase == .preview {
+            previewFooter
+        } else {
+            selectFooter
+        }
+    }
+
+    private var selectFooter: some View {
         let ritualCount = ritualCandidates.filter { includedRituals.contains($0.id) }.count
         let projectCount = projectPlacements.count
         let totalBlocks = proposals.count + ritualCount + projectCount
         return HStack {
             let unplaced = (included.count - proposals.count) + (includedProjects.count - projectCount)
             VStack(alignment: .leading, spacing: 1) {
-                Text("\(totalBlocks) block\(totalBlocks == 1 ? "" : "s") will be created")
+                Text("\(totalBlocks) block\(totalBlocks == 1 ? "" : "s") to review")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
                 if unplaced > 0 {
@@ -360,9 +400,10 @@ struct PlanMyDayView: View {
             }
             Spacer()
             Button {
-                apply()
+                buildDrafts()
+                withAnimation(.snappy) { phase = .preview }
             } label: {
-                Text("Add to Calendar")
+                Label("Review Timeline", systemImage: "calendar.day.timeline.left")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.onAccent)
                     .padding(.horizontal, 16)
@@ -377,40 +418,104 @@ struct PlanMyDayView: View {
         .padding(14)
     }
 
+    private var previewFooter: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(draftBlocks.count) block\(draftBlocks.count == 1 ? "" : "s") ready")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Theme.textSecondary)
+                Text("Adjust anything, then confirm")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            Spacer()
+            Button {
+                apply()
+            } label: {
+                Text("Confirm & Schedule")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Theme.onAccent)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 7)
+                    .background(Theme.accentColor, in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .disabled(draftBlocks.isEmpty)
+            .opacity(draftBlocks.isEmpty ? 0.4 : 1)
+            .keyboardShortcut(.defaultAction)
+        }
+        .padding(14)
+    }
+
+    /// Turn the selected tasks, routine windows and project sessions into
+    /// draggable draft blocks for the review timeline.
+    private func buildDrafts() {
+        var drafts: [PlanDraftBlock] = []
+        for proposal in proposals {
+            drafts.append(PlanDraftBlock(
+                title: proposal.task.title,
+                emoji: nil,
+                startMinutes: proposal.start.minutesSinceMidnight,
+                minutes: max(5, Int(proposal.end.timeIntervalSince(proposal.start) / 60)),
+                color: proposal.task.color,
+                colorHex: nil,
+                source: .task(proposal.task.id)
+            ))
+        }
+        for window in ritualCandidates where includedRituals.contains(window.id) {
+            drafts.append(PlanDraftBlock(
+                title: window.title,
+                emoji: nil,
+                startMinutes: window.start.minutesSinceMidnight,
+                minutes: max(5, Int(window.end.timeIntervalSince(window.start) / 60)),
+                color: Palette.color(Palette.options[7]),
+                colorHex: nil,
+                source: .ritual(window.title)
+            ))
+        }
+        for placement in projectPlacements {
+            let p = placement.session.project
+            drafts.append(PlanDraftBlock(
+                title: p.title.isEmpty ? "Project" : p.title,
+                emoji: p.emoji,
+                startMinutes: placement.start.minutesSinceMidnight,
+                minutes: placement.session.minutes,
+                color: p.color,
+                colorHex: p.colorHex,
+                source: .project(p.id)
+            ))
+        }
+        draftBlocks = drafts.sorted { $0.startMinutes < $1.startMinutes }
+    }
+
     private func apply() {
-        // Snapshot both lists first: creating ritual blocks refreshes the
-        // service, and re-computing `proposals` afterwards could shift or
-        // drop task slots the user just confirmed.
-        let confirmedRituals = ritualCandidates.filter { includedRituals.contains($0.id) }
-        let confirmedProposals = proposals
-        let confirmedProjects = projectPlacements
-
-        for placement in confirmedProjects {
-            var draft = BlockDraft()
-            let project = placement.session.project
-            draft.title = "\(project.emoji) \(project.title.isEmpty ? "Project" : project.title)"
-            draft.calendarID = defaultCalendarID.isEmpty ? nil : defaultCalendarID
-            draft.start = placement.start
-            draft.end = placement.start.adding(minutes: placement.session.minutes)
-            draft.colorHex = project.colorHex
-            service.createBlock(draft)
-        }
-
-        for window in confirmedRituals {
-            var draft = BlockDraft()
-            draft.title = window.title
-            draft.calendarID = defaultCalendarID.isEmpty ? nil : defaultCalendarID
-            draft.start = window.start
-            draft.end = window.end
-            service.createBlock(draft)
-        }
-        for proposal in confirmedProposals {
-            service.scheduleTask(
-                proposal.task,
-                at: proposal.start,
-                minutes: proposal.minutes,
-                calendarID: defaultCalendarID.isEmpty ? nil : defaultCalendarID
-            )
+        for draft in draftBlocks {
+            let start = day.at(minutes: draft.startMinutes)
+            switch draft.source {
+            case .task(let id):
+                guard let task = service.task(withID: id) else { continue }
+                service.scheduleTask(
+                    task, at: start, minutes: draft.minutes,
+                    calendarID: defaultCalendarID.isEmpty ? nil : defaultCalendarID
+                )
+            case .ritual:
+                var block = BlockDraft()
+                block.title = draft.title
+                block.calendarID = defaultCalendarID.isEmpty ? nil : defaultCalendarID
+                block.start = start
+                block.end = start.adding(minutes: draft.minutes)
+                service.createBlock(block)
+            case .project(let pid):
+                var block = BlockDraft()
+                let project = life.project(pid)
+                let emoji = project?.emoji ?? draft.emoji ?? "🎯"
+                block.title = "\(emoji) \(draft.title)"
+                block.calendarID = defaultCalendarID.isEmpty ? nil : defaultCalendarID
+                block.start = start
+                block.end = start.adding(minutes: draft.minutes)
+                if let hex = draft.colorHex ?? project?.colorHex { block.colorHex = hex }
+                service.createBlock(block)
+            }
         }
         dismiss()
     }
